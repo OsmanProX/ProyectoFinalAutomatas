@@ -1,0 +1,22 @@
+{
+  "name": "proyecto-final-automatas",
+  "version": "1.0.0",
+  "description": "App web monolítica modular con login y CRUD de usuarios",
+  "main": "src/app.js",
+  "scripts": {
+    "dev": "bun run --watch src/app.js",
+    "start": "bun run src/app.js",
+    "encrypt": "bun run src/scripts/encrypt.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "mysql2": "^3.24.2"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
