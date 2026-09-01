@@ -9,6 +9,7 @@
     "encrypt": "bun run src/scripts/encrypt.js"
   },
   "dependencies": {
+    "@vladmandic/face-api": "^1.7.15",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "ejs": "^6.0.1",
