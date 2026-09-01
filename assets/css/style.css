@@ -1,17 +1,9 @@
-/* ============================================
-   RESET BASE
-   Elimina margenes y padding por defecto
-   ============================================ */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* ============================================
-   BODY
-   Fuente general, fondo gris claro
-   ============================================ */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f0f2f5;
@@ -19,20 +11,14 @@ body {
   min-height: 100vh;
 }
 
-/* ============================================
-   CONTENEDOR PRINCIPAL
-   Centra el contenido con ancho maximo
-   ============================================ */
+/* Container */
 .container {
-  max-width: 1100px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 40px 20px;
 }
 
-/* ============================================
-   TARJETA / CARD
-   Contenedor blanco con sombra suave
-   ============================================ */
+/* Card */
 .card {
   background: #fff;
   border-radius: 12px;
@@ -43,21 +29,13 @@ body {
   margin: 0 auto;
 }
 
-/* Tarjeta para dashboard (mas ancha) */
-.card-wide {
-  max-width: 100%;
-}
-
 .card h1, .card h2 {
   text-align: center;
   margin-bottom: 24px;
   color: #1a1a2e;
 }
 
-/* ============================================
-   FORMULARIOS
-   Grupo de campo + label
-   ============================================ */
+/* Form */
 .form-group {
   margin-bottom: 16px;
 }
@@ -84,10 +62,7 @@ body {
   box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
 }
 
-/* ============================================
-   BOTONES
-   Base y variantes de color
-   ============================================ */
+/* Buttons */
 .btn {
   display: inline-block;
   padding: 10px 20px;
@@ -104,7 +79,6 @@ body {
   transform: translateY(-1px);
 }
 
-/* Boton primario (login, registro) */
 .btn-primary {
   width: 100%;
   background: #4361ee;
@@ -118,13 +92,11 @@ body {
   background: #3a56d4;
 }
 
-/* Boton pequeno (acciones en tabla) */
 .btn-sm {
   padding: 6px 12px;
   font-size: 12px;
 }
 
-/* Boton peligro (eliminar, logout) */
 .btn-danger {
   background: #e74c3c;
   color: #fff;
@@ -134,7 +106,6 @@ body {
   background: #c0392b;
 }
 
-/* Boton advertencia (cambiar estado) */
 .btn-warning {
   background: #f39c12;
   color: #fff;
@@ -144,10 +115,7 @@ body {
   background: #d68910;
 }
 
-/* ============================================
-   CAMBIADOR DE IDIOMA
-   Boton fijo en esquina superior derecha
-   ============================================ */
+/* Language Switcher */
 .lang-switcher {
   position: fixed;
   top: 16px;
@@ -171,9 +139,7 @@ body {
   background: #3a56d4;
 }
 
-/* ============================================
-   ALERTAS / MENSAJES DE ERROR
-   ============================================ */
+/* Alert */
 .alert {
   padding: 12px 16px;
   border-radius: 8px;
@@ -187,10 +153,7 @@ body {
   border: 1px solid #f5c6cb;
 }
 
-/* ============================================
-   LINKS DE TEXTO
-   "No tienes cuenta? Registrate"
-   ============================================ */
+/* Link text */
 .link-text {
   text-align: center;
   margin-top: 20px;
@@ -208,41 +171,32 @@ body {
   text-decoration: underline;
 }
 
-/* ============================================
-   BARRA DE NAVEGACION
-   Menu superior oscuro centrado
-   ============================================ */
+/* Navbar */
 .navbar {
   background: #1a1a2e;
   color: #fff;
-  padding: 16px 32px;
+  padding: 16px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Logo / titulo del nav */
 .nav-brand {
   font-size: 18px;
   font-weight: 700;
-  letter-spacing: 0.5px;
 }
 
-/* Contenedor de botones derecha */
 .nav-links {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-/* Texto de bienvenida */
 .nav-welcome {
   font-size: 14px;
   color: #ccc;
 }
 
-/* Botones dentro del nav */
 .navbar .btn-sm {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
@@ -252,30 +206,7 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* ============================================
-   SECCION DE BIENVENIDA
-   Centrado arriba del contenido
-   ============================================ */
-.welcome-section {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.welcome-section h1 {
-  font-size: 24px;
-  color: #1a1a2e;
-  margin-bottom: 8px;
-}
-
-.welcome-section p {
-  font-size: 16px;
-  color: #666;
-}
-
-/* ============================================
-   TABLA DE USUARIOS
-   Estilos para la grilla de datos
-   ============================================ */
+/* Table */
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -299,10 +230,7 @@ body {
   background: #f8f9fa;
 }
 
-/* ============================================
-   BADGES / ETIQUETAS DE ESTADO
-   Activo = verde, Inactivo = rojo
-   ============================================ */
+/* Badge */
 .badge {
   display: inline-block;
   padding: 4px 10px;
@@ -321,10 +249,7 @@ body {
   color: #721c24;
 }
 
-/* ============================================
-   MENSAJE SIN DATOS
-   Cuando la tabla esta vacia
-   ============================================ */
+/* No data */
 .no-data {
   text-align: center;
   color: #999;

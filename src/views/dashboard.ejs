@@ -10,17 +10,14 @@
   <nav class="navbar">
     <div class="nav-brand"><%= t.dashboard_title %></div>
     <div class="nav-links">
+      <span class="nav-welcome"><%= t.dashboard_welcome %>, <%= user.full_name %></span>
       <a href="/lang/<%= lang === 'es' ? 'en' : 'es' %>" class="btn btn-sm"><%= t.switch_lang %></a>
       <a href="/logout" class="btn btn-sm btn-danger"><%= t.dashboard_logout %></a>
     </div>
   </nav>
 
   <div class="container">
-    <div class="welcome-section">
-      <h1><%= t.dashboard_welcome %>, <%= user.full_name %></h1>
-    </div>
-
-    <div class="card card-wide">
+    <div class="card">
       <h2><%= t.dashboard_users %></h2>
 
       <% if (users.length > 0) { %>
