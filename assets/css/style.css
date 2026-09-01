@@ -10,13 +10,25 @@
 
 /* ============================================
    BODY
-   Fuente general, fondo gris claro
+   Fuente general, fondo degradado difuminado
    ============================================ */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f0f2f5;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #333;
   min-height: 100vh;
+}
+
+/* ============================================
+   CONTENEDOR DE AUTENTICACION
+   Centra el card vertical y horizontalmente
+   ============================================ */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
 }
 
 /* ============================================
