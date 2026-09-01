@@ -35,7 +35,7 @@ class AuthController {
       res.redirect('/users/dashboard');
     } catch (err) {
       console.error('Error en login:', err);
-      res.render('login', { t, lang, error: 'Error del servidor' });
+      res.render('login', { t, lang, error: t.validation_server_error });
     }
   }
 
@@ -64,6 +64,33 @@ class AuthController {
           case 'username_exists':
             errorMsg = t.register_error_exists;
             break;
+          case 'validation_username_min':
+            errorMsg = t.validation_username_min;
+            break;
+          case 'validation_username_max':
+            errorMsg = t.validation_username_max;
+            break;
+          case 'validation_username_pattern':
+            errorMsg = t.validation_username_pattern;
+            break;
+          case 'validation_password_min':
+            errorMsg = t.validation_password_min;
+            break;
+          case 'validation_password_max':
+            errorMsg = t.validation_password_max;
+            break;
+          case 'validation_fullname_min':
+            errorMsg = t.validation_fullname_min;
+            break;
+          case 'validation_fullname_max':
+            errorMsg = t.validation_fullname_max;
+            break;
+          case 'validation_fullname_pattern':
+            errorMsg = t.validation_fullname_pattern;
+            break;
+          case 'validation_required':
+            errorMsg = t.validation_required;
+            break;
           default:
             errorMsg = result.error;
         }
@@ -73,7 +100,7 @@ class AuthController {
       res.redirect('/login');
     } catch (err) {
       console.error('Error en registro:', err);
-      res.render('register', { t, lang, error: 'Error del servidor' });
+      res.render('register', { t, lang, error: t.validation_server_error });
     }
   }
 

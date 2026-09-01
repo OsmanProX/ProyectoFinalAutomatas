@@ -32,7 +32,6 @@
               <th><%= t.dashboard_username %></th>
               <th><%= t.dashboard_state %></th>
               <th><%= t.dashboard_created %></th>
-              <th><%= t.dashboard_actions %></th>
             </tr>
           </thead>
           <tbody>
@@ -47,17 +46,7 @@
                   </span>
                 </td>
                 <td><%= new Date(u.createAt).toLocaleDateString() %></td>
-                <td>
-                  <form action="/users/toggle/<%= u.id %>" method="POST" style="display:inline">
-                    <button type="submit" class="btn btn-sm btn-warning">
-                      <%= u.state === 1 ? t.dashboard_inactive : t.dashboard_active %>
-                    </button>
-                  </form>
-                  <form action="/users/delete/<%= u.id %>" method="POST" style="display:inline"
-                    onsubmit="return confirm('¿Estás seguro?')">
-                    <button type="submit" class="btn btn-sm btn-danger"><%= t.dashboard_actions %></button>
-                  </form>
-                </td>
+
               </tr>
             <% }); %>
           </tbody>

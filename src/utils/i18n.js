@@ -23,6 +23,18 @@ const translations = {
     register_error_exists: "El usuario ya existe",
     register_success: "Cuenta creada correctamente",
 
+    // Validation errors
+    validation_required: "Este campo es obligatorio",
+    validation_username_min: "El usuario debe tener al menos 4 caracteres",
+    validation_username_max: "El usuario debe tener maximo 30 caracteres",
+    validation_username_pattern: "El usuario solo puede contener letras, numeros y guiones bajos",
+    validation_password_min: "La contraseña debe tener al menos 6 caracteres",
+    validation_password_max: "La contraseña debe tener maximo 100 caracteres",
+    validation_fullname_min: "El nombre debe tener al menos 2 caracteres",
+    validation_fullname_max: "El nombre debe tener maximo 100 caracteres",
+    validation_fullname_pattern: "El nombre solo puede contener letras y espacios",
+    validation_server_error: "Error del servidor",
+
     // Dashboard
     dashboard_title: "Panel de Control",
     dashboard_welcome: "Bienvenido",
@@ -65,6 +77,18 @@ const translations = {
     register_error_password: "Passwords do not match",
     register_error_exists: "Username already exists",
     register_success: "Account created successfully",
+
+    // Validation errors
+    validation_required: "This field is required",
+    validation_username_min: "Username must be at least 4 characters",
+    validation_username_max: "Username must be at most 30 characters",
+    validation_username_pattern: "Username can only contain letters, numbers and underscores",
+    validation_password_min: "Password must be at least 6 characters",
+    validation_password_max: "Password must be at most 100 characters",
+    validation_fullname_min: "Full name must be at least 2 characters",
+    validation_fullname_max: "Full name must be at most 100 characters",
+    validation_fullname_pattern: "Full name can only contain letters and spaces",
+    validation_server_error: "Server error",
 
     // Dashboard
     dashboard_title: "Dashboard",
