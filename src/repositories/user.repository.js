@@ -7,6 +7,14 @@ class UserRepository {
     return User.fromRow(rows[0]);
   }
 
+  async findWithPhoto(username) {
+    const [rows] = await pool.query(
+      'SELECT id, full_name, username, state, photo FROM users WHERE username = ?',
+      [username]
+    );
+    return User.fromRow(rows[0]);
+  }
+
   async findById(id) {
     const [rows] = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
     return User.fromRow(rows[0]);

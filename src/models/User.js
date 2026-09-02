@@ -1,10 +1,11 @@
 class User {
-  constructor({ id, full_name, username, password, state, create_at }) {
+  constructor({ id, full_name, username, password, state, photo, create_at }) {
     this.id = id || null;
     this.fullName = full_name || '';
     this.username = username || '';
     this.password = password || '';
     this.state = state !== undefined ? state : 1;
+    this.photo = photo || null;
     this.createAt = create_at || null;
   }
 
@@ -18,6 +19,7 @@ class User {
       fullName: this.fullName,
       username: this.username,
       state: this.state,
+      photo: this.photo,
       createAt: this.createAt
     };
   }
@@ -26,7 +28,8 @@ class User {
     return {
       id: this.id,
       full_name: this.fullName,
-      username: this.username
+      username: this.username,
+      photo: this.photo
     };
   }
 

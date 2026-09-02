@@ -128,6 +128,10 @@ class UserService {
     return await userRepository.findAll();
   }
 
+  async findWithPhoto(username) {
+    return await userRepository.findWithPhoto(username);
+  }
+
   async getUserById(id) {
     if (!id || isNaN(id)) {
       return { success: false, error: 'invalid_id' };

@@ -156,6 +156,84 @@ body {
   background: #d68910;
 }
 
+/* Boton de reconocimiento facial */
+.btn-face {
+  width: 100%;
+  background: #6c5ce7;
+  color: #fff;
+  font-size: 16px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-face:hover {
+  background: #5a4bd1;
+}
+
+/* Separador entre metodos de login */
+.face-divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.face-divider::before,
+.face-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #ddd;
+}
+
+.face-divider span {
+  padding: 0 12px;
+  color: #999;
+  font-size: 14px;
+}
+
+/* Seccion de camara facial */
+.face-section {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.face-video {
+  width: 100%;
+  max-width: 320px;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+}
+
+.face-canvas {
+  position: absolute;
+  display: none;
+}
+
+.face-status {
+  margin-top: 10px;
+  font-size: 14px;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.face-loading {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.face-success {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.face-error {
+  background: #ffebee;
+  color: #c62828;
+}
+
 /* ============================================
    CAMBIADOR DE IDIOMA
    Boton fijo en esquina superior derecha

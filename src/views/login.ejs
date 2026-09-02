@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= t.login_title %></title>
   <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 </head>
 <body>
   <div class="lang-switcher">
@@ -33,11 +34,27 @@
         <button type="submit" class="btn btn-primary"><%= t.login_submit %></button>
       </form>
 
+      <div class="face-divider">
+        <span>o</span>
+      </div>
+
+      <button type="button" class="btn btn-face" id="btnFaceLogin">
+        Login con Rostro
+      </button>
+
+      <div id="faceSection" class="face-section" style="display:none">
+        <video id="video" autoplay muted playsinline class="face-video"></video>
+        <canvas id="canvas" class="face-canvas"></canvas>
+        <p id="faceStatus" class="face-status"></p>
+      </div>
+
       <p class="link-text">
         <%= t.login_no_account %>
         <a href="/register"><%= t.login_register %></a>
       </p>
     </div>
   </div>
+
+  <script src="/js/face-login.js"></script>
 </body>
 </html>
