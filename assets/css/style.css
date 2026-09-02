@@ -234,6 +234,68 @@ body {
   color: #c62828;
 }
 
+/* Seccion de foto en registro */
+.photo-section {
+  margin-bottom: 16px;
+}
+
+.photo-section label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #555;
+}
+
+.photo-options {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.btn-photo {
+  flex: 1;
+  background: #6c5ce7;
+  color: #fff;
+  font-size: 13px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-photo:hover {
+  background: #5a4bd1;
+}
+
+.camera-section {
+  text-align: center;
+  position: relative;
+}
+
+.camera-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.photo-preview {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.photo-preview img {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+  margin-bottom: 8px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* ============================================
    CAMBIADOR DE IDIOMA
    Boton fijo en esquina superior derecha

@@ -5,21 +5,17 @@ document.addEventListener('DOMContentLoaded', function () {
   const canvas = document.getElementById('canvas');
   const faceStatus = document.getElementById('faceStatus');
   const usernameInput = document.getElementById('username');
+  const btnVerify = document.getElementById('btnVerify');
+  const btnCloseCamera = document.getElementById('btnCloseCamera');
 
   let stream = null;
-  let detecting = false;
   let modelsLoaded = false;
 
-  if (btnFace) {
-    btnFace.addEventListener('click', toggleFaceLogin);
-  }
+  btnFace.addEventListener('click', openCamera);
+  if (btnVerify) btnVerify.addEventListener('click', verifyFace);
+  if (btnCloseCamera) btnCloseCamera.addEventListener('click', closeCamera);
 
-  async function toggleFaceLogin() {
-    if (stream) {
-      stopCamera();
-      return;
-    }
-
+  async function openCamera() {
     const username = usernameInput.value.trim();
     if (!username) {
       showStatus('Ingrese su usuario primero', 'error');
@@ -27,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     faceSection.style.display = 'block';
-    btnFace.textContent = 'Cancelar';
+    btnFace.style.display = 'none';
 
     try {
       if (!modelsLoaded) {
@@ -45,22 +41,22 @@ document.addEventListener('DOMContentLoaded', function () {
       video.srcObject = stream;
       video.play();
 
-      showStatus('Buscando rostro...', 'loading');
-      startDetection();
+      showStatus('Presione "Verificar" cuando su rostro sea visible', 'loading');
     } catch (err) {
       console.error('Error:', err);
       showStatus('No se pudo acceder a la cámara', 'error');
-      stopCamera();
+      closeCamera();
     }
   }
 
-  function startDetection() {
-    detecting = true;
-    detectFace();
-  }
+  async function verifyFace() {
+    const username = usernameInput.value.trim();
+    if (!username) {
+      showStatus('Ingrese su usuario', 'error');
+      return;
+    }
 
-  async function detectFace() {
-    if (!detecting || !stream) return;
+    showStatus('Detectando rostro...', 'loading');
 
     try {
       const detection = await faceapi
@@ -68,41 +64,15 @@ document.addEventListener('DOMContentLoaded', function () {
         .withFaceLandmarks()
         .withFaceDescriptor();
 
-      if (detection) {
-        const displaySize = { width: video.videoWidth, height: video.videoHeight };
-        const resized = faceapi.resizeResults(detection, displaySize);
-
-        const ctx = canvas.getContext('2d');
-        canvas.width = displaySize.width;
-        canvas.height = displaySize.height;
-        ctx.drawImage(video, 0, 0);
-
-        const box = resized.detection.box;
-        ctx.strokeStyle = '#00ff00';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(box.x, box.y, box.width, box.height);
-
-        const descriptor = Array.from(detection.descriptor);
-
-        if (descriptor.length === 128) {
-          detecting = false;
-          await sendDescriptor(descriptor);
-          return;
-        }
+      if (!detection) {
+        showStatus('No se detectó rostro. Intente de nuevo.', 'error');
+        return;
       }
 
-      requestAnimationFrame(detectFace);
-    } catch (err) {
-      console.error('Error en detección:', err);
-      requestAnimationFrame(detectFace);
-    }
-  }
+      const descriptor = Array.from(detection.descriptor);
 
-  async function sendDescriptor(descriptor) {
-    const username = usernameInput.value.trim();
-    showStatus('Verificando rostro...', 'loading');
+      showStatus('Verificando identidad...', 'loading');
 
-    try {
       const response = await fetch('/login/face', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -115,29 +85,29 @@ document.addEventListener('DOMContentLoaded', function () {
         showStatus('Rostro verificado. Similitud: ' + data.similarity + '%', 'success');
         setTimeout(() => {
           window.location.href = data.redirect || '/users/dashboard';
-        }, 1000);
+        }, 1500);
       } else {
-        showStatus('Rostro no coincide. Similitud: ' + (data.similarity || 0) + '%', 'error');
-        detecting = true;
-        detectFace();
+        let msg = 'Rostro no coincide';
+        if (data.error === 'user_not_found') msg = 'Usuario no encontrado';
+        else if (data.error === 'no_photo_registered') msg = 'Usuario sin foto registrada';
+        else if (data.error === 'account_disabled') msg = 'Cuenta desactivada';
+        else if (data.similarity) msg += '. Similitud: ' + data.similarity + '%';
+        showStatus(msg, 'error');
       }
     } catch (err) {
       console.error('Error:', err);
       showStatus('Error de conexión', 'error');
-      detecting = true;
-      detectFace();
     }
   }
 
-  function stopCamera() {
-    detecting = false;
+  function closeCamera() {
     if (stream) {
       stream.getTracks().forEach(t => t.stop());
       stream = null;
     }
     video.srcObject = null;
     faceSection.style.display = 'none';
-    btnFace.textContent = 'Login con Rostro';
+    btnFace.style.display = 'block';
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
   }
 

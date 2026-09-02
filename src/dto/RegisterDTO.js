@@ -1,9 +1,10 @@
 class RegisterDTO {
-  constructor({ full_name, username, password, confirm_password }) {
+  constructor({ full_name, username, password, confirm_password, photo }) {
     this.fullName = (full_name || '').trim();
     this.username = (username || '').trim().toLowerCase();
     this.password = password || '';
     this.confirmPassword = confirm_password || '';
+    this.photo = photo || null;
   }
 
   isValid() {

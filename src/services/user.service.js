@@ -119,7 +119,12 @@ class UserService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(registerDTO.password, salt);
 
-    const id = await userRepository.create(registerDTO.fullName, registerDTO.username, hashedPassword);
+    const id = await userRepository.create(
+      registerDTO.fullName,
+      registerDTO.username,
+      hashedPassword,
+      registerDTO.photo
+    );
 
     return { success: true, id };
   }

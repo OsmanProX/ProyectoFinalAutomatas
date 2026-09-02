@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= t.register_title %></title>
   <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 </head>
 <body>
   <div class="lang-switcher">
@@ -19,7 +20,9 @@
         <div class="alert alert-error"><%= error %></div>
       <% } %>
 
-      <form action="/register" method="POST">
+      <form action="/register" method="POST" id="registerForm">
+        <input type="hidden" id="photo" name="photo" value="">
+
         <div class="form-group">
           <label for="full_name"><%= t.register_full_name %></label>
           <input type="text" id="full_name" name="full_name" required>
@@ -40,6 +43,30 @@
           <input type="password" id="confirm_password" name="confirm_password" required>
         </div>
 
+        <div class="photo-section">
+          <label>Foto de perfil</label>
+          <div class="photo-options">
+            <button type="button" class="btn btn-photo" id="btnCamera">Tomar foto</button>
+            <button type="button" class="btn btn-photo" id="btnUpload">Subir imagen</button>
+            <input type="file" id="fileInput" accept="image/*" style="display:none">
+          </div>
+
+          <div id="cameraSection" class="camera-section" style="display:none">
+            <video id="regVideo" autoplay muted playsinline class="face-video"></video>
+            <canvas id="regCanvas" class="face-canvas"></canvas>
+            <div class="camera-controls">
+              <button type="button" class="btn btn-sm btn-primary" id="btnCapture">Capturar</button>
+              <button type="button" class="btn btn-sm btn-danger" id="btnCancelCamera">Cancelar</button>
+            </div>
+            <p id="cameraStatus" class="face-status"></p>
+          </div>
+
+          <div id="photoPreview" class="photo-preview" style="display:none">
+            <img id="previewImg" src="" alt="Foto">
+            <button type="button" class="btn btn-sm btn-danger" id="btnRemovePhoto">Quitar</button>
+          </div>
+        </div>
+
         <button type="submit" class="btn btn-primary"><%= t.register_submit %></button>
       </form>
 
@@ -49,5 +76,7 @@
       </p>
     </div>
   </div>
+
+  <script src="/js/register-face.js"></script>
 </body>
 </html>
