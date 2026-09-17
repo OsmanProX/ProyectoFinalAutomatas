@@ -41,7 +41,6 @@
     <!-- TOPBAR -->
     <header class="topbar">
       <a href="/lang/<%= lang === 'es' ? 'en' : 'es' %>" class="btn btn-sm"><%= t.switch_lang %></a>
-      <a href="/logout" class="btn btn-sm btn-danger"><%= t.dashboard_logout %></a>
     </header>
 
     <!-- CONTENIDO -->
@@ -49,41 +48,6 @@
 
       <div class="welcome-center">
         <h1><%= t.dashboard_welcome %>, <%= user.full_name %></h1>
-      </div>
-
-      <div class="users-card">
-        <h2><%= t.dashboard_users %></h2>
-
-        <% if (users.length > 0) { %>
-          <table class="table">
-            <thead>
-              <tr>
-                <th><%= t.dashboard_id %></th>
-                <th><%= t.dashboard_full_name %></th>
-                <th><%= t.dashboard_username %></th>
-                <th><%= t.dashboard_state %></th>
-                <th><%= t.dashboard_created %></th>
-              </tr>
-            </thead>
-            <tbody>
-              <% users.forEach(function(u) { %>
-                <tr>
-                  <td><%= u.id %></td>
-                  <td><%= u.fullName %></td>
-                  <td><%= u.username %></td>
-                  <td>
-                    <span class="badge <%= u.state === 1 ? 'badge-active' : 'badge-inactive' %>">
-                      <%= u.state === 1 ? t.dashboard_active : t.dashboard_inactive %>
-                    </span>
-                  </td>
-                  <td><%= new Date(u.createAt).toLocaleDateString() %></td>
-                </tr>
-              <% }); %>
-            </tbody>
-          </table>
-        <% } else { %>
-          <p class="no-data"><%= t.dashboard_users %> - No data</p>
-        <% } %>
       </div>
 
     </div>
