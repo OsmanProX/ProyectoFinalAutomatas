@@ -83,8 +83,8 @@
             <video id="regVideo" autoplay muted playsinline class="face-video"></video>
             <canvas id="regCanvas" class="face-canvas"></canvas>
             <div class="camera-controls">
-              <button type="button" class="btn btn-sm btn-primary" id="btnCapture"><%= t.register_crop %></button>
-              <button type="button" class="btn btn-sm btn-danger" id="btnCancelCamera"><%= t.register_cancel %></button>
+              <button type="button" class="btn btn-sm btn-primary" id="btnCapture"><%= t.register_capture_photo %></button>
+              <button type="button" class="btn btn-sm btn-danger" id="btnCancelCamera"><%= t.register_cancel_photo %></button>
             </div>
           </div>
 
@@ -93,14 +93,14 @@
               <img id="cropperImage" src="" alt="Crop">
             </div>
             <div class="camera-controls">
-              <button type="button" class="btn btn-sm btn-primary" id="btnCrop"><%= t.register_crop %></button>
-              <button type="button" class="btn btn-sm btn-danger" id="btnCancelCrop"><%= t.register_cancel %></button>
+              <button type="button" class="btn btn-sm btn-primary" id="btnCrop"><%= t.register_crop_photo %></button>
+              <button type="button" class="btn btn-sm btn-danger" id="btnCancelCrop"><%= t.register_cancel_photo %></button>
             </div>
           </div>
 
           <div id="photoPreview" class="photo-preview" style="display:none">
             <img id="previewImg" src="" alt="Photo">
-            <button type="button" class="btn btn-sm btn-danger" id="btnRemovePhoto">X</button>
+            <button type="button" class="btn btn-sm btn-danger" id="btnRemovePhoto"><%= t.register_cancel_photo %></button>
           </div>
 
           <div class="photo-options">

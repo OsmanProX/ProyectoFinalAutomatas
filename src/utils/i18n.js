@@ -29,8 +29,9 @@ const translations = {
     register_photo: "Foto de perfil",
     register_take_photo: "Tomar foto",
     register_upload_photo: "Subir imagen",
-    register_crop: "Recortar",
-    register_cancel: "Cancelar",
+    register_capture_photo: "Capturar foto",
+    register_crop_photo: "Recortar foto",
+    register_cancel_photo: "Cancelar foto",
     register_photo_required: "Debe tomar o subir una foto",
 
     // Validation errors
@@ -94,8 +95,9 @@ const translations = {
     register_photo: "Profile photo",
     register_take_photo: "Take photo",
     register_upload_photo: "Upload image",
-    register_crop: "Crop",
-    register_cancel: "Cancel",
+    register_capture_photo: "Capture photo",
+    register_crop_photo: "Crop photo",
+    register_cancel_photo: "Cancel photo",
     register_photo_required: "You must take or upload a photo",
 
     // Validation errors

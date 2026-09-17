@@ -308,8 +308,9 @@ body {
 
 .photo-options {
   display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-top: 12px;
+  margin-bottom: 8px;
 }
 
 .btn-photo {
