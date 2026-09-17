@@ -25,10 +25,10 @@ class UserRepository {
     return User.fromRows(rows);
   }
 
-  async create(fullName, username, password, photo) {
+  async create(fullName, username, password, photo, email, phone, birthDate, nickname) {
     const [result] = await pool.query(
-      'INSERT INTO users (full_name, username, password, state, photo) VALUES (?, ?, ?, 1, ?)',
-      [fullName, username, password, photo || null]
+      'INSERT INTO users (full_name, username, password, state, photo, email, phone, birth_date, nickname) VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?)',
+      [fullName, username, password, photo || null, email, phone || null, birthDate || null, nickname || null]
     );
     return result.insertId;
   }

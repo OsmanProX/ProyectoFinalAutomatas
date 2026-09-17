@@ -123,7 +123,11 @@ class UserService {
       registerDTO.fullName,
       registerDTO.username,
       hashedPassword,
-      registerDTO.photo
+      registerDTO.photo,
+      registerDTO.email,
+      registerDTO.phone,
+      registerDTO.birthDate,
+      registerDTO.nickname
     );
 
     return { success: true, id };

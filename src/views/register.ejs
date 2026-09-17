@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= t.register_title %></title>
   <link rel="stylesheet" href="/css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 </head>
 <body>
   <div class="lang-switcher">
@@ -13,7 +13,7 @@
   </div>
 
   <div class="auth-container">
-    <div class="card">
+    <div class="card card-register">
       <h1><%= t.register_title %></h1>
 
       <% if (error) { %>
@@ -23,9 +23,15 @@
       <form action="/register" method="POST" id="registerForm">
         <input type="hidden" id="photo" name="photo" value="">
 
-        <div class="form-group">
-          <label for="full_name"><%= t.register_full_name %></label>
-          <input type="text" id="full_name" name="full_name" required>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="full_name"><%= t.register_full_name %></label>
+            <input type="text" id="full_name" name="full_name" required>
+          </div>
+          <div class="form-group">
+            <label for="nickname"><%= t.register_nickname %></label>
+            <input type="text" id="nickname" name="nickname">
+          </div>
         </div>
 
         <div class="form-group">
@@ -34,36 +40,73 @@
         </div>
 
         <div class="form-group">
-          <label for="password"><%= t.register_password %></label>
-          <input type="password" id="password" name="password" required>
+          <label for="email"><%= t.register_email %></label>
+          <input type="email" id="email" name="email" required>
         </div>
 
-        <div class="form-group">
-          <label for="confirm_password"><%= t.register_confirm_password %></label>
-          <input type="password" id="confirm_password" name="confirm_password" required>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone"><%= t.register_phone %></label>
+            <input type="tel" id="phone" name="phone">
+          </div>
+          <div class="form-group">
+            <label for="birth_date"><%= t.register_birth_date %></label>
+            <input type="date" id="birth_date" name="birth_date">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="password"><%= t.register_password %></label>
+            <div class="input-password">
+              <input type="password" id="password" name="password" required>
+              <button type="button" class="btn-eye" id="togglePassword">&#128065;</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="confirm_password"><%= t.register_confirm_password %></label>
+            <div class="input-password">
+              <input type="password" id="confirm_password" name="confirm_password" required>
+              <button type="button" class="btn-eye" id="toggleConfirmPassword">&#128065;</button>
+            </div>
+          </div>
         </div>
 
         <div class="photo-section">
-          <label>Foto de perfil</label>
-          <div class="photo-options">
-            <button type="button" class="btn btn-photo" id="btnCamera">Tomar foto</button>
-            <button type="button" class="btn btn-photo" id="btnUpload">Subir imagen</button>
-            <input type="file" id="fileInput" accept="image/*" style="display:none">
+          <label><%= t.register_photo %></label>
+          <div class="photo-placeholder" id="photoPlaceholder">
+            <span class="camera-icon">&#128247;</span>
+            <span><%= t.register_photo %></span>
           </div>
 
           <div id="cameraSection" class="camera-section" style="display:none">
             <video id="regVideo" autoplay muted playsinline class="face-video"></video>
             <canvas id="regCanvas" class="face-canvas"></canvas>
             <div class="camera-controls">
-              <button type="button" class="btn btn-sm btn-primary" id="btnCapture">Capturar</button>
-              <button type="button" class="btn btn-sm btn-danger" id="btnCancelCamera">Cancelar</button>
+              <button type="button" class="btn btn-sm btn-primary" id="btnCapture"><%= t.register_crop %></button>
+              <button type="button" class="btn btn-sm btn-danger" id="btnCancelCamera"><%= t.register_cancel %></button>
             </div>
-            <p id="cameraStatus" class="face-status"></p>
+          </div>
+
+          <div id="cropperSection" class="cropper-section" style="display:none">
+            <div class="cropper-container">
+              <img id="cropperImage" src="" alt="Crop">
+            </div>
+            <div class="camera-controls">
+              <button type="button" class="btn btn-sm btn-primary" id="btnCrop"><%= t.register_crop %></button>
+              <button type="button" class="btn btn-sm btn-danger" id="btnCancelCrop"><%= t.register_cancel %></button>
+            </div>
           </div>
 
           <div id="photoPreview" class="photo-preview" style="display:none">
-            <img id="previewImg" src="" alt="Foto">
-            <button type="button" class="btn btn-sm btn-danger" id="btnRemovePhoto">Quitar</button>
+            <img id="previewImg" src="" alt="Photo">
+            <button type="button" class="btn btn-sm btn-danger" id="btnRemovePhoto">X</button>
+          </div>
+
+          <div class="photo-options">
+            <button type="button" class="btn btn-photo" id="btnCamera"><%= t.register_take_photo %></button>
+            <button type="button" class="btn btn-photo" id="btnUpload"><%= t.register_upload_photo %></button>
+            <input type="file" id="fileInput" accept="image/*" style="display:none">
           </div>
         </div>
 
@@ -77,6 +120,7 @@
     </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
   <script src="/js/register-face.js"></script>
 </body>
 </html>

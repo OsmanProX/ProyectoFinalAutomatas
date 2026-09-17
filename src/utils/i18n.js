@@ -22,6 +22,16 @@ const translations = {
     register_error_password: "Las contraseñas no coinciden",
     register_error_exists: "El usuario ya existe",
     register_success: "Cuenta creada correctamente",
+    register_nickname: "Apodo",
+    register_email: "Correo electrónico",
+    register_phone: "Teléfono",
+    register_birth_date: "Fecha de nacimiento",
+    register_photo: "Foto de perfil",
+    register_take_photo: "Tomar foto",
+    register_upload_photo: "Subir imagen",
+    register_crop: "Recortar",
+    register_cancel: "Cancelar",
+    register_photo_required: "Debe tomar o subir una foto",
 
     // Validation errors
     validation_required: "Este campo es obligatorio",
@@ -77,6 +87,16 @@ const translations = {
     register_error_password: "Passwords do not match",
     register_error_exists: "Username already exists",
     register_success: "Account created successfully",
+    register_nickname: "Nickname",
+    register_email: "Email",
+    register_phone: "Phone",
+    register_birth_date: "Birth date",
+    register_photo: "Profile photo",
+    register_take_photo: "Take photo",
+    register_upload_photo: "Upload image",
+    register_crop: "Crop",
+    register_cancel: "Cancel",
+    register_photo_required: "You must take or upload a photo",
 
     // Validation errors
     validation_required: "This field is required",
