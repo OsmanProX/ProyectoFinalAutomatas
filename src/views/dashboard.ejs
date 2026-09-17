@@ -5,56 +5,90 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= t.dashboard_title %></title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/menu.css">
 </head>
 <body>
-  <nav class="navbar">
-    <div class="nav-brand"><%= t.dashboard_title %></div>
-    <div class="nav-links">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <h2 class="sidebar-text">Mi App</h2>
+      <button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="sidebar-nav-item active">
+        <span class="icon">&#127968;</span>
+        <span class="sidebar-text"><%= t.nav_home %></span>
+      </a>
+      <a href="#" class="sidebar-nav-item">
+        <span class="icon">&#128101;</span>
+        <span class="sidebar-text"><%= t.dashboard_users %></span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="/logout" class="sidebar-nav-item">
+        <span class="icon">&#128682;</span>
+        <span class="sidebar-footer-text"><%= t.dashboard_logout %></span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="main-wrapper">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
       <a href="/lang/<%= lang === 'es' ? 'en' : 'es' %>" class="btn btn-sm"><%= t.switch_lang %></a>
       <a href="/logout" class="btn btn-sm btn-danger"><%= t.dashboard_logout %></a>
-    </div>
-  </nav>
+    </header>
 
-  <div class="container">
-    <div class="welcome-section">
-      <h1><%= t.dashboard_welcome %>, <%= user.full_name %></h1>
-    </div>
+    <!-- CONTENIDO -->
+    <div class="dashboard-content">
 
-    <div class="card card-wide">
-      <h2><%= t.dashboard_users %></h2>
+      <div class="welcome-center">
+        <h1><%= t.dashboard_welcome %>, <%= user.full_name %></h1>
+      </div>
 
-      <% if (users.length > 0) { %>
-        <table class="table">
-          <thead>
-            <tr>
-              <th><%= t.dashboard_id %></th>
-              <th><%= t.dashboard_full_name %></th>
-              <th><%= t.dashboard_username %></th>
-              <th><%= t.dashboard_state %></th>
-              <th><%= t.dashboard_created %></th>
-            </tr>
-          </thead>
-          <tbody>
-            <% users.forEach(function(u) { %>
+      <div class="users-card">
+        <h2><%= t.dashboard_users %></h2>
+
+        <% if (users.length > 0) { %>
+          <table class="table">
+            <thead>
               <tr>
-                <td><%= u.id %></td>
-                <td><%= u.fullName %></td>
-                <td><%= u.username %></td>
-                <td>
-                  <span class="badge <%= u.state === 1 ? 'badge-active' : 'badge-inactive' %>">
-                    <%= u.state === 1 ? t.dashboard_active : t.dashboard_inactive %>
-                  </span>
-                </td>
-                <td><%= new Date(u.createAt).toLocaleDateString() %></td>
-
+                <th><%= t.dashboard_id %></th>
+                <th><%= t.dashboard_full_name %></th>
+                <th><%= t.dashboard_username %></th>
+                <th><%= t.dashboard_state %></th>
+                <th><%= t.dashboard_created %></th>
               </tr>
-            <% }); %>
-          </tbody>
-        </table>
-      <% } else { %>
-        <p class="no-data"><%= t.dashboard_users %> - No data</p>
-      <% } %>
+            </thead>
+            <tbody>
+              <% users.forEach(function(u) { %>
+                <tr>
+                  <td><%= u.id %></td>
+                  <td><%= u.fullName %></td>
+                  <td><%= u.username %></td>
+                  <td>
+                    <span class="badge <%= u.state === 1 ? 'badge-active' : 'badge-inactive' %>">
+                      <%= u.state === 1 ? t.dashboard_active : t.dashboard_inactive %>
+                    </span>
+                  </td>
+                  <td><%= new Date(u.createAt).toLocaleDateString() %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <p class="no-data"><%= t.dashboard_users %> - No data</p>
+        <% } %>
+      </div>
+
     </div>
   </div>
+
+  <script src="/js/menu.js"></script>
 </body>
 </html>
