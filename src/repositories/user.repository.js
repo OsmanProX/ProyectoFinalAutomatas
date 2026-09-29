@@ -2,15 +2,15 @@ const pool = require('../config/db');
 const User = require('../models/User');
 
 class UserRepository {
-  async findByUsername(username) {
-    const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
+  async findByNickname(nickname) {
+    const [rows] = await pool.query('SELECT * FROM users WHERE nickname = ?', [nickname]);
     return User.fromRow(rows[0]);
   }
 
-  async findWithPhoto(username) {
+  async findWithPhoto(nickname) {
     const [rows] = await pool.query(
-      'SELECT id, full_name, username, state, photo FROM users WHERE username = ?',
-      [username]
+      'SELECT id, full_name, nickname, state, role, notification_method, photo FROM users WHERE nickname = ?',
+      [nickname]
     );
     return User.fromRow(rows[0]);
   }
@@ -21,14 +21,26 @@ class UserRepository {
   }
 
   async findAll() {
-    const [rows] = await pool.query('SELECT id, full_name, username, state, create_at FROM users');
+    const [rows] = await pool.query(
+      'SELECT id, full_name, nickname, role, notification_method, state, create_at FROM users ORDER BY create_at DESC'
+    );
     return User.fromRows(rows);
   }
 
-  async create(fullName, username, password, photo, email, phone, birthDate, nickname) {
+  async create(user) {
     const [result] = await pool.query(
-      'INSERT INTO users (full_name, username, password, state, photo, email, phone, birth_date, nickname) VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?)',
-      [fullName, username, password, photo || null, email, phone || null, birthDate || null, nickname || null]
+      'INSERT INTO users (full_name, nickname, password, state, role, notification_method, photo, email, phone, birth_date) VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, ?)',
+      [
+        user.fullName,
+        user.nickname,
+        user.password,
+        user.role,
+        user.notificationMethod,
+        user.photo || null,
+        user.email,
+        user.phone || null,
+        user.birthDate || null
+      ]
     );
     return result.insertId;
   }

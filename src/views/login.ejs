@@ -22,8 +22,8 @@
 
       <form action="/login" method="POST">
         <div class="form-group">
-          <label for="username"><%= t.login_username %></label>
-          <input type="text" id="username" name="username" required>
+          <label for="nickname"><%= t.login_nickname %></label>
+          <input type="text" id="nickname" name="nickname" required>
         </div>
 
         <div class="form-group">
@@ -35,19 +35,19 @@
       </form>
 
       <div class="face-divider">
-        <span>o</span>
+        <span><%= t.login_or %></span>
       </div>
 
       <button type="button" class="btn btn-face" id="btnFaceLogin">
-        Login con Rostro
+        <%= t.login_face %>
       </button>
 
       <div id="faceSection" class="face-section" style="display:none">
         <video id="video" autoplay muted playsinline class="face-video"></video>
         <canvas id="canvas" class="face-canvas"></canvas>
         <div class="camera-controls">
-          <button type="button" class="btn btn-sm btn-primary" id="btnVerify">Verificar</button>
-          <button type="button" class="btn btn-sm btn-danger" id="btnCloseCamera">Cancelar</button>
+          <button type="button" class="btn btn-sm btn-primary" id="btnVerify"><%= t.login_face_verify %></button>
+          <button type="button" class="btn btn-sm btn-danger" id="btnCloseCamera"><%= t.login_face_cancel %></button>
         </div>
         <p id="faceStatus" class="face-status"></p>
       </div>
@@ -59,6 +59,23 @@
     </div>
   </div>
 
+  <script>
+    window.FACE_I18N = {
+      promptNickname: "<%= t.face_prompt_nickname %>",
+      loadingModels: "<%= t.face_loading_models %>",
+      cameraError: "<%= t.face_camera_error %>",
+      readyHint: "<%= t.face_ready_hint %>",
+      detecting: "<%= t.face_detecting %>",
+      verifying: "<%= t.face_verifying %>",
+      noFace: "<%= t.face_no_face %>",
+      verified: "<%= t.face_verified %>",
+      noMatch: "<%= t.face_no_match %>",
+      userNotFound: "<%= t.face_user_not_found %>",
+      noPhoto: "<%= t.face_no_photo %>",
+      accountDisabled: "<%= t.face_account_disabled %>",
+      connectionError: "<%= t.face_connection_error %>"
+    };
+  </script>
   <script src="/js/face-login.js"></script>
 </body>
 </html>

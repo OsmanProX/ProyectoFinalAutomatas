@@ -1,11 +1,11 @@
 class LoginDTO {
-  constructor({ username, password }) {
-    this.username = (username || '').trim().toLowerCase();
+  constructor({ nickname, password }) {
+    this.nickname = (nickname || '').trim().toLowerCase();
     this.password = password || '';
   }
 
   isValid() {
-    return this.username.length > 0 && this.password.length > 0;
+    return this.nickname.length > 0 && this.password.length > 0;
   }
 }
 

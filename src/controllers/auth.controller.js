@@ -62,23 +62,38 @@ class AuthController {
       if (!result.success) {
         let errorMsg;
         switch (result.error) {
-          case 'username_exists':
+          case 'nickname_exists':
             errorMsg = t.register_error_exists;
             break;
-          case 'validation_username_min':
-            errorMsg = t.validation_username_min;
+          case 'validation_nickname_required':
+            errorMsg = t.validation_nickname_required;
             break;
-          case 'validation_username_max':
-            errorMsg = t.validation_username_max;
+          case 'validation_nickname_min':
+            errorMsg = t.validation_nickname_min;
             break;
-          case 'validation_username_pattern':
-            errorMsg = t.validation_username_pattern;
+          case 'validation_nickname_max':
+            errorMsg = t.validation_nickname_max;
+            break;
+          case 'validation_nickname_pattern':
+            errorMsg = t.validation_nickname_pattern;
+            break;
+          case 'validation_role_invalid':
+            errorMsg = t.validation_role_invalid;
+            break;
+          case 'validation_notification_invalid':
+            errorMsg = t.validation_notification_invalid;
+            break;
+          case 'validation_password_required':
+            errorMsg = t.validation_password_required;
             break;
           case 'validation_password_min':
             errorMsg = t.validation_password_min;
             break;
           case 'validation_password_max':
             errorMsg = t.validation_password_max;
+            break;
+          case 'validation_fullname_required':
+            errorMsg = t.validation_fullname_required;
             break;
           case 'validation_fullname_min':
             errorMsg = t.validation_fullname_min;
@@ -89,11 +104,14 @@ class AuthController {
           case 'validation_fullname_pattern':
             errorMsg = t.validation_fullname_pattern;
             break;
+          case 'passwords_not_match':
+            errorMsg = t.register_error_password;
+            break;
           case 'validation_required':
             errorMsg = t.validation_required;
             break;
           default:
-            errorMsg = result.error;
+            errorMsg = t.validation_server_error;
         }
         return res.render('register', { t, lang, error: errorMsg });
       }
@@ -116,13 +134,13 @@ class AuthController {
     const t = getTranslation(lang);
 
     try {
-      const { username, descriptor } = req.body;
+      const { nickname, descriptor } = req.body;
 
-      if (!username || !descriptor) {
+      if (!nickname || !descriptor) {
         return res.status(400).json({ success: false, error: 'missing_data' });
       }
 
-      const user = await userService.findWithPhoto(username);
+      const user = await userService.findWithPhoto(nickname.trim().toLowerCase());
       if (!user) {
         return res.status(401).json({ success: false, error: 'user_not_found' });
       }

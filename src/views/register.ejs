@@ -30,13 +30,27 @@
           </div>
           <div class="form-group">
             <label for="nickname"><%= t.register_nickname %></label>
-            <input type="text" id="nickname" name="nickname">
+            <input type="text" id="nickname" name="nickname" required>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="username"><%= t.register_username %></label>
-          <input type="text" id="username" name="username" required>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="role"><%= t.register_role %></label>
+            <select id="role" name="role" required>
+              <option value="admin"><%= t.role_admin %></option>
+              <option value="supervisor"><%= t.role_supervisor %></option>
+              <option value="analitico" selected><%= t.role_analitico %></option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="notification_method"><%= t.register_notification %></label>
+            <select id="notification_method" name="notification_method" required>
+              <option value="whatsapp"><%= t.notification_whatsapp %></option>
+              <option value="correo_electronico" selected><%= t.notification_email %></option>
+              <option value="ambos"><%= t.notification_both %></option>
+            </select>
+          </div>
         </div>
 
         <div class="form-group">
@@ -121,6 +135,13 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+  <script>
+    window.REGISTER_I18N = {
+      photoRequired: "<%= t.register_photo_required %>",
+      cameraError: "<%= t.register_camera_error %>",
+      invalidImage: "<%= t.register_invalid_image %>"
+    };
+  </script>
   <script src="/js/register-face.js"></script>
 </body>
 </html>

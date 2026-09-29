@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+  const i18n = window.REGISTER_I18N || {};
   const togglePassword = document.getElementById('togglePassword');
   const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
   const passwordInput = document.getElementById('password');
@@ -62,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
   registerForm.addEventListener('submit', function (e) {
     if (!photoInput.value) {
       e.preventDefault();
-      alert('Debe tomar o subir una foto');
+      alert(i18n.photoRequired);
     }
   });
 
@@ -78,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
       cropperSection.style.display = 'none';
       hidePlaceholder();
     } catch (err) {
-      alert('No se pudo acceder a la cámara');
+      alert(i18n.cameraError);
     }
   }
 
@@ -104,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const file = e.target.files[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      alert('Seleccione una imagen válida');
+      alert(i18n.invalidImage);
       return;
     }
     const reader = new FileReader();

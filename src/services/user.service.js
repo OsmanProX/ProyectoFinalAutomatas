@@ -1,9 +1,10 @@
 const bcrypt = require('bcryptjs');
 const userRepository = require('../repositories/user.repository');
+const { ROLES, NOTIFICATION_METHODS } = require('../config/constants');
 const { LoginDTO, RegisterDTO } = require('../dto');
 
 const RULES = {
-  username: {
+  nickname: {
     minLength: 4,
     maxLength: 30,
     pattern: /^[a-zA-Z0-9_]+$/
@@ -20,47 +21,61 @@ const RULES = {
 };
 
 class UserService {
-  validateUsername(username) {
-    if (!username || username.trim().length === 0) {
-      return { valid: false, error: 'Username is required' };
+  validateNickname(nickname) {
+    if (!nickname || nickname.trim().length === 0) {
+      return { valid: false, error: 'validation_nickname_required' };
     }
-    if (username.length < RULES.username.minLength) {
-      return { valid: false, error: `Username must be at least ${RULES.username.minLength} characters` };
+    if (nickname.length < RULES.nickname.minLength) {
+      return { valid: false, error: 'validation_nickname_min' };
     }
-    if (username.length > RULES.username.maxLength) {
-      return { valid: false, error: `Username must be at most ${RULES.username.maxLength} characters` };
+    if (nickname.length > RULES.nickname.maxLength) {
+      return { valid: false, error: 'validation_nickname_max' };
     }
-    if (!RULES.username.pattern.test(username)) {
-      return { valid: false, error: 'Username can only contain letters, numbers and underscores' };
+    if (!RULES.nickname.pattern.test(nickname)) {
+      return { valid: false, error: 'validation_nickname_pattern' };
+    }
+    return { valid: true };
+  }
+
+  validateRole(role) {
+    if (!role || !ROLES.includes(role)) {
+      return { valid: false, error: 'validation_role_invalid' };
+    }
+    return { valid: true };
+  }
+
+  validateNotificationMethod(notificationMethod) {
+    if (!notificationMethod || !NOTIFICATION_METHODS.includes(notificationMethod)) {
+      return { valid: false, error: 'validation_notification_invalid' };
     }
     return { valid: true };
   }
 
   validatePassword(password) {
     if (!password || password.length === 0) {
-      return { valid: false, error: 'Password is required' };
+      return { valid: false, error: 'validation_password_required' };
     }
     if (password.length < RULES.password.minLength) {
-      return { valid: false, error: `Password must be at least ${RULES.password.minLength} characters` };
+      return { valid: false, error: 'validation_password_min' };
     }
     if (password.length > RULES.password.maxLength) {
-      return { valid: false, error: `Password must be at most ${RULES.password.maxLength} characters` };
+      return { valid: false, error: 'validation_password_max' };
     }
     return { valid: true };
   }
 
   validateFullName(fullName) {
     if (!fullName || fullName.trim().length === 0) {
-      return { valid: false, error: 'Full name is required' };
+      return { valid: false, error: 'validation_fullname_required' };
     }
     if (fullName.trim().length < RULES.fullName.minLength) {
-      return { valid: false, error: `Full name must be at least ${RULES.fullName.minLength} characters` };
+      return { valid: false, error: 'validation_fullname_min' };
     }
     if (fullName.trim().length > RULES.fullName.maxLength) {
-      return { valid: false, error: `Full name must be at most ${RULES.fullName.maxLength} characters` };
+      return { valid: false, error: 'validation_fullname_max' };
     }
     if (!RULES.fullName.pattern.test(fullName)) {
-      return { valid: false, error: 'Full name can only contain letters and spaces' };
+      return { valid: false, error: 'validation_fullname_pattern' };
     }
     return { valid: true };
   }
@@ -70,7 +85,7 @@ class UserService {
       return { success: false, error: 'credentials_required' };
     }
 
-    const user = await userRepository.findByUsername(loginDTO.username);
+    const user = await userRepository.findByNickname(loginDTO.nickname);
 
     if (!user) {
       return { success: false, error: 'invalid_credentials' };
@@ -97,9 +112,19 @@ class UserService {
       return { success: false, error: nameValidation.error };
     }
 
-    const userValidation = this.validateUsername(registerDTO.username);
-    if (!userValidation.valid) {
-      return { success: false, error: userValidation.error };
+    const nicknameValidation = this.validateNickname(registerDTO.nickname);
+    if (!nicknameValidation.valid) {
+      return { success: false, error: nicknameValidation.error };
+    }
+
+    const roleValidation = this.validateRole(registerDTO.role);
+    if (!roleValidation.valid) {
+      return { success: false, error: roleValidation.error };
+    }
+
+    const notificationValidation = this.validateNotificationMethod(registerDTO.notificationMethod);
+    if (!notificationValidation.valid) {
+      return { success: false, error: notificationValidation.error };
     }
 
     const passValidation = this.validatePassword(registerDTO.password);
@@ -111,24 +136,25 @@ class UserService {
       return { success: false, error: 'passwords_not_match' };
     }
 
-    const existing = await userRepository.findByUsername(registerDTO.username);
+    const existing = await userRepository.findByNickname(registerDTO.nickname);
     if (existing) {
-      return { success: false, error: 'username_exists' };
+      return { success: false, error: 'nickname_exists' };
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(registerDTO.password, salt);
 
-    const id = await userRepository.create(
-      registerDTO.fullName,
-      registerDTO.username,
-      hashedPassword,
-      registerDTO.photo,
-      registerDTO.email,
-      registerDTO.phone,
-      registerDTO.birthDate,
-      registerDTO.nickname
-    );
+    const id = await userRepository.create({
+      fullName: registerDTO.fullName,
+      nickname: registerDTO.nickname,
+      password: hashedPassword,
+      photo: registerDTO.photo,
+      email: registerDTO.email,
+      phone: registerDTO.phone,
+      birthDate: registerDTO.birthDate,
+      role: registerDTO.role,
+      notificationMethod: registerDTO.notificationMethod
+    });
 
     return { success: true, id };
   }
@@ -137,8 +163,8 @@ class UserService {
     return await userRepository.findAll();
   }
 
-  async findWithPhoto(username) {
-    return await userRepository.findWithPhoto(username);
+  async findWithPhoto(nickname) {
+    return await userRepository.findWithPhoto(nickname);
   }
 
   async getUserById(id) {

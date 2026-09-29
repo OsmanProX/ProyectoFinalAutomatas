@@ -1,10 +1,11 @@
 document.addEventListener('DOMContentLoaded', function () {
+  const i18n = window.FACE_I18N || {};
   const btnFace = document.getElementById('btnFaceLogin');
   const faceSection = document.getElementById('faceSection');
   const video = document.getElementById('video');
   const canvas = document.getElementById('canvas');
   const faceStatus = document.getElementById('faceStatus');
-  const usernameInput = document.getElementById('username');
+  const nicknameInput = document.getElementById('nickname');
   const btnVerify = document.getElementById('btnVerify');
   const btnCloseCamera = document.getElementById('btnCloseCamera');
 
@@ -15,10 +16,14 @@ document.addEventListener('DOMContentLoaded', function () {
   if (btnVerify) btnVerify.addEventListener('click', verifyFace);
   if (btnCloseCamera) btnCloseCamera.addEventListener('click', closeCamera);
 
+  function getNickname() {
+    return nicknameInput ? nicknameInput.value.trim() : '';
+  }
+
   async function openCamera() {
-    const username = usernameInput.value.trim();
-    if (!username) {
-      showStatus('Ingrese su usuario primero', 'error');
+    const nickname = getNickname();
+    if (!nickname) {
+      showStatus(i18n.promptNickname, 'error');
       return;
     }
 
@@ -27,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     try {
       if (!modelsLoaded) {
-        showStatus('Cargando modelos...', 'loading');
+        showStatus(i18n.loadingModels, 'loading');
         await faceapi.nets.ssdMobilenetv1.loadFromUri('/models');
         await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
         await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
@@ -41,22 +46,22 @@ document.addEventListener('DOMContentLoaded', function () {
       video.srcObject = stream;
       video.play();
 
-      showStatus('Presione "Verificar" cuando su rostro sea visible', 'loading');
+      showStatus(i18n.readyHint, 'loading');
     } catch (err) {
       console.error('Error:', err);
-      showStatus('No se pudo acceder a la cámara', 'error');
+      showStatus(i18n.cameraError, 'error');
       closeCamera();
     }
   }
 
   async function verifyFace() {
-    const username = usernameInput.value.trim();
-    if (!username) {
-      showStatus('Ingrese su usuario', 'error');
+    const nickname = getNickname();
+    if (!nickname) {
+      showStatus(i18n.promptNickname, 'error');
       return;
     }
 
-    showStatus('Detectando rostro...', 'loading');
+    showStatus(i18n.detecting, 'loading');
 
     try {
       const detection = await faceapi
@@ -65,38 +70,38 @@ document.addEventListener('DOMContentLoaded', function () {
         .withFaceDescriptor();
 
       if (!detection) {
-        showStatus('No se detectó rostro. Intente de nuevo.', 'error');
+        showStatus(i18n.noFace, 'error');
         return;
       }
 
       const descriptor = Array.from(detection.descriptor);
 
-      showStatus('Verificando identidad...', 'loading');
+      showStatus(i18n.verifying, 'loading');
 
       const response = await fetch('/login/face', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, descriptor })
+        body: JSON.stringify({ nickname, descriptor })
       });
 
       const data = await response.json();
 
       if (data.success) {
-        showStatus('Rostro verificado. Similitud: ' + data.similarity + '%', 'success');
+        showStatus(i18n.verified + ' ' + data.similarity + '%', 'success');
         setTimeout(() => {
           window.location.href = data.redirect || '/users/dashboard';
         }, 1500);
       } else {
-        let msg = 'Rostro no coincide';
-        if (data.error === 'user_not_found') msg = 'Usuario no encontrado';
-        else if (data.error === 'no_photo_registered') msg = 'Usuario sin foto registrada';
-        else if (data.error === 'account_disabled') msg = 'Cuenta desactivada';
-        else if (data.similarity) msg += '. Similitud: ' + data.similarity + '%';
+        let msg = i18n.noMatch;
+        if (data.error === 'user_not_found') msg = i18n.userNotFound;
+        else if (data.error === 'no_photo_registered') msg = i18n.noPhoto;
+        else if (data.error === 'account_disabled') msg = i18n.accountDisabled;
+        else if (data.similarity) msg += '. ' + data.similarity + '%';
         showStatus(msg, 'error');
       }
     } catch (err) {
       console.error('Error:', err);
-      showStatus('Error de conexión', 'error');
+      showStatus(i18n.connectionError, 'error');
     }
   }
 

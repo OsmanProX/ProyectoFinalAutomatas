@@ -3,9 +3,11 @@ class DashboardDTO {
     this.users = users.map(user => ({
       id: user.id,
       fullName: user.fullName || user.full_name,
-      username: user.username,
+      nickname: user.nickname,
+      role: user.role,
       state: user.state,
       stateLabel: user.state === 1 ? 'active' : 'inactive',
+      notificationMethod: user.notificationMethod,
       createAt: user.createAt || user.create_at
     }));
   }
