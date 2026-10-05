@@ -39,9 +39,20 @@ document.addEventListener('DOMContentLoaded', function () {
   const photoInput = document.getElementById('photo');
   const registerForm = document.getElementById('registerForm');
   const photoPlaceholder = document.getElementById('photoPlaceholder');
+  const formAlert = document.getElementById('formAlert');
 
   let stream = null;
   let cropper = null;
+
+  function showFormAlert(message) {
+    if (!formAlert) {
+      alert(message);
+      return;
+    }
+    formAlert.textContent = message;
+    formAlert.style.display = 'block';
+    formAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 
   function hidePlaceholder() {
     if (photoPlaceholder) photoPlaceholder.style.display = 'none';
@@ -49,6 +60,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function showPlaceholder() {
     if (photoPlaceholder) photoPlaceholder.style.display = 'block';
+  }
+
+  function restorePhoto() {
+    if (!photoInput.value) return;
+    previewImg.src = photoInput.value;
+    photoPreview.style.display = 'block';
+    hidePlaceholder();
   }
 
   btnCamera.addEventListener('click', openCamera);
@@ -60,10 +78,12 @@ document.addEventListener('DOMContentLoaded', function () {
   btnCancelCrop.addEventListener('click', cancelCrop);
   btnRemovePhoto.addEventListener('click', removePhoto);
 
+  restorePhoto();
+
   registerForm.addEventListener('submit', function (e) {
     if (!photoInput.value) {
       e.preventDefault();
-      alert(i18n.photoRequired);
+      showFormAlert(i18n.photoRequired);
     }
   });
 
@@ -79,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
       cropperSection.style.display = 'none';
       hidePlaceholder();
     } catch (err) {
-      alert(i18n.cameraError);
+      showFormAlert(i18n.cameraError);
     }
   }
 
@@ -105,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const file = e.target.files[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      alert(i18n.invalidImage);
+      showFormAlert(i18n.invalidImage);
       return;
     }
     const reader = new FileReader();

@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 </head>
 <body>
+  <%
+    const datos = values || {};
+  %>
   <div class="lang-switcher">
     <a href="/lang/<%= lang === 'es' ? 'en' : 'es' %>" class="btn-lang"><%= t.switch_lang %></a>
   </div>
@@ -16,22 +19,20 @@
     <div class="card card-register">
       <h1><%= t.register_title %></h1>
 
-      <% if (error) { %>
-        <div class="alert alert-error"><%= error %></div>
-      <% } %>
+      <div id="formAlert" class="alert alert-error" style="<%= error ? '' : 'display:none' %>"><%= error || '' %></div>
 
-      <form action="/register" method="POST" id="registerForm">
-        <input type="hidden" id="photo" name="photo" value="">
+      <form action="/register" method="POST" id="registerForm" novalidate>
+        <input type="hidden" id="photo" name="photo" value="<%= datos.photo || '' %>">
         <input type="hidden" id="role" name="role" value="analitico">
 
         <div class="form-row">
           <div class="form-group">
             <label for="full_name"><%= t.register_full_name %></label>
-            <input type="text" id="full_name" name="full_name" required>
+            <input type="text" id="full_name" name="full_name" value="<%= datos.fullName || '' %>" required>
           </div>
           <div class="form-group">
             <label for="nickname"><%= t.register_nickname %></label>
-            <input type="text" id="nickname" name="nickname" required>
+            <input type="text" id="nickname" name="nickname" value="<%= datos.nickname || '' %>" required>
           </div>
         </div>
 
@@ -44,17 +45,16 @@
           <div class="form-group">
             <label for="notification_method"><%= t.register_notification %></label>
             <select id="notification_method" name="notification_method" required>
-              <option value="whatsapp"><%= t.notification_whatsapp %></option>
-              <option value="correo_electronico" selected><%= t.notification_email %></option>
-              <option value="ambos"><%= t.notification_both %></option>
+              <option value="whatsapp" <%= datos.notificationMethod === 'whatsapp' ? 'selected' : '' %>><%= t.notification_whatsapp %></option>
+              <option value="correo_electronico" <%= !datos.notificationMethod || datos.notificationMethod === 'correo_electronico' ? 'selected' : '' %>><%= t.notification_email %></option>
+              <option value="ambos" <%= datos.notificationMethod === 'ambos' ? 'selected' : '' %>><%= t.notification_both %></option>
             </select>
           </div>
         </div>
 
         <div class="form-group">
           <label for="email"><%= t.register_email %></label>
-          <input type="email" id="email" name="email" required maxlength="254"
-                 pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}"
+          <input type="email" id="email" name="email" value="<%= datos.email || '' %>" required maxlength="254"
                  placeholder="nombre.usuario@correo.com">
           <small class="form-hint"><%= t.register_email_hint %></small>
         </div>
@@ -62,14 +62,13 @@
         <div class="form-row">
           <div class="form-group">
             <label for="phone"><%= t.register_phone %></label>
-            <input type="tel" id="phone" name="phone" inputmode="tel" maxlength="25"
-                   pattern="\+?[0-9 ()-]{7,25}"
+            <input type="tel" id="phone" name="phone" value="<%= datos.phone || '' %>" inputmode="tel" maxlength="25"
                    placeholder="+52 123 456 7890">
             <small class="form-hint"><%= t.register_phone_hint %></small>
           </div>
           <div class="form-group">
             <label for="birth_date"><%= t.register_birth_date %></label>
-            <input type="date" id="birth_date" name="birth_date">
+            <input type="date" id="birth_date" name="birth_date" value="<%= datos.birthDate || '' %>">
           </div>
         </div>
 

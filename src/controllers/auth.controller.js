@@ -52,7 +52,7 @@ class AuthController {
     const lang = req.session.lang || 'es';
     const t = getTranslation(lang);
     const error = req.query.error || null;
-    res.render('register', { t, lang, error });
+    res.render('register', { t, lang, error, values: {} });
   }
 
   async postRegister(req, res) {
@@ -63,7 +63,12 @@ class AuthController {
       const registerDTO = new RegisterDTO(req.body);
 
       if (!registerDTO.passwordsMatch()) {
-        return res.render('register', { t, lang, error: t.register_error_password });
+        return res.render('register', {
+          t,
+          lang,
+          error: t.register_error_password,
+          values: registerDTO.toFormValues()
+        });
       }
 
       const result = await userService.register(registerDTO);
@@ -133,14 +138,24 @@ class AuthController {
           default:
             errorMsg = t.validation_server_error;
         }
-        return res.render('register', { t, lang, error: errorMsg });
+        return res.render('register', {
+          t,
+          lang,
+          error: errorMsg,
+          values: registerDTO.toFormValues()
+        });
       }
 
       req.session.flash = t.register_success;
       res.redirect('/login');
     } catch (err) {
       console.error('Error en registro:', err);
-      res.render('register', { t, lang, error: t.validation_server_error });
+      res.render('register', {
+        t,
+        lang,
+        error: t.validation_server_error,
+        values: {}
+      });
     }
   }
 

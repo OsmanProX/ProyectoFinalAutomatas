@@ -41,6 +41,18 @@ class RegisterDTO {
     );
   }
 
+  toFormValues() {
+    return {
+      fullName: this.fullName,
+      nickname: this.nickname,
+      email: this.email,
+      phone: this.phone,
+      birthDate: this.birthDate,
+      photo: this.photo,
+      notificationMethod: this.notificationMethod
+    };
+  }
+
   passwordsMatch() {
     return this.password === this.confirmPassword;
   }
