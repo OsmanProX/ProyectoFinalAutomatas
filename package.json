@@ -15,7 +15,8 @@
     "ejs": "^6.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
-    "mysql2": "^3.24.2"
+    "mysql2": "^3.24.2",
+    "validator": "^13.15.35"
   },
   "devDependencies": {
     "concurrently": "^10.0.5"

@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (data.error === 'user_not_found') msg = i18n.userNotFound;
         else if (data.error === 'no_photo_registered') msg = i18n.noPhoto;
         else if (data.error === 'account_disabled') msg = i18n.accountDisabled;
+        else if (data.error === 'account_pending') msg = i18n.accountPending;
         else if (data.similarity) msg += '. ' + data.similarity + '%';
         showStatus(msg, 'error');
       }

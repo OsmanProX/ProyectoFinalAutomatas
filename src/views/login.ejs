@@ -16,6 +16,10 @@
     <div class="card">
       <h1><%= t.login_title %></h1>
 
+      <% if (success) { %>
+        <div class="alert alert-success"><%= success %></div>
+      <% } %>
+
       <% if (error) { %>
         <div class="alert alert-error"><%= error %></div>
       <% } %>
@@ -73,6 +77,7 @@
       userNotFound: "<%= t.face_user_not_found %>",
       noPhoto: "<%= t.face_no_photo %>",
       accountDisabled: "<%= t.face_account_disabled %>",
+      accountPending: "<%= t.face_account_pending %>",
       connectionError: "<%= t.face_connection_error %>"
     };
   </script>

@@ -1,7 +1,18 @@
 const bcrypt = require('bcryptjs');
 const userRepository = require('../repositories/user.repository');
-const { ROLES, NOTIFICATION_METHODS } = require('../config/constants');
+const {
+  ROLES,
+  NOTIFICATION_METHODS,
+  INACTIVE_STATE,
+  INITIAL_USER_STATE,
+  REGISTER_ROLE
+} = require('../config/constants');
 const { LoginDTO, RegisterDTO } = require('../dto');
+const {
+  isValidEmail,
+  isValidPhone,
+  normalizeEmailForComparison
+} = require('../utils/validators');
 
 const RULES = {
   nickname: {
@@ -80,6 +91,26 @@ class UserService {
     return { valid: true };
   }
 
+  validateEmail(email) {
+    if (!email || email.length === 0) {
+      return { valid: false, error: 'validation_email_required' };
+    }
+    if (!isValidEmail(email)) {
+      return { valid: false, error: 'validation_email_invalid' };
+    }
+    return { valid: true };
+  }
+
+  validatePhone(phone) {
+    if (!phone || phone.length === 0) {
+      return { valid: true };
+    }
+    if (!isValidPhone(phone)) {
+      return { valid: false, error: 'validation_phone_invalid' };
+    }
+    return { valid: true };
+  }
+
   async authenticate(loginDTO) {
     if (!loginDTO.isValid()) {
       return { success: false, error: 'credentials_required' };
@@ -92,7 +123,10 @@ class UserService {
     }
 
     if (!user.isActive()) {
-      return { success: false, error: 'account_disabled' };
+      return {
+        success: false,
+        error: user.state === INACTIVE_STATE ? 'account_pending' : 'account_disabled'
+      };
     }
 
     const valid = await bcrypt.compare(loginDTO.password, user.password);
@@ -122,6 +156,16 @@ class UserService {
       return { success: false, error: roleValidation.error };
     }
 
+    const emailValidation = this.validateEmail(registerDTO.email);
+    if (!emailValidation.valid) {
+      return { success: false, error: emailValidation.error };
+    }
+
+    const phoneValidation = this.validatePhone(registerDTO.phone);
+    if (!phoneValidation.valid) {
+      return { success: false, error: phoneValidation.error };
+    }
+
     const notificationValidation = this.validateNotificationMethod(registerDTO.notificationMethod);
     if (!notificationValidation.valid) {
       return { success: false, error: notificationValidation.error };
@@ -141,6 +185,14 @@ class UserService {
       return { success: false, error: 'nickname_exists' };
     }
 
+    const emailTaken = await userRepository.findByEmail(
+      registerDTO.email,
+      normalizeEmailForComparison(registerDTO.email)
+    );
+    if (emailTaken) {
+      return { success: false, error: 'email_exists' };
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(registerDTO.password, salt);
 
@@ -152,11 +204,12 @@ class UserService {
       email: registerDTO.email,
       phone: registerDTO.phone,
       birthDate: registerDTO.birthDate,
-      role: registerDTO.role,
-      notificationMethod: registerDTO.notificationMethod
+      role: REGISTER_ROLE,
+      notificationMethod: registerDTO.notificationMethod,
+      state: INITIAL_USER_STATE
     });
 
-    return { success: true, id };
+    return { success: true, id, state: INITIAL_USER_STATE };
   }
 
   async getAllUsers() {

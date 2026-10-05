@@ -1,4 +1,9 @@
-const { ROLES, DEFAULT_ROLE, NOTIFICATION_METHODS, DEFAULT_NOTIFICATION_METHOD } = require('../config/constants');
+const {
+  NOTIFICATION_METHODS,
+  DEFAULT_NOTIFICATION_METHOD,
+  REGISTER_ROLE
+} = require('../config/constants');
+const { normalizeEmail, normalizePhone } = require('../utils/validators');
 
 class RegisterDTO {
   constructor({
@@ -10,7 +15,6 @@ class RegisterDTO {
     email,
     phone,
     birth_date,
-    role,
     notification_method
   }) {
     this.fullName = (full_name || '').trim();
@@ -18,10 +22,10 @@ class RegisterDTO {
     this.password = password || '';
     this.confirmPassword = confirm_password || '';
     this.photo = photo || null;
-    this.email = (email || '').trim().toLowerCase();
-    this.phone = (phone || '').trim();
+    this.email = normalizeEmail(email);
+    this.phone = normalizePhone(phone);
     this.birthDate = birth_date || null;
-    this.role = ROLES.includes(role) ? role : DEFAULT_ROLE;
+    this.role = REGISTER_ROLE;
     this.notificationMethod = NOTIFICATION_METHODS.includes(notification_method)
       ? notification_method
       : DEFAULT_NOTIFICATION_METHOD;

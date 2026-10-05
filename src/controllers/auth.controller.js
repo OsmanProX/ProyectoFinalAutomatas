@@ -2,13 +2,16 @@ const userService = require('../services/user.service');
 const faceService = require('../services/face.service');
 const { getTranslation } = require('../utils/i18n');
 const { LoginDTO, RegisterDTO } = require('../dto');
+const { INACTIVE_STATE } = require('../config/constants');
 
 class AuthController {
   getLogin(req, res) {
     const lang = req.session.lang || 'es';
     const t = getTranslation(lang);
     const error = req.query.error || null;
-    res.render('login', { t, lang, error });
+    const success = req.session.flash || null;
+    delete req.session.flash;
+    res.render('login', { t, lang, error, success });
   }
 
   async postLogin(req, res) {
@@ -24,19 +27,24 @@ class AuthController {
         switch (result.error) {
           case 'credentials_required':
           case 'invalid_credentials':
-          case 'account_disabled':
             errorMsg = t.login_error;
+            break;
+          case 'account_pending':
+            errorMsg = t.login_account_pending;
+            break;
+          case 'account_disabled':
+            errorMsg = t.login_account_disabled;
             break;
           default:
             errorMsg = t.login_error;
         }
-        return res.render('login', { t, lang, error: errorMsg });
+        return res.render('login', { t, lang, error: errorMsg, success: null });
       }
       req.session.user = result.user;
       res.redirect('/users/dashboard');
     } catch (err) {
       console.error('Error en login:', err);
-      res.render('login', { t, lang, error: t.validation_server_error });
+      res.render('login', { t, lang, error: t.validation_server_error, success: null });
     }
   }
 
@@ -64,6 +72,9 @@ class AuthController {
         switch (result.error) {
           case 'nickname_exists':
             errorMsg = t.register_error_exists;
+            break;
+          case 'email_exists':
+            errorMsg = t.register_error_email_exists;
             break;
           case 'validation_nickname_required':
             errorMsg = t.validation_nickname_required;
@@ -104,6 +115,15 @@ class AuthController {
           case 'validation_fullname_pattern':
             errorMsg = t.validation_fullname_pattern;
             break;
+          case 'validation_email_required':
+            errorMsg = t.validation_email_required;
+            break;
+          case 'validation_email_invalid':
+            errorMsg = t.validation_email_invalid;
+            break;
+          case 'validation_phone_invalid':
+            errorMsg = t.validation_phone_invalid;
+            break;
           case 'passwords_not_match':
             errorMsg = t.register_error_password;
             break;
@@ -116,6 +136,7 @@ class AuthController {
         return res.render('register', { t, lang, error: errorMsg });
       }
 
+      req.session.flash = t.register_success;
       res.redirect('/login');
     } catch (err) {
       console.error('Error en registro:', err);
@@ -146,7 +167,10 @@ class AuthController {
       }
 
       if (!user.isActive()) {
-        return res.status(401).json({ success: false, error: 'account_disabled' });
+        return res.status(401).json({
+          success: false,
+          error: user.state === INACTIVE_STATE ? 'account_pending' : 'account_disabled'
+        });
       }
 
       if (!user.photo) {

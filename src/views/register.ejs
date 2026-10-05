@@ -22,6 +22,7 @@
 
       <form action="/register" method="POST" id="registerForm">
         <input type="hidden" id="photo" name="photo" value="">
+        <input type="hidden" id="role" name="role" value="analitico">
 
         <div class="form-row">
           <div class="form-group">
@@ -37,11 +38,8 @@
         <div class="form-row">
           <div class="form-group">
             <label for="role"><%= t.register_role %></label>
-            <select id="role" name="role" required>
-              <option value="admin"><%= t.role_admin %></option>
-              <option value="supervisor"><%= t.role_supervisor %></option>
-              <option value="analitico" selected><%= t.role_analitico %></option>
-            </select>
+            <input type="text" id="role_display" value="<%= t.role_analitico %>" disabled>
+            <small class="form-hint"><%= t.register_role_fixed %></small>
           </div>
           <div class="form-group">
             <label for="notification_method"><%= t.register_notification %></label>
@@ -55,13 +53,19 @@
 
         <div class="form-group">
           <label for="email"><%= t.register_email %></label>
-          <input type="email" id="email" name="email" required>
+          <input type="email" id="email" name="email" required maxlength="254"
+                 pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}"
+                 placeholder="nombre.usuario@correo.com">
+          <small class="form-hint"><%= t.register_email_hint %></small>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="phone"><%= t.register_phone %></label>
-            <input type="tel" id="phone" name="phone">
+            <input type="tel" id="phone" name="phone" inputmode="tel" maxlength="25"
+                   pattern="\+?[0-9 ()-]{7,25}"
+                   placeholder="+52 123 456 7890">
+            <small class="form-hint"><%= t.register_phone_hint %></small>
           </div>
           <div class="form-group">
             <label for="birth_date"><%= t.register_birth_date %></label>
