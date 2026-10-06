@@ -3,19 +3,32 @@ document.addEventListener('DOMContentLoaded', function () {
   const btnFace = document.getElementById('btnFaceLogin');
   const faceModal = document.getElementById('faceModal');
   const faceModalClose = document.getElementById('btnCloseModal');
-  const faceSection = document.getElementById('faceSection');
   const video = document.getElementById('video');
   const canvas = document.getElementById('canvas');
   const faceStatus = document.getElementById('faceStatus');
-  const nicknameInput = document.getElementById('nickname');
+  const faceStatusText = document.getElementById('faceStatusText');
+  const faceStatusIcon = document.getElementById('faceStatusIcon');
+  const nicknameInput = document.getElementById('faceNickname');
   const btnVerify = document.getElementById('btnVerify');
+  const btnCapture = document.getElementById('btnCapture');
   const btnCloseCamera = document.getElementById('btnCloseCamera');
+  const captureLabel = document.getElementById('captureLabel');
+  const liveFrame = document.getElementById('liveFrame');
+  const capturedPreview = document.getElementById('capturedPreview');
+  const capturedImg = document.getElementById('capturedImg');
+  const segmentedPreview = document.getElementById('segmentedPreview');
+  const segmentedImg = document.getElementById('segmentedImg');
+  const faceLoader = document.getElementById('faceLoader');
+  const loaderText = document.getElementById('loaderText');
 
   let stream = null;
   let modalOpen = false;
+  let capturedImage = null;
+  let verifying = false;
 
   btnFace.addEventListener('click', openCamera);
   if (btnVerify) btnVerify.addEventListener('click', verifyFace);
+  if (btnCapture) btnCapture.addEventListener('click', captureSnapshot);
   if (btnCloseCamera) btnCloseCamera.addEventListener('click', closeCamera);
   if (faceModalClose) faceModalClose.addEventListener('click', closeCamera);
 
@@ -33,12 +46,6 @@ document.addEventListener('DOMContentLoaded', function () {
     return nicknameInput ? nicknameInput.value.trim() : '';
   }
 
-  function setControlsDisabled(disabled) {
-    if (btnVerify) btnVerify.disabled = disabled;
-    if (btnCloseCamera) btnCloseCamera.disabled = disabled;
-    if (faceModalClose) faceModalClose.disabled = disabled;
-  }
-
   function openModal() {
     if (!faceModal) return;
     faceModal.style.display = 'flex';
@@ -46,92 +53,183 @@ document.addEventListener('DOMContentLoaded', function () {
     modalOpen = true;
   }
 
-  async function openCamera() {
-    const nickname = getNickname();
-    if (!nickname) {
-      showStatus(i18n.promptNickname, 'error');
-      return;
-    }
+  function hideAllPreviews() {
+    if (liveFrame) liveFrame.style.display = '';
+    if (capturedPreview) capturedPreview.classList.add('face-preview-hidden');
+    if (segmentedPreview) segmentedPreview.classList.add('face-preview-hidden');
+    if (faceLoader) faceLoader.style.display = 'none';
+    capturedImage = null;
+  }
 
+  function showStatus(kind, text) {
+    if (!faceStatus) return;
+    faceStatus.style.display = 'flex';
+    faceStatus.className = 'face-status face-status-' + kind;
+    faceStatusText.textContent = text;
+    faceStatusIcon.innerHTML = iconFor(kind);
+  }
+
+  function hideStatus() {
+    if (!faceStatus) return;
+    faceStatus.style.display = 'none';
+    faceStatusText.textContent = '';
+  }
+
+  function iconFor(kind) {
+    if (kind === 'success') {
+      return '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+    }
+    if (kind === 'error') {
+      return '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg>';
+    }
+    return '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  }
+
+  async function openCamera() {
     openModal();
+    hideAllPreviews();
+    hideStatus();
+    if (captureLabel) captureLabel.textContent = i18n.face_capture;
 
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 640, height: 480, facingMode: 'user' }
       });
-
       video.srcObject = stream;
       await video.play();
-
-      showStatus(i18n.readyHint, 'loading');
+      enableControls(false);
+      showStatus('info', i18n.readyHint);
     } catch (err) {
       console.error('Error:', err);
-      showStatus(i18n.cameraError, 'error');
-      closeCamera();
+      showStatus('error', i18n.cameraError);
+      enableControls(false);
     }
   }
 
-  function captureFrame() {
+  function captureSnapshot() {
+    const nickname = getNickname();
+    if (!nickname) {
+      showStatus('error', i18n.promptNickname);
+      return;
+    }
+    if (!stream || !video.videoWidth) {
+      showStatus('error', i18n.cameraError);
+      return;
+    }
+    if (verifying) return;
+
     const w = video.videoWidth || 640;
     const h = video.videoHeight || 480;
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, w, h);
-    return canvas.toDataURL('image/jpeg', 0.85);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    capturedImage = dataUrl;
+
+    if (capturedImg) capturedImg.src = dataUrl;
+    if (capturedPreview) capturedPreview.classList.remove('face-preview-hidden');
+
+    if (btnVerify) btnVerify.disabled = false;
+    if (captureLabel) captureLabel.textContent = i18n.face_retake;
+
+    showStatus('info', i18n.face_ready_to_verify);
   }
 
   async function verifyFace() {
     const nickname = getNickname();
     if (!nickname) {
-      showStatus(i18n.promptNickname, 'error');
+      showStatus('error', i18n.promptNickname);
       return;
     }
-
-    if (!video.videoWidth) {
-      showStatus(i18n.cameraError, 'error');
+    if (!capturedImage) {
+      showStatus('error', i18n.face_no_capture);
       return;
     }
+    if (verifying) return;
 
-    showStatus(i18n.detecting, 'loading');
-    setControlsDisabled(true);
+    verifying = true;
+    enableControls(false);
+
+    if (capturedPreview) capturedPreview.classList.add('face-preview-hidden');
+    if (segmentedPreview) segmentedPreview.classList.add('face-preview-hidden');
+    if (faceLoader) {
+      faceLoader.style.display = 'flex';
+      loaderText.textContent = i18n.face_segmenting;
+    }
+    hideStatus();
 
     try {
-      const image = captureFrame();
-
-      showStatus(i18n.verifying, 'loading');
-
       const response = await fetch('/login/face', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nickname, image })
+        body: JSON.stringify({ nickname, image: capturedImage })
       });
 
       const data = await response.json();
 
+      if (faceLoader) faceLoader.style.display = 'none';
+
+      if (data.segmentedImage && segmentedImg) {
+        segmentedImg.src = data.segmentedImage.startsWith('data:')
+          ? data.segmentedImage
+          : 'data:image/jpeg;base64,' + data.segmentedImage;
+        if (segmentedPreview) segmentedPreview.classList.remove('face-preview-hidden');
+      } else if (segmentedPreview) {
+        segmentedPreview.classList.add('face-preview-hidden');
+      }
+
       if (data.success) {
-        const simText = data.similarity ? ' ' + data.similarity + '%' : '';
-        showStatus(i18n.verified + simText, 'success');
+        const simText = data.similarity ? ' (' + data.similarity + '%)' : '';
+        showStatus('success', i18n.verified + simText);
         setTimeout(() => {
           window.location.href = data.redirect || '/users/dashboard';
-        }, 1500);
+        }, 1800);
       } else {
-        let msg = i18n.noMatch;
-        if (data.error === 'user_not_found') msg = i18n.userNotFound;
-        else if (data.error === 'no_photo_registered') msg = i18n.noPhoto;
-        else if (data.error === 'account_disabled') msg = i18n.accountDisabled;
-        else if (data.error === 'account_pending') msg = i18n.accountPending;
-        else if (data.error === 'invalid_image') msg = i18n.invalidImage || msg;
-        else if (data.error === 'segmentation_failed') msg = i18n.segmentationFailed || msg;
-        else if (data.error === 'server_error') msg = i18n.connectionError;
-        if (data.similarity) msg += '. ' + data.similarity + '%';
-        showStatus(msg, 'error');
-        setControlsDisabled(false);
+        const message = mapError(data.error, data.similarity);
+        showStatus('error', message);
+        verifying = false;
+        enableControls(true);
+        if (capturedPreview) capturedPreview.classList.remove('face-preview-hidden');
+        if (btnVerify) btnVerify.disabled = true;
+        if (captureLabel) captureLabel.textContent = i18n.face_retake;
       }
     } catch (err) {
       console.error('Error:', err);
-      showStatus(i18n.connectionError, 'error');
-      setControlsDisabled(false);
+      if (faceLoader) faceLoader.style.display = 'none';
+      showStatus('error', i18n.connectionError);
+      verifying = false;
+      enableControls(true);
+      if (capturedPreview) capturedPreview.classList.remove('face-preview-hidden');
+      if (btnVerify) btnVerify.disabled = true;
+      if (captureLabel) captureLabel.textContent = i18n.face_retake;
+    }
+  }
+
+  function mapError(code, similarity) {
+    let msg;
+    switch (code) {
+      case 'user_not_found': msg = i18n.userNotFound; break;
+      case 'no_photo_registered': msg = i18n.noPhoto; break;
+      case 'account_disabled': msg = i18n.accountDisabled; break;
+      case 'account_pending': msg = i18n.accountPending; break;
+      case 'invalid_image':
+      case 'invalid_image_format': msg = i18n.invalidImage; break;
+      case 'segmentation_failed': msg = i18n.segmentationFailed; break;
+      case 'server_error': msg = i18n.connectionError; break;
+      default: msg = i18n.noMatch;
+    }
+    if (similarity && code !== 'segmentation_failed') msg += ' (' + similarity + '%)';
+    return msg;
+  }
+
+  function enableControls(canCapture) {
+    if (btnCapture) btnCapture.disabled = false;
+    if (btnCloseCamera) btnCloseCamera.disabled = false;
+    if (faceModalClose) faceModalClose.disabled = false;
+    if (btnVerify) {
+      if (canCapture) btnVerify.disabled = !capturedImage;
+      else btnVerify.disabled = true;
     }
   }
 
@@ -146,17 +244,11 @@ document.addEventListener('DOMContentLoaded', function () {
       faceModal.setAttribute('aria-hidden', 'true');
     }
     modalOpen = false;
-    setControlsDisabled(false);
-    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-    if (faceStatus) {
-      faceStatus.textContent = '';
-      faceStatus.className = 'face-status';
-    }
-  }
-
-  function showStatus(msg, type) {
-    if (!faceStatus) return;
-    faceStatus.textContent = msg;
-    faceStatus.className = 'face-status face-' + type;
+    verifying = false;
+    hideAllPreviews();
+    hideStatus();
+    capturedImage = null;
+    if (captureLabel) captureLabel.textContent = i18n.face_capture;
+    if (btnVerify) btnVerify.disabled = true;
   }
 });

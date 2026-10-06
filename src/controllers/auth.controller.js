@@ -213,6 +213,7 @@ class AuthController {
         return res.json({
           success: true,
           similarity: result.similarity,
+          segmentedImage: result.segmentedImage,
           redirect: '/users/dashboard'
         });
       }

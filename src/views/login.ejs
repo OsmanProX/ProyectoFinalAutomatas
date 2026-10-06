@@ -48,16 +48,67 @@
       <div id="faceModal" class="face-modal-backdrop" style="display:none" aria-hidden="true">
         <div class="face-modal" role="dialog" aria-modal="true" aria-labelledby="faceModalTitle">
           <button type="button" class="face-modal-close" id="btnCloseModal" aria-label="Close">&times;</button>
-          <h2 id="faceModalTitle" class="face-modal-title"><%= t.login_face %></h2>
+          <div class="face-modal-header">
+            <div class="face-modal-icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+            <h2 id="faceModalTitle" class="face-modal-title"><%= t.login_face %></h2>
+          </div>
 
           <div id="faceSection" class="face-section">
-            <video id="video" autoplay muted playsinline class="face-video"></video>
-            <canvas id="canvas" class="face-canvas"></canvas>
-            <div class="camera-controls">
-              <button type="button" class="btn btn-sm btn-primary" id="btnVerify"><%= t.login_face_verify %></button>
-              <button type="button" class="btn btn-sm btn-danger" id="btnCloseCamera"><%= t.login_face_cancel %></button>
+            <div class="face-nickname-group">
+              <label for="faceNickname" class="face-nickname-label"><%= t.login_nickname %></label>
+              <input type="text" id="faceNickname" class="face-nickname-input" placeholder="<%= t.face_nickname_placeholder %>" autocomplete="username">
             </div>
-            <p id="faceStatus" class="face-status"></p>
+
+            <div class="face-stage">
+              <div class="face-frame" id="liveFrame">
+                <video id="video" autoplay muted playsinline class="face-video"></video>
+                <div class="face-overlay">
+                  <div class="face-overlay-corner tl"></div>
+                  <div class="face-overlay-corner tr"></div>
+                  <div class="face-overlay-corner bl"></div>
+                  <div class="face-overlay-corner br"></div>
+                </div>
+              </div>
+
+              <div class="face-preview face-preview-hidden" id="capturedPreview">
+                <img id="capturedImg" alt="captured">
+                <span class="face-preview-label"><%= t.face_label_captured %></span>
+              </div>
+
+              <div class="face-preview face-preview-hidden" id="segmentedPreview">
+                <img id="segmentedImg" alt="segmented">
+                <span class="face-preview-label"><%= t.face_label_segmented %></span>
+              </div>
+
+              <div class="face-loader" id="faceLoader" style="display:none">
+                <div class="face-spinner"></div>
+                <span id="loaderText"><%= t.face_verifying %></span>
+              </div>
+            </div>
+
+            <canvas id="canvas" class="face-canvas"></canvas>
+
+            <div class="camera-controls">
+              <button type="button" class="btn-face-action btn-face-capture" id="btnCapture">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                <span id="captureLabel"><%= t.face_capture %></span>
+              </button>
+              <button type="button" class="btn-face-action btn-face-verify" id="btnVerify" disabled>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                <span><%= t.login_face_verify %></span>
+              </button>
+              <button type="button" class="btn-face-action btn-face-cancel" id="btnCloseCamera">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                <span><%= t.login_face_cancel %></span>
+              </button>
+            </div>
+
+            <div id="faceStatus" class="face-status" style="display:none">
+              <span class="face-status-icon" id="faceStatusIcon"></span>
+              <span id="faceStatusText"></span>
+            </div>
           </div>
         </div>
       </div>
@@ -77,6 +128,7 @@
       readyHint: "<%= t.face_ready_hint %>",
       detecting: "<%= t.face_detecting %>",
       verifying: "<%= t.face_verifying %>",
+      segmenting: "<%= t.face_segmenting %>",
       noFace: "<%= t.face_no_face %>",
       verified: "<%= t.face_verified %>",
       noMatch: "<%= t.face_no_match %>",
@@ -86,7 +138,11 @@
       accountPending: "<%= t.face_account_pending %>",
       connectionError: "<%= t.face_connection_error %>",
       invalidImage: "<%= t.face_invalid_image %>",
-      segmentationFailed: "<%= t.face_segmentation_failed %>"
+      segmentationFailed: "<%= t.face_segmentation_failed %>",
+      capture: "<%= t.face_capture %>",
+      retake: "<%= t.face_retake %>",
+      readyToVerify: "<%= t.face_ready_to_verify %>",
+      noCapture: "<%= t.face_no_capture %>"
     };
   </script>
   <script src="/js/face-login.js"></script>

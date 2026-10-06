@@ -9,13 +9,18 @@ function stripDataUrl(image) {
 
 function isLikelyBase64(value) {
   if (!value || typeof value !== 'string') return false;
-  return /^[A-Za-z0-9+/=]+$/.test(value) && value.length > 100;
+  const stripped = stripDataUrl(value);
+  return stripped.length > 100 && /^[A-Za-z0-9+/=]+$/.test(stripped);
 }
 
 class FaceService {
   async callSegmentar(rostroBase64) {
     const url = `${FACE_API_BASE}/api/Rostro/Segmentar`;
-    const payload = { RostroA: stripDataUrl(rostroBase64) };
+    const image = stripDataUrl(rostroBase64);
+    const payload = { RostroA: image, RostroB: image };
+
+    console.log('[FaceAPI] Segmentar →', url);
+    console.log('[FaceAPI] Payload size:', payload.RostroA ? payload.RostroA.length : 0, 'chars');
 
     const response = await fetch(url, {
       method: 'POST',
@@ -24,6 +29,9 @@ class FaceService {
     });
 
     const raw = await response.text();
+    console.log('[FaceAPI] Segmentar status:', response.status);
+    console.log('[FaceAPI] Segmentar response (primeros 500 chars):', raw.substring(0, 500));
+
     let data;
     try {
       data = JSON.parse(raw);
@@ -31,9 +39,26 @@ class FaceService {
       throw new Error(`segmentar_respuesta_no_json: ${raw.substring(0, 200)}`);
     }
 
-    if (!response.ok || data.resultado === false || data.segmentado === false) {
-      const msg = data && (data.error || data.mensaje) || `http_${response.status}`;
-      const err = new Error(`segmentar_fallo: ${msg}`);
+    const resultado = data.resultado === true;
+    const segmentado = data.segmentado === true;
+    const errorMsg = data.error || data.mensaje || data.message || null;
+
+    if (!response.ok) {
+      const err = new Error(`segmentar_http_${response.status}: ${errorMsg || raw.substring(0, 100)}`);
+      err.code = 'segmentar_failed';
+      err.detail = data;
+      throw err;
+    }
+
+    if (resultado === false || segmentado === false) {
+      const err = new Error(`segmentar_fallo: ${errorMsg || 'sin detalle'}`);
+      err.code = 'segmentar_failed';
+      err.detail = data;
+      throw err;
+    }
+
+    if (!data.rostro) {
+      const err = new Error('segmentar_sin_rostro');
       err.code = 'segmentar_failed';
       err.detail = data;
       throw err;
@@ -49,6 +74,9 @@ class FaceService {
       RostroB: stripDataUrl(rostroBBase64)
     };
 
+    console.log('[FaceAPI] Verificar →', url);
+    console.log('[FaceAPI] Payload sizes - A:', payload.RostroA.length, 'B:', payload.RostroB.length);
+
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -56,6 +84,9 @@ class FaceService {
     });
 
     const raw = await response.text();
+    console.log('[FaceAPI] Verificar status:', response.status);
+    console.log('[FaceAPI] Verificar response:', raw.substring(0, 500));
+
     let data;
     try {
       data = JSON.parse(raw);
@@ -103,6 +134,7 @@ class FaceService {
       return {
         match,
         similarity,
+        segmentedImage: segmentedLive,
         detail: result
       };
     } catch (err) {
