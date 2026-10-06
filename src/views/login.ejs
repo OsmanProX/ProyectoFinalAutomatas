@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= t.login_title %></title>
   <link rel="stylesheet" href="/css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 </head>
 <body>
   <div class="lang-switcher">
@@ -46,14 +45,21 @@
         <%= t.login_face %>
       </button>
 
-      <div id="faceSection" class="face-section" style="display:none">
-        <video id="video" autoplay muted playsinline class="face-video"></video>
-        <canvas id="canvas" class="face-canvas"></canvas>
-        <div class="camera-controls">
-          <button type="button" class="btn btn-sm btn-primary" id="btnVerify"><%= t.login_face_verify %></button>
-          <button type="button" class="btn btn-sm btn-danger" id="btnCloseCamera"><%= t.login_face_cancel %></button>
+      <div id="faceModal" class="face-modal-backdrop" style="display:none" aria-hidden="true">
+        <div class="face-modal" role="dialog" aria-modal="true" aria-labelledby="faceModalTitle">
+          <button type="button" class="face-modal-close" id="btnCloseModal" aria-label="Close">&times;</button>
+          <h2 id="faceModalTitle" class="face-modal-title"><%= t.login_face %></h2>
+
+          <div id="faceSection" class="face-section">
+            <video id="video" autoplay muted playsinline class="face-video"></video>
+            <canvas id="canvas" class="face-canvas"></canvas>
+            <div class="camera-controls">
+              <button type="button" class="btn btn-sm btn-primary" id="btnVerify"><%= t.login_face_verify %></button>
+              <button type="button" class="btn btn-sm btn-danger" id="btnCloseCamera"><%= t.login_face_cancel %></button>
+            </div>
+            <p id="faceStatus" class="face-status"></p>
+          </div>
         </div>
-        <p id="faceStatus" class="face-status"></p>
       </div>
 
       <p class="link-text">
@@ -78,7 +84,9 @@
       noPhoto: "<%= t.face_no_photo %>",
       accountDisabled: "<%= t.face_account_disabled %>",
       accountPending: "<%= t.face_account_pending %>",
-      connectionError: "<%= t.face_connection_error %>"
+      connectionError: "<%= t.face_connection_error %>",
+      invalidImage: "<%= t.face_invalid_image %>",
+      segmentationFailed: "<%= t.face_segmentation_failed %>"
     };
   </script>
   <script src="/js/face-login.js"></script>

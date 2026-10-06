@@ -46,6 +46,7 @@ const translations = {
     register_photo_required: "Debe tomar o subir una foto",
     register_camera_error: "No se pudo acceder a la cámara",
     register_invalid_image: "Seleccione una imagen válida",
+    register_segment_error: "No se pudo procesar la imagen del rostro. Intente con otra foto",
 
     // Roles
     role_admin: "Administrador",
@@ -62,7 +63,7 @@ const translations = {
     face_loading_models: "Cargando modelos...",
     face_camera_error: "No se pudo acceder a la cámara",
     face_ready_hint: 'Presione "Verificar" cuando su rostro sea visible',
-    face_detecting: "Detectando rostro...",
+    face_detecting: "Capturando rostro...",
     face_verifying: "Verificando identidad...",
     face_no_face: "No se detectó rostro. Intente de nuevo.",
     face_verified: "Rostro verificado. Similitud:",
@@ -72,6 +73,8 @@ const translations = {
     face_account_disabled: "Cuenta desactivada",
     face_account_pending: "Cuenta pendiente de validación del administrador",
     face_connection_error: "Error de conexión",
+    face_invalid_image: "La imagen capturada no es válida",
+    face_segmentation_failed: "No se pudo segmentar el rostro. Reintente con mejor iluminación",
 
     // Validation errors
     validation_required: "Este campo es obligatorio",
@@ -160,6 +163,7 @@ const translations = {
     register_photo_required: "You must take or upload a photo",
     register_camera_error: "Could not access the camera",
     register_invalid_image: "Please select a valid image",
+    register_segment_error: "Could not process the face image. Try another photo",
 
     // Roles
     role_admin: "Administrator",
@@ -176,7 +180,7 @@ const translations = {
     face_loading_models: "Loading models...",
     face_camera_error: "Could not access the camera",
     face_ready_hint: 'Press "Verify" when your face is visible',
-    face_detecting: "Detecting face...",
+    face_detecting: "Capturing face...",
     face_verifying: "Verifying identity...",
     face_no_face: "No face detected. Please try again.",
     face_verified: "Face verified. Similarity:",
@@ -186,6 +190,8 @@ const translations = {
     face_account_disabled: "Account disabled",
     face_account_pending: "Account pending administrator validation",
     face_connection_error: "Connection error",
+    face_invalid_image: "The captured image is not valid",
+    face_segmentation_failed: "Could not segment the face. Try again with better lighting",
 
     // Validation errors
     validation_required: "This field is required",

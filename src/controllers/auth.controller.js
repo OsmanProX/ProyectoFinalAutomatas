@@ -71,6 +71,20 @@ class AuthController {
         });
       }
 
+      if (registerDTO.photo) {
+        try {
+          registerDTO.photo = await faceService.segment(registerDTO.photo);
+        } catch (err) {
+          console.error('Error al segmentar la foto de registro:', err.message);
+          return res.render('register', {
+            t,
+            lang,
+            error: t.register_segment_error,
+            values: registerDTO.toFormValues()
+          });
+        }
+      }
+
       const result = await userService.register(registerDTO);
       if (!result.success) {
         let errorMsg;
@@ -170,9 +184,9 @@ class AuthController {
     const t = getTranslation(lang);
 
     try {
-      const { nickname, descriptor } = req.body;
+      const { nickname, image } = req.body;
 
-      if (!nickname || !descriptor) {
+      if (!nickname || !image) {
         return res.status(400).json({ success: false, error: 'missing_data' });
       }
 
@@ -192,14 +206,7 @@ class AuthController {
         return res.status(400).json({ success: false, error: 'no_photo_registered' });
       }
 
-      let storedDescriptor;
-      try {
-        storedDescriptor = JSON.parse(user.photo);
-      } catch (e) {
-        return res.status(500).json({ success: false, error: 'invalid_photo_data' });
-      }
-
-      const result = await faceService.verifyFace(storedDescriptor, descriptor);
+      const result = await faceService.verify(image, user.photo);
 
       if (result.match) {
         req.session.user = user.toSession();
@@ -210,9 +217,25 @@ class AuthController {
         });
       }
 
+      let errorCode;
+      switch (result.error) {
+        case 'invalid_image':
+        case 'invalid_image_format':
+          errorCode = 'invalid_image';
+          break;
+        case 'segmentar_failed':
+          errorCode = 'segmentation_failed';
+          break;
+        case 'missing_image':
+          errorCode = 'no_photo_registered';
+          break;
+        default:
+          errorCode = 'face_not_match';
+      }
+
       return res.status(401).json({
         success: false,
-        error: 'face_not_match',
+        error: errorCode,
         similarity: result.similarity
       });
     } catch (err) {
