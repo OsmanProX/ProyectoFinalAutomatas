@@ -40,6 +40,7 @@
 
     <!-- TOPBAR -->
     <header class="topbar">
+      <%- include('partials/user-chip') %>
       <a href="/lang/<%= lang === 'es' ? 'en' : 'es' %>" class="btn btn-sm"><%= t.switch_lang %></a>
     </header>
 

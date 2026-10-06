@@ -600,3 +600,13 @@ input:disabled {
   padding: 40px;
   font-size: 16px;
 }
+
+/* Boton para volver a abrir el estudio de foto */
+.btn-edit-photo {
+  background: #4361ee;
+  color: #fff;
+}
+
+.btn-edit-photo:hover {
+  background: #3a56d4;
+}

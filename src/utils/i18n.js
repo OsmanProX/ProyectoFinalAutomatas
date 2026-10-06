@@ -108,6 +108,24 @@ const translations = {
     dashboard_active: "Activo",
     dashboard_inactive: "Inactivo",
 
+    // Estudio de foto (filtros y stickers)
+    studio_edit_photo: "✨ Personalizar foto",
+    studio_titulo: "✨ Personaliza tu foto",
+    studio_subtitulo: "Esta foto aparecerá en tu credencial y en la barra del sitio",
+    studio_filtros: "Filtros",
+    studio_stickers: "Stickers",
+    studio_marcos: "Marcos",
+    studio_sorprendeme: "🎲 Sorpréndeme",
+    studio_saltar: "Usar sin cambios",
+    studio_listo: "Listo ✓",
+    studio_tamano: "Tamaño",
+    studio_girar: "Girar",
+    studio_quitar: "Quitar sticker",
+    studio_ayudaSticker: "Toca un sticker para agregarlo y arrástralo sobre la foto",
+    studio_limpiar: "Quitar todos",
+    validation_photo_invalid: "La foto no es válida. Tome o suba la foto de nuevo",
+    profile_photo_alt: "Foto de perfil",
+
     // General
     nav_home: "Inicio",
     nav_language: "Idioma",
@@ -221,6 +239,24 @@ const translations = {
     dashboard_created: "Created",
     dashboard_active: "Active",
     dashboard_inactive: "Inactive",
+
+    // Photo studio (filters and stickers)
+    studio_edit_photo: "✨ Customize photo",
+    studio_titulo: "✨ Customize your photo",
+    studio_subtitulo: "This photo will appear on your ID card and in the site bar",
+    studio_filtros: "Filters",
+    studio_stickers: "Stickers",
+    studio_marcos: "Frames",
+    studio_sorprendeme: "🎲 Surprise me",
+    studio_saltar: "Use without changes",
+    studio_listo: "Done ✓",
+    studio_tamano: "Size",
+    studio_girar: "Rotate",
+    studio_quitar: "Remove sticker",
+    studio_ayudaSticker: "Tap a sticker to add it and drag it over the photo",
+    studio_limpiar: "Remove all",
+    validation_photo_invalid: "The photo is not valid. Take or upload it again",
+    profile_photo_alt: "Profile photo",
 
     // General
     nav_home: "Home",

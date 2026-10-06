@@ -37,6 +37,11 @@ document.addEventListener('DOMContentLoaded', function () {
   const previewImg = document.getElementById('previewImg');
   const btnRemovePhoto = document.getElementById('btnRemovePhoto');
   const photoInput = document.getElementById('photo');
+  const photoModifiedInput = document.getElementById('photo_modified');
+  const btnEditPhoto = document.getElementById('btnEditPhoto');
+  const nicknameInput = document.getElementById('nickname');
+  const studioI18nNode = document.getElementById('studio-i18n');
+  const studioTexts = studioI18nNode ? JSON.parse(studioI18nNode.textContent) : {};
   const registerForm = document.getElementById('registerForm');
   const photoPlaceholder = document.getElementById('photoPlaceholder');
   const formAlert = document.getElementById('formAlert');
@@ -64,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function restorePhoto() {
     if (!photoInput.value) return;
-    previewImg.src = photoInput.value;
+    previewImg.src = photoModifiedInput.value || photoInput.value;
     photoPreview.style.display = 'block';
     hidePlaceholder();
   }
@@ -77,6 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
   btnCrop.addEventListener('click', cropImage);
   btnCancelCrop.addEventListener('click', cancelCrop);
   btnRemovePhoto.addEventListener('click', removePhoto);
+  btnEditPhoto.addEventListener('click', () => openStudio(photoInput.value));
 
   restorePhoto();
 
@@ -161,13 +167,32 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!cropper) return;
     const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
     const dataURL = canvas.toDataURL('image/jpeg', 0.85);
+    // Foto ORIGINAL (recortada): se usa para el login facial
     photoInput.value = dataURL;
+    photoModifiedInput.value = '';
     previewImg.src = dataURL;
     photoPreview.style.display = 'block';
     cropperSection.style.display = 'none';
     hidePlaceholder();
     cropper.destroy();
     cropper = null;
+    openStudio(dataURL);
+  }
+
+  /** Abre el estudio de filtros/stickers; el resultado es la foto MODIFICADA */
+  async function openStudio(original) {
+    if (!original || !window.PhotoStudio) return;
+    const nickname = (nicknameInput && nicknameInput.value.trim()) || '';
+    const modified = await window.PhotoStudio.open(original, {
+      etiqueta: nickname ? '@' + nickname.toLowerCase() : '',
+      textos: studioTexts
+    });
+    if (modified) {
+      photoModifiedInput.value = modified;
+    } else if (!photoModifiedInput.value) {
+      photoModifiedInput.value = original; // cerró el estudio sin cambios
+    }
+    previewImg.src = photoModifiedInput.value;
   }
 
   function cancelCrop() {
@@ -181,6 +206,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function removePhoto() {
     photoInput.value = '';
+    photoModifiedInput.value = '';
     previewImg.src = '';
     photoPreview.style.display = 'none';
     showPlaceholder();
