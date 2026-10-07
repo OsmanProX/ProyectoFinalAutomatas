@@ -219,3 +219,56 @@
   color: #1a1a2e;
   margin-bottom: 16px;
 }
+
+/* ============================================
+   FOTO DE PERFIL EN LA BARRA SUPERIOR
+   Muestra la foto modificada (filtros/stickers)
+   ============================================ */
+.topbar .user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: auto;
+}
+
+.user-chip-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #4361ee;
+  background: #eef0f7;
+}
+
+.user-chip-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.user-chip-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.user-chip-nick {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.user-chip-link {
+  color: #4361ee;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.user-chip-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .user-chip-name {
+    display: none;
+  }
+}

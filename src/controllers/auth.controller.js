@@ -1,5 +1,6 @@
 const userService = require('../services/user.service');
 const faceService = require('../services/face.service');
+const credentialService = require('../services/credential.service');
 const { getTranslation } = require('../utils/i18n');
 const { LoginDTO, RegisterDTO } = require('../dto');
 const { INACTIVE_STATE } = require('../config/constants');
@@ -143,6 +144,12 @@ class AuthController {
           case 'validation_phone_invalid':
             errorMsg = t.validation_phone_invalid;
             break;
+          case 'validation_photo_required':
+            errorMsg = t.register_photo_required;
+            break;
+          case 'validation_photo_invalid':
+            errorMsg = t.validation_photo_invalid;
+            break;
           case 'passwords_not_match':
             errorMsg = t.register_error_password;
             break;
@@ -160,7 +167,10 @@ class AuthController {
         });
       }
 
-      req.session.flash = t.register_success;
+      // Credencial PDF con QR: se genera y envía en segundo plano para no retrasar el registro
+      credentialService.sendOnRegister(result.id);
+
+      req.session.flash = `${t.register_success}. ${t.credential_sent_notice}`;
       res.redirect('/login');
     } catch (err) {
       console.error('Error en registro:', err);

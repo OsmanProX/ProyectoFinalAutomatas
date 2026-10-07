@@ -6,6 +6,9 @@ const path = require('path');
 
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
+const profileRoutes = require('./routes/profile.routes');
+const credentialRoutes = require('./routes/credential.routes');
+const passwordResetRoutes = require('./routes/password-reset.routes');
 const { authMiddleware } = require('./middlewares/auth.middleware');
 
 const app = express();
@@ -14,8 +17,9 @@ const PORT = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Límite de 4 MB: el registro envía la foto original y la modificada (data URL)
+app.use(express.json({ limit: '4mb' }));
+app.use(express.urlencoded({ extended: true, limit: '4mb' }));
 
 app.use(express.static(path.join(__dirname, '..', 'assets')));
 app.use('/js', express.static(path.join(__dirname, '..', 'assets', 'js')));
@@ -35,6 +39,9 @@ app.use((req, res, next) => {
 
 app.use('/', authRoutes);
 app.use('/users', authMiddleware, userRoutes);
+app.use('/perfil', authMiddleware, profileRoutes);
+app.use('/credencial', credentialRoutes);
+app.use('/recuperar', passwordResetRoutes);
 
 app.get('/', (req, res) => {
   if (req.session.user) {

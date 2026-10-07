@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= t.login_title %></title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/qr-login.css">
+  <link rel="stylesheet" href="/css/forgot-password.css">
 </head>
 <body>
   <div class="lang-switcher">
@@ -33,6 +35,7 @@
           <label for="password"><%= t.login_password %></label>
           <input type="password" id="password" name="password" required>
         </div>
+        <a href="/recuperar" class="forgot-link"><%= t.reset_forgot_link %></a>
 
         <button type="submit" class="btn btn-primary"><%= t.login_submit %></button>
       </form>
@@ -113,6 +116,22 @@
         </div>
       </div>
 
+      <!-- Login con el código QR de la credencial -->
+      <button type="button" class="btn-qr" id="btnQrLogin"><%= t.login_qr %></button>
+
+      <div id="qrSection" class="qr-section" style="display:none">
+        <div class="qr-viewer">
+          <video id="qrVideo" autoplay muted playsinline></video>
+          <span class="qr-frame"></span>
+        </div>
+        <div class="qr-actions">
+          <button type="button" class="btn btn-sm btn-qr-upload" id="btnQrUpload"><%= t.login_qr_upload %></button>
+          <button type="button" class="btn btn-sm btn-danger" id="btnQrCancel"><%= t.login_qr_cancel %></button>
+          <input type="file" id="qrFileInput" accept="image/*" hidden>
+        </div>
+        <p id="qrStatus" class="face-status"></p>
+      </div>
+
       <p class="link-text">
         <%= t.login_no_account %>
         <a href="/register"><%= t.login_register %></a>
@@ -146,5 +165,21 @@
     };
   </script>
   <script src="/js/face-login.js"></script>
+  <script>
+    window.QR_I18N = {
+      hint: "<%= t.login_qr_hint %>",
+      scanning: "<%= t.login_qr_scanning %>",
+      verifying: "<%= t.login_qr_verifying %>",
+      success: "<%= t.login_qr_success %>",
+      seconds: "<%= t.login_qr_seconds %>",
+      cameraError: "<%= t.login_qr_camera_error %>",
+      notCredential: "<%= t.login_qr_not_credential %>",
+      noCode: "<%= t.login_qr_no_code %>",
+      invalid: "<%= t.login_qr_error_qr_invalid %>",
+      connectionError: "<%= t.face_connection_error %>"
+    };
+  </script>
+  <script src="/js/vendor/jsQR.js"></script>
+  <script src="/js/qr-login.js"></script>
 </body>
 </html>

@@ -1,0 +1,74 @@
+/* ============================================
+   LOGIN CON CÓDIGO QR
+   ============================================ */
+.btn-qr {
+  width: 100%;
+  margin-top: 10px;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 16px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-qr:hover {
+  background: #2a2a4a;
+}
+
+.qr-section {
+  margin-top: 16px;
+  text-align: center;
+}
+
+/* Visor de la cámara con un marco guía */
+.qr-viewer {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1a1a2e;
+  aspect-ratio: 4 / 3;
+}
+
+.qr-viewer video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.qr-frame {
+  position: absolute;
+  inset: 18% 24%;
+  border: 3px solid #4361ee;
+  border-radius: 14px;
+  box-shadow: 0 0 0 999px rgba(26, 26, 46, 0.35);
+  animation: qr-pulse 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes qr-pulse {
+  50% { border-color: #ff3cac; }
+}
+
+.qr-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-qr-upload {
+  background: #4361ee;
+  color: #fff;
+}
+
+.btn-qr-upload:hover {
+  background: #3a56d4;
+}

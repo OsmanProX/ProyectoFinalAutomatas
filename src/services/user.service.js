@@ -1,5 +1,7 @@
 const bcrypt = require('bcryptjs');
 const userRepository = require('../repositories/user.repository');
+const userPhotoRepository = require('../repositories/user-photo.repository');
+const { isValidImageDataUrl } = require('../utils/image');
 const {
   ROLES,
   NOTIFICATION_METHODS,
@@ -111,6 +113,20 @@ class UserService {
     return { valid: true };
   }
 
+  /**
+   * Foto original (obligatoria) y foto modificada con filtros/stickers (opcional).
+   * Ambas deben ser imágenes reales en formato data URL.
+   */
+  validatePhotos(photo, photoModified) {
+    if (!photo) {
+      return { valid: false, error: 'validation_photo_required' };
+    }
+    if (!isValidImageDataUrl(photo) || (photoModified && !isValidImageDataUrl(photoModified))) {
+      return { valid: false, error: 'validation_photo_invalid' };
+    }
+    return { valid: true };
+  }
+
   async authenticate(loginDTO) {
     if (!loginDTO.isValid()) {
       return { success: false, error: 'credentials_required' };
@@ -180,6 +196,11 @@ class UserService {
       return { success: false, error: 'passwords_not_match' };
     }
 
+    const photoValidation = this.validatePhotos(registerDTO.photo, registerDTO.photoModified);
+    if (!photoValidation.valid) {
+      return { success: false, error: photoValidation.error };
+    }
+
     const existing = await userRepository.findByNickname(registerDTO.nickname);
     if (existing) {
       return { success: false, error: 'nickname_exists' };
@@ -208,6 +229,9 @@ class UserService {
       notificationMethod: registerDTO.notificationMethod,
       state: INITIAL_USER_STATE
     });
+
+    // Foto modificada (filtros/stickers); si no la personalizó se usa la original
+    await userPhotoRepository.saveModified(id, registerDTO.photoModified || registerDTO.photo);
 
     return { success: true, id, state: INITIAL_USER_STATE };
   }

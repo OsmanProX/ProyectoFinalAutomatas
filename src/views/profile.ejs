@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= t.profile_title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/menu.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+  <link rel="stylesheet" href="/css/photo-studio.css">
+  <link rel="stylesheet" href="/css/profile.css">
+</head>
+<body class="profile-body">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <h2 class="sidebar-text">Mi App</h2>
+      <button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="/users/dashboard" class="sidebar-nav-item">
+        <span class="icon">&#127968;</span>
+        <span class="sidebar-text"><%= t.nav_home %></span>
+      </a>
+      <a href="#" class="sidebar-nav-item">
+        <span class="icon">&#128101;</span>
+        <span class="sidebar-text"><%= t.dashboard_users %></span>
+      </a>
+      <a href="/perfil" class="sidebar-nav-item active">
+        <span class="icon">&#128100;</span>
+        <span class="sidebar-text"><%= t.nav_profile %></span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="/logout" class="sidebar-nav-item">
+        <span class="icon">&#128682;</span>
+        <span class="sidebar-footer-text"><%= t.dashboard_logout %></span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <%- include('partials/user-chip') %>
+      <a href="/lang/<%= lang === 'es' ? 'en' : 'es' %>" class="btn btn-sm"><%= t.switch_lang %></a>
+    </header>
+
+    <main class="profile-page">
+      <div class="profile-header">
+        <h1><%= t.profile_title %></h1>
+        <p><%= t.profile_subtitle %></p>
+      </div>
+
+      <div class="profile-grid">
+
+        <!-- ================= MI FOTO ================= -->
+        <section class="profile-card">
+          <h2><%= t.profile_photo_title %></h2>
+          <p class="profile-hint"><%= t.profile_photo_hint %></p>
+
+          <div class="profile-photo-box" id="photoView">
+            <img id="profilePhoto" src="/perfil/foto?v=<%= version %>" alt="<%= t.profile_photo_alt %>">
+          </div>
+
+          <div id="cameraBox" class="profile-tool" hidden>
+            <video id="profileVideo" autoplay muted playsinline></video>
+            <div class="profile-actions">
+              <button type="button" class="btn btn-sm btn-accent" id="btnCapture"><%= t.profile_capture %></button>
+              <button type="button" class="btn btn-sm btn-danger" id="btnCancelCamera"><%= t.profile_cancel %></button>
+            </div>
+          </div>
+
+          <div id="cropBox" class="profile-tool" hidden>
+            <div class="profile-crop"><img id="cropImage" src="" alt="Recorte"></div>
+            <div class="profile-actions">
+              <button type="button" class="btn btn-sm btn-accent" id="btnCrop"><%= t.profile_crop %></button>
+              <button type="button" class="btn btn-sm btn-danger" id="btnCancelCrop"><%= t.profile_cancel %></button>
+            </div>
+          </div>
+
+          <div class="profile-actions" id="photoButtons">
+            <button type="button" class="btn btn-sm btn-outline" id="btnTakePhoto"><%= t.profile_take_photo %></button>
+            <button type="button" class="btn btn-sm btn-outline" id="btnUploadPhoto"><%= t.profile_upload_photo %></button>
+            <input type="file" id="photoFile" accept="image/*" hidden>
+          </div>
+          <button type="button" class="btn btn-accent btn-block" id="btnCustomize"><%= t.profile_customize %></button>
+          <p class="profile-status" id="photoStatus" role="status"></p>
+        </section>
+
+        <!-- ================= CONTRASEÑA ================= -->
+        <section class="profile-card">
+          <h2><%= t.profile_password_title %></h2>
+          <form id="passwordForm" novalidate autocomplete="off">
+            <div class="form-group">
+              <label for="current_password"><%= t.profile_current_password %></label>
+              <input type="password" id="current_password" autocomplete="current-password" required>
+            </div>
+            <div class="form-group">
+              <label for="new_password"><%= t.profile_new_password %></label>
+              <input type="password" id="new_password" autocomplete="new-password" required>
+            </div>
+            <div class="form-group">
+              <label for="confirm_password"><%= t.profile_confirm_password %></label>
+              <input type="password" id="confirm_password" autocomplete="new-password" required>
+            </div>
+            <button type="submit" class="btn btn-accent btn-block" id="btnPassword"><%= t.profile_password_submit %></button>
+          </form>
+          <p class="profile-status" id="passwordStatus" role="status"></p>
+        </section>
+
+        <!-- ================= CREDENCIAL Y DATOS ================= -->
+        <section class="profile-card">
+          <h2><%= t.profile_credential_title %></h2>
+          <% if (credencial) { %>
+            <dl class="profile-data">
+              <dt><%= t.profile_credential_code %></dt><dd id="credentialCode"><%= credencial.credentialCode %></dd>
+              <dt><%= t.profile_credential_issued %></dt><dd><%= new Date(credencial.issuedAt).toLocaleDateString('es-GT') %></dd>
+            </dl>
+          <% } else { %>
+            <p class="profile-hint"><%= t.profile_credential_none %></p>
+          <% } %>
+          <a class="btn btn-outline btn-block" href="/perfil/credencial" target="_blank" rel="noopener"><%= t.profile_credential_view %></a>
+          <button type="button" class="btn btn-outline btn-block" id="btnNewCredential"><%= t.profile_credential_new %></button>
+          <div class="profile-confirm" id="confirmBox" hidden>
+            <p><%= t.profile_credential_confirm %></p>
+            <div class="profile-actions">
+              <button type="button" class="btn btn-sm btn-danger" id="btnConfirmNew"><%= t.profile_credential_yes %></button>
+              <button type="button" class="btn btn-sm btn-outline" id="btnCancelNew"><%= t.profile_cancel %></button>
+            </div>
+          </div>
+          <p class="profile-status" id="credentialStatus" role="status"></p>
+
+          <h2 class="profile-subtitle"><%= t.profile_data_title %></h2>
+          <dl class="profile-data">
+            <dt><%= t.profile_email %></dt><dd><%= perfil.email %></dd>
+            <dt><%= t.profile_phone %></dt><dd><%= perfil.phone || '—' %></dd>
+            <dt><%= t.profile_notification %></dt>
+            <dd><%= perfil.notificationMethod === 'whatsapp' ? t.notification_whatsapp : (perfil.notificationMethod === 'ambos' ? t.notification_both : t.notification_email) %></dd>
+          </dl>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <%
+    const textosPerfil = {};
+    Object.keys(t).filter(function (k) { return k.indexOf('profile_') === 0; }).forEach(function (k) { textosPerfil[k] = t[k]; });
+    textosPerfil.server_error = t.validation_server_error;
+    const textosEstudio = {};
+    Object.keys(t).filter(function (k) { return k.indexOf('studio_') === 0; }).forEach(function (k) { textosEstudio[k.replace('studio_', '')] = t[k]; });
+  %>
+  <script id="profile-i18n" type="application/json"><%- JSON.stringify({ t: textosPerfil, studio: textosEstudio, nickname: user.nickname }).replace(/</g, '\\u003c') %></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+  <script src="/js/menu.js"></script>
+  <script src="/js/photo-studio.js"></script>
+  <script src="/js/profile.js"></script>
+</body>
+</html>

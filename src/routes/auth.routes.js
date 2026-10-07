@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
+const qrLoginController = require('../controllers/qr-login.controller');
 
 router.get('/login', (req, res) => authController.getLogin(req, res));
 router.post('/login', (req, res) => authController.postLogin(req, res));
 router.post('/login/face', (req, res) => authController.postFaceLogin(req, res));
+router.post('/login/qr', (req, res) => qrLoginController.postQrLogin(req, res));
 
 router.get('/register', (req, res) => authController.getRegister(req, res));
 router.post('/register', (req, res) => authController.postRegister(req, res));
