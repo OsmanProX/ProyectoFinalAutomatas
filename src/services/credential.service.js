@@ -6,6 +6,7 @@ const userPhotoRepository = require('../repositories/user-photo.repository');
 const credentialRepository = require('../repositories/credential.repository');
 const messagingService = require('./messaging.service');
 const { parseImageDataUrl } = require('../utils/image');
+const { INACTIVE_STATE } = require('../config/constants');
 const { encrypt, decrypt, safeEqual, randomToken, createSignedToken } = require('../utils/crypto');
 
 /**
@@ -69,6 +70,22 @@ class CredentialService {
     if (!credencial) return null;
     const secreto = decrypt(credencial.qrTokenEnc);
     return secreto && safeEqual(secreto, match[2]) ? userId : null;
+  }
+
+  /**
+   * Login con QR: valida el código leído y el estado de la cuenta.
+   * @returns {Promise<{ success: boolean, user?: object, error?: string }>}
+   */
+  async authenticateByQr(texto) {
+    if (typeof texto !== 'string' || texto.length > 120) return { success: false, error: 'qr_invalid' };
+    const userId = await this.verifyQrToken(texto);
+    if (!userId) return { success: false, error: 'qr_invalid' };
+    const user = await userRepository.findById(userId);
+    if (!user) return { success: false, error: 'qr_invalid' };
+    if (!user.isActive()) {
+      return { success: false, error: user.state === INACTIVE_STATE ? 'account_pending' : 'account_disabled' };
+    }
+    return { success: true, user };
   }
 
   /** PDF de la credencial vigente de un usuario (descarga desde el perfil o enlace de WhatsApp) */
