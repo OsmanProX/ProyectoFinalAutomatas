@@ -20,7 +20,7 @@
     <div class="card card-register">
       <h1><%= t.register_title %></h1>
 
-      <div id="formAlert" class="alert alert-error" style="<%= error ? '' : 'display:none' %>"><%= error || '' %></div>
+      <div id="formAlert" class="alert alert-error"<%- error ? '' : ' style="display:none"' %>><%= error || '' %></div>
 
       <form action="/register" method="POST" id="registerForm" novalidate>
         <input type="hidden" id="photo" name="photo" value="<%= datos.photo || '' %>">
