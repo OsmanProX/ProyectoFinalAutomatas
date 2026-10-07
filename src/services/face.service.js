@@ -128,8 +128,30 @@ class FaceService {
 
       const result = await this.callVerificar(segmentedLive, storedImageBase64);
 
-      const match = result.resultado === true || result.coincide === true || result.match === true;
-      const similarity = result.similitud || result.similarity || result.score || null;
+      console.log('[FaceAPI] Verificar resultado completo:', JSON.stringify(result).substring(0, 500));
+
+      const match = result.coincide === true
+        || result.match === true
+        || result.esIgual === true
+        || result.verificado === true;
+
+      let similarity = result.similitud
+        ?? result.similarity
+        ?? result.score
+        ?? result.porcentaje
+        ?? result.porcentajeSimilitud
+        ?? result.confianza
+        ?? null;
+
+      if (similarity !== null && typeof similarity === 'number') {
+        if (similarity >= 0 && similarity <= 1) {
+          similarity = Math.round(similarity * 10000) / 100;
+        } else {
+          similarity = Math.round(similarity * 100) / 100;
+        }
+      }
+
+      console.log('[FaceAPI] Match:', match, '| Similarity:', similarity);
 
       return {
         match,
