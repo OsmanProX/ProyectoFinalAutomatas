@@ -74,7 +74,10 @@ class AuthController {
 
       if (registerDTO.photo) {
         try {
-          registerDTO.photo = await faceService.segment(registerDTO.photo);
+          const segmented = await faceService.segment(registerDTO.photo);
+          registerDTO.photo = segmented && !segmented.startsWith('data:')
+            ? 'data:image/jpeg;base64,' + segmented
+            : segmented;
         } catch (err) {
           console.error('Error al segmentar la foto de registro:', err.message);
           return res.render('register', {
