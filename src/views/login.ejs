@@ -6,6 +6,7 @@
   <title><%= t.login_title %></title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/qr-login.css">
+  <link rel="stylesheet" href="/css/forgot-password.css">
   <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 </head>
 <body>
@@ -35,6 +36,7 @@
           <label for="password"><%= t.login_password %></label>
           <input type="password" id="password" name="password" required>
         </div>
+        <a href="/recuperar" class="forgot-link"><%= t.reset_forgot_link %></a>
 
         <button type="submit" class="btn btn-primary"><%= t.login_submit %></button>
       </form>

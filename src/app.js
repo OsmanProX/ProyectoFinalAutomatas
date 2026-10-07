@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const profileRoutes = require('./routes/profile.routes');
 const credentialRoutes = require('./routes/credential.routes');
+const passwordResetRoutes = require('./routes/password-reset.routes');
 const { authMiddleware } = require('./middlewares/auth.middleware');
 
 const app = express();
@@ -40,6 +41,7 @@ app.use('/', authRoutes);
 app.use('/users', authMiddleware, userRoutes);
 app.use('/perfil', authMiddleware, profileRoutes);
 app.use('/credencial', credentialRoutes);
+app.use('/recuperar', passwordResetRoutes);
 
 app.get('/', (req, res) => {
   if (req.session.user) {
