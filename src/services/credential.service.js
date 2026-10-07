@@ -102,7 +102,7 @@ class CredentialService {
    * Se llama al terminar el registro: genera la credencial y la envía según el
    * método de notificación del usuario. Nunca lanza error (el registro ya terminó).
    */
-  async sendOnRegister(userId) {
+  async sendOnRegister(userId, { nueva = false } = {}) {
     try {
       const user = await userRepository.findById(userId);
       if (!user) return [];
@@ -114,13 +114,15 @@ class CredentialService {
       const resultados = await messagingService.sendByPreference(user.notificationMethod, {
         email: {
           to: user.email,
-          subject: '🎉 ¡Bienvenido! Aquí está tu credencial de inscripción',
-          html: this.emailHtml(user, code),
+          subject: nueva ? '🪪 Tu nueva credencial (la anterior ya no funciona)' : '🎉 ¡Bienvenido! Aquí está tu credencial de inscripción',
+          html: this.emailHtml(user, code, nueva),
           attachments: [{ filename: archivo, content: pdf, contentType: 'application/pdf' }]
         },
         whatsapp: {
           to: user.phone,
-          body: `¡Hola ${user.fullName}! 🎉 Tu registro quedó listo. Te enviamos tu credencial ${code}. Guárdala: con su código QR podrás iniciar sesión.`,
+          body: nueva
+            ? `Hola ${user.fullName}, generaste una credencial nueva (${code}). El QR anterior ya no funciona.`
+            : `¡Hola ${user.fullName}! 🎉 Tu registro quedó listo. Te enviamos tu credencial ${code}. Guárdala: con su código QR podrás iniciar sesión.`,
           mediaUrl: `${process.env.PUBLIC_BASE_URL}/credencial/publica/${createSignedToken(userId, 120)}`
         }
       });
@@ -265,13 +267,13 @@ class CredentialService {
     doc.rect(0, ALTO - 8, ANCHO, 8).fill(franja);
   }
 
-  emailHtml(user, code) {
+  emailHtml(user, code, nueva = false) {
     const escapar = (s) => String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     return `
       <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden">
         <div style="background:linear-gradient(90deg,#1a1a2e,#4361ee);color:#fff;padding:22px 26px">
-          <h2 style="margin:0">🎉 ¡Bienvenido, ${escapar(user.fullName || user.nickname)}!</h2>
-          <p style="margin:6px 0 0;color:#c7d0ff">Tu registro quedó listo</p>
+          <h2 style="margin:0">${nueva ? '🪪 Tu nueva credencial' : `🎉 ¡Bienvenido, ${escapar(user.fullName || user.nickname)}!`}</h2>
+          <p style="margin:6px 0 0;color:#c7d0ff">${nueva ? 'La credencial anterior y su QR ya no funcionan' : 'Tu registro quedó listo'}</p>
         </div>
         <div style="padding:22px 26px;color:#2d2d3a;line-height:1.5">
           <p>Adjuntamos tu <b>credencial de inscripción ${escapar(code)}</b> en PDF, con la foto que personalizaste.</p>
