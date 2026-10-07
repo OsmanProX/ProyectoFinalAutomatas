@@ -5,7 +5,8 @@
        onerror="this.style.visibility='hidden'">
   <div class="user-chip-text">
     <span class="user-chip-name"><%= user.full_name %></span>
-    <span class="user-chip-nick">@<%= user.nickname %></span>
+    <span class="user-chip-nick">@<%= user.nickname %>
+      · <a href="/perfil/credencial" target="_blank" rel="noopener" class="user-chip-link"><%= t.credential_download %></a></span>
   </div>
 </div>
 <% } %>

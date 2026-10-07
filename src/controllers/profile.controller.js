@@ -1,4 +1,5 @@
 const profileService = require('../services/profile.service');
+const credentialService = require('../services/credential.service');
 
 class ProfileController {
   /** GET /perfil/foto -> imagen de perfil (modificada) del usuario en sesión */
@@ -17,5 +18,22 @@ class ProfileController {
     }
   }
 }
+
+ProfileController.prototype.downloadCredential = async function downloadCredential(req, res) {
+  // GET /perfil/credencial -> PDF de la credencial vigente (con QR) del usuario en sesión
+  try {
+    const result = await credentialService.buildPdfForUser(req.session.user.id);
+    if (!result) return res.status(404).send('Credencial no encontrada');
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename="credencial-${result.user.nickname}.pdf"`,
+      'Cache-Control': 'no-store'
+    });
+    return res.send(result.pdf);
+  } catch (err) {
+    console.error('Error al generar la credencial:', err.message);
+    return res.status(500).send('No se pudo generar la credencial');
+  }
+};
 
 module.exports = new ProfileController();

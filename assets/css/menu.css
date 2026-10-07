@@ -257,6 +257,16 @@
   color: #6b7280;
 }
 
+.user-chip-link {
+  color: #4361ee;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.user-chip-link:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 600px) {
   .user-chip-name {
     display: none;

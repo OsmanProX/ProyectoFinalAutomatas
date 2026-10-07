@@ -1,5 +1,6 @@
 const userService = require('../services/user.service');
 const faceService = require('../services/face.service');
+const credentialService = require('../services/credential.service');
 const { getTranslation } = require('../utils/i18n');
 const { LoginDTO, RegisterDTO } = require('../dto');
 const { INACTIVE_STATE } = require('../config/constants');
@@ -152,7 +153,10 @@ class AuthController {
         });
       }
 
-      req.session.flash = t.register_success;
+      // Credencial PDF con QR: se genera y envía en segundo plano para no retrasar el registro
+      credentialService.sendOnRegister(result.id);
+
+      req.session.flash = `${t.register_success}. ${t.credential_sent_notice}`;
       res.redirect('/login');
     } catch (err) {
       console.error('Error en registro:', err);

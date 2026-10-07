@@ -125,6 +125,8 @@ const translations = {
     studio_limpiar: "Quitar todos",
     validation_photo_invalid: "La foto no es válida. Tome o suba la foto de nuevo",
     profile_photo_alt: "Foto de perfil",
+    credential_sent_notice: "Te enviamos tu credencial con código QR según el medio de notificación que elegiste",
+    credential_download: "🪪 Mi credencial",
 
     // General
     nav_home: "Inicio",
@@ -257,6 +259,8 @@ const translations = {
     studio_limpiar: "Remove all",
     validation_photo_invalid: "The photo is not valid. Take or upload it again",
     profile_photo_alt: "Profile photo",
+    credential_sent_notice: "We sent your ID card with QR code through the notification method you chose",
+    credential_download: "🪪 My ID card",
 
     // General
     nav_home: "Home",
