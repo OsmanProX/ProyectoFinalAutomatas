@@ -1,7 +1,7 @@
 <%# Foto modificada + apodo del usuario en la barra superior (barra de estado) %>
 <% if (user) { %>
 <div class="user-chip">
-  <img class="user-chip-avatar" src="/perfil/foto" alt="<%= t.profile_photo_alt %>"
+  <img class="user-chip-avatar" src="/perfil/foto?u=<%= user.id %>" alt="<%= t.profile_photo_alt %>"
        onerror="this.style.visibility='hidden'">
   <div class="user-chip-text">
     <span class="user-chip-name"><%= user.full_name %></span>
