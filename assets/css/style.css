@@ -621,6 +621,87 @@ body {
   align-items: center;
 }
 
+/* Pagina Roles y Permisos */
+.roles-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.roles-subtitle {
+  color: #6a7086;
+  margin-top: -6px;
+  margin-bottom: 20px;
+}
+
+.roles-card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(15, 17, 36, 0.08);
+  overflow: hidden;
+}
+
+.roles-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.roles-table th,
+.roles-table td {
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.roles-table thead th {
+  background: #f4f6fc;
+  color: #3c4360;
+  font-weight: 600;
+  border-bottom: 2px solid #e4e8f4;
+}
+
+.roles-table tbody tr {
+  border-bottom: 1px solid #eef0f7;
+}
+
+.roles-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.roles-table tbody tr:hover {
+  background: #fafbfe;
+}
+
+.roles-name {
+  font-weight: 600;
+  color: #2c3050;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.role-badge-active {
+  background: #e8f5e9;
+  color: #1f6f3c;
+  border: 1px solid #b6e0c0;
+}
+
+.role-badge-inactive {
+  background: #ffebee;
+  color: #b1303a;
+  border: 1px solid #f4c0c5;
+}
+
+.role-badge-protected {
+  background: #fff8e1;
+  color: #8d6e00;
+  border: 1px solid #f0dfa0;
+}
+
 /* Seccion de foto en registro */
 .photo-section {
   margin-bottom: 16px;

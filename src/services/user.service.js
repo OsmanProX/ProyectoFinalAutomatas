@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const userRepository = require('../repositories/user.repository');
 const userPhotoRepository = require('../repositories/user-photo.repository');
+const roleRepository = require('../repositories/role.repository');
 const { isValidImageDataUrl } = require('../utils/image');
 const {
   ROLES,
@@ -214,6 +215,11 @@ class UserService {
       return { success: false, error: 'email_exists' };
     }
 
+    const roleRow = await roleRepository.findRegisterRole();
+    if (!roleRow) {
+      return { success: false, error: 'role_not_found' };
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(registerDTO.password, salt);
 
@@ -225,7 +231,7 @@ class UserService {
       email: registerDTO.email,
       phone: registerDTO.phone,
       birthDate: registerDTO.birthDate,
-      role: REGISTER_ROLE,
+      idRole: roleRow.id,
       notificationMethod: registerDTO.notificationMethod,
       state: INITIAL_USER_STATE
     });

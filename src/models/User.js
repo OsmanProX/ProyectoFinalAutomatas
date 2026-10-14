@@ -1,5 +1,14 @@
 const { DEFAULT_ROLE, DEFAULT_NOTIFICATION_METHOD } = require('../config/constants');
 
+/**
+ * La columna roles.active es BIT(1); mysql2 la devuelve como Buffer.
+ */
+function bitToBool(value) {
+  if (value === null || value === undefined) return false;
+  if (Buffer.isBuffer(value)) return value[0] === 1;
+  return value === 1 || value === true || value === '1';
+}
+
 class User {
   constructor({
     id,
@@ -8,6 +17,9 @@ class User {
     password,
     state,
     role,
+    id_Roles,
+    role_name,
+    role_active,
     notification_method,
     photo,
     email,
@@ -20,7 +32,10 @@ class User {
     this.nickname = nickname || '';
     this.password = password || '';
     this.state = state !== undefined ? state : 1;
-    this.role = role || DEFAULT_ROLE;
+    this.role = role || DEFAULT_ROLE;                    // enum viejo (legacy)
+    this.idRole = id_Roles !== undefined ? id_Roles : null;
+    this.roleName = role_name || null;                   // nombre desde tabla roles (JOIN)
+    this.roleActive = role_active !== undefined ? bitToBool(role_active) : true;
     this.notificationMethod = notification_method || DEFAULT_NOTIFICATION_METHOD;
     this.photo = photo || null;
     this.email = email || '';
@@ -29,16 +44,22 @@ class User {
     this.createAt = create_at || null;
   }
 
+  roleDisplayName() {
+    return this.roleName || this.role;
+  }
+
   isActive() {
     return this.state === 1;
   }
 
   isAdmin() {
-    return this.role === 'admin';
+    const name = (this.roleName || this.role || '').toString().toUpperCase();
+    return name === 'ADMIN';
   }
 
   isSupervisor() {
-    return this.role === 'supervisor';
+    const name = (this.roleName || this.role || '').toString().toUpperCase();
+    return name === 'SUPERVISOR';
   }
 
   toJSON() {
@@ -47,7 +68,9 @@ class User {
       fullName: this.fullName,
       nickname: this.nickname,
       state: this.state,
-      role: this.role,
+      role: this.roleDisplayName(),
+      idRole: this.idRole,
+      roleActive: this.roleActive,
       notificationMethod: this.notificationMethod,
       photo: this.photo,
       email: this.email,
@@ -62,7 +85,9 @@ class User {
       id: this.id,
       full_name: this.fullName,
       nickname: this.nickname,
-      role: this.role,
+      role: this.roleDisplayName(),
+      id_role: this.idRole,
+      role_active: this.roleActive,
       notification_method: this.notificationMethod,
       photo: this.photo,
       email: this.email,

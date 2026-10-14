@@ -218,7 +218,25 @@ const translations = {
     // General
     nav_home: "Inicio",
     nav_language: "Idioma",
-    switch_lang: "English"
+    nav_roles: "Roles y Permisos",
+    switch_lang: "English",
+
+    // Roles y permisos
+    roles_title: "Roles y Permisos",
+    roles_subtitle: "Activa o desactiva las opciones que puede usar cada rol registrado",
+    roles_col_id: "ID",
+    roles_col_name: "Rol",
+    roles_col_description: "Descripción",
+    roles_col_state: "Estado",
+    roles_col_actions: "Acciones",
+    roles_active: "Activo",
+    roles_inactive: "Inactivo",
+    roles_activate: "Activar",
+    roles_deactivate: "Desactivar",
+    roles_protected: "Protegido",
+    roles_updated: "Estado del rol actualizado",
+    roles_error_admin: "No se puede desactivar el rol ADMIN",
+    roles_error_generic: "No se pudo actualizar el rol",
   },
   en: {
     // Login
@@ -439,7 +457,25 @@ const translations = {
     // General
     nav_home: "Home",
     nav_language: "Language",
-    switch_lang: "Español"
+    nav_roles: "Roles & Permissions",
+    switch_lang: "Español",
+
+    // Roles & permissions
+    roles_title: "Roles & Permissions",
+    roles_subtitle: "Enable or disable the options available to each registered role",
+    roles_col_id: "ID",
+    roles_col_name: "Role",
+    roles_col_description: "Description",
+    roles_col_state: "Status",
+    roles_col_actions: "Actions",
+    roles_active: "Active",
+    roles_inactive: "Inactive",
+    roles_activate: "Activate",
+    roles_deactivate: "Deactivate",
+    roles_protected: "Protected",
+    roles_updated: "Role status updated",
+    roles_error_admin: "The ADMIN role cannot be deactivated",
+    roles_error_generic: "Could not update the role",
   }
 };
 

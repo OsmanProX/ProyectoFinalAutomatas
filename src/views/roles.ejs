@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= t.roles_title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/menu.css">
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <h2 class="sidebar-text">Mi App</h2>
+      <button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="/users/dashboard" class="sidebar-nav-item">
+        <span class="icon">&#127968;</span>
+        <span class="sidebar-text"><%= t.nav_home %></span>
+      </a>
+      <% if (user.role_active !== false) { %>
+      <a href="#" class="sidebar-nav-item">
+        <span class="icon">&#128101;</span>
+        <span class="sidebar-text"><%= t.dashboard_users %></span>
+      </a>
+      <a href="/analyze" class="sidebar-nav-item">
+        <span class="icon">&#128196;</span>
+        <span class="sidebar-text"><%= t.nav_analysis || 'Análisis léxico' %></span>
+      </a>
+      <% } %>
+      <a href="/perfil" class="sidebar-nav-item">
+        <span class="icon">&#128100;</span>
+        <span class="sidebar-text"><%= t.nav_profile %></span>
+      </a>
+      <% if ((user.role || '').toString().toUpperCase() === 'ADMIN') { %>
+      <a href="/roles" class="sidebar-nav-item active">
+        <span class="icon">&#128272;</span>
+        <span class="sidebar-text"><%= t.nav_roles %></span>
+      </a>
+      <% } %>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="/logout" class="sidebar-nav-item">
+        <span class="icon">&#128682;</span>
+        <span class="sidebar-footer-text"><%= t.dashboard_logout %></span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="main-wrapper">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <%- include('partials/user-chip') %>
+      <a href="/lang/<%= lang === 'es' ? 'en' : 'es' %>" class="btn btn-sm"><%= t.switch_lang %></a>
+    </header>
+
+    <!-- CONTENIDO -->
+    <div class="dashboard-content">
+      <div class="roles-page">
+        <h1><%= t.roles_title %></h1>
+        <p class="roles-subtitle"><%= t.roles_subtitle %></p>
+
+        <% if (ok) { %>
+          <div class="alert alert-success"><%= t.roles_updated %></div>
+        <% } %>
+        <% if (error) { %>
+          <div class="alert alert-error">
+            <%= error === 'cannot_deactivate_admin' ? t.roles_error_admin : t.roles_error_generic %>
+          </div>
+        <% } %>
+
+        <div class="roles-card">
+          <table class="roles-table">
+            <thead>
+              <tr>
+                <th><%= t.roles_col_id %></th>
+                <th><%= t.roles_col_name %></th>
+                <th><%= t.roles_col_description %></th>
+                <th><%= t.roles_col_state %></th>
+                <th><%= t.roles_col_actions %></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% roles.forEach(function(r) { %>
+                <tr>
+                  <td><%= r.id %></td>
+                  <td class="roles-name"><%= r.name %></td>
+                  <td><%= r.description || '' %></td>
+                  <td>
+                    <span class="role-badge <%= r.active ? 'role-badge-active' : 'role-badge-inactive' %>">
+                      <%= r.active ? t.roles_active : t.roles_inactive %>
+                    </span>
+                  </td>
+                  <td>
+                    <% if (r.name.toUpperCase() === 'ADMIN') { %>
+                      <span class="role-badge role-badge-protected"><%= t.roles_protected %></span>
+                    <% } else { %>
+                      <form method="POST" action="/roles/toggle/<%= r.id %>">
+                        <button type="submit" class="btn btn-sm <%= r.active ? 'btn-danger' : 'btn-primary' %>">
+                          <%= r.active ? t.roles_deactivate : t.roles_activate %>
+                        </button>
+                      </form>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/menu.js"></script>
+</body>
+</html>
