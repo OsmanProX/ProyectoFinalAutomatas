@@ -50,6 +50,31 @@ class UserRepository {
     return User.fromRows(rows);
   }
 
+  /**
+   * Lista para la pagina Usuarios: incluye la foto original (Base64) de la tabla users.
+   */
+  async findAllWithPhoto() {
+    const [rows] = await pool.query(
+      `SELECT u.id, u.full_name, u.nickname, u.photo, u.id_Roles,
+              r.name AS role_name
+       FROM users u
+       LEFT JOIN roles r ON r.id = u.id_Roles
+       ORDER BY u.full_name`
+    );
+    return rows.map(row => ({
+      id: row.id,
+      fullName: row.full_name,
+      nickname: row.nickname,
+      photo: row.photo || null,
+      idRole: row.id_Roles,
+      roleName: row.role_name || null
+    }));
+  }
+
+  async updateRole(id, idRole) {
+    await pool.query('UPDATE users SET id_Roles = ? WHERE id = ?', [idRole, id]);
+  }
+
   async create(user) {
     const [result] = await pool.query(
       'INSERT INTO users (full_name, nickname, password, state, id_Roles, notification_method, photo, email, phone, birth_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',

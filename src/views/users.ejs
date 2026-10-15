@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= t.users_title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/menu.css">
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <%- include('partials/sidebar', { activePage: 'usuarios' }) %>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="main-wrapper">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <%- include('partials/user-chip') %>
+      <a href="/lang/<%= lang === 'es' ? 'en' : 'es' %>" class="btn btn-sm"><%= t.switch_lang %></a>
+    </header>
+
+    <!-- CONTENIDO -->
+    <div class="dashboard-content">
+      <div class="roles-page">
+        <h1><%= t.users_title %></h1>
+        <p class="roles-subtitle"><%= t.users_subtitle %></p>
+
+        <% if (ok) { %>
+          <div class="alert alert-success"><%= t.users_saved %></div>
+        <% } %>
+        <% if (error) { %>
+          <div class="alert alert-error"><%= t.users_error %></div>
+        <% } %>
+
+        <div class="roles-card">
+          <table class="roles-table">
+            <thead>
+              <tr>
+                <th><%= t.users_col_photo %></th>
+                <th><%= t.users_col_name %></th>
+                <th><%= t.users_col_nickname %></th>
+                <th><%= t.users_col_role %></th>
+                <th><%= t.users_col_actions %></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% users.forEach(function(u) { %>
+                <tr data-user-id="<%= u.id %>">
+                  <td>
+                    <% if (u.photo && u.photo.length > 100) { %>
+                      <img class="user-avatar-sm" src="<%= u.photo %>" alt="<%= u.nickname %>"
+                           onerror="this.style.display='none'">
+                    <% } else { %>
+                      <span class="user-avatar-sm user-avatar-placeholder">&#128100;</span>
+                    <% } %>
+                  </td>
+                  <td class="roles-name"><%= u.fullName %></td>
+                  <td>@<%= u.nickname %></td>
+                  <td>
+                    <select class="role-select" data-role-select>
+                      <% roles.forEach(function(r) { %>
+                        <option value="<%= r.id %>" <%= u.idRole === r.id ? 'selected' : '' %>>
+                          <%= r.name %>
+                        </option>
+                      <% }); %>
+                    </select>
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-sm btn-primary btn-save-role"
+                            data-user-id="<%= u.id %>">
+                      <%= t.users_save %>
+                    </button>
+                    <span class="row-status" data-row-status></span>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script id="users-i18n" type="application/json"><%- JSON.stringify({
+    saving: t.users_saving,
+    saved: t.users_saved,
+    error: t.users_error
+  }).replace(/</g, '\\u003c') %></script>
+  <script src="/js/users-role.js"></script>
+  <script src="/js/menu.js"></script>
+</body>
+</html>

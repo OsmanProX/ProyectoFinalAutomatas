@@ -29,7 +29,8 @@
     listEl.innerHTML = '';
 
     menuItems.forEach(function (item) {
-      if (item.key === 'roles') return;
+      // 'inicio' no es una opcion configurable; 'roles' solo lo ve ADMIN
+      if (item.key === 'roles' || item.key === 'inicio') return;
 
       var active = perms.hasOwnProperty(item.key) ? perms[item.key] : true;
       var label = i18n.menuLabels && i18n.menuLabels[item.key] ? i18n.menuLabels[item.key] : item.key;

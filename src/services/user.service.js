@@ -285,6 +285,38 @@ class UserService {
     await userRepository.delete(id);
     return { success: true };
   }
+
+  async getUsersWithPhoto() {
+    return await userRepository.findAllWithPhoto();
+  }
+
+  /**
+   * Cambia el rol de un usuario. Solo se permiten los roles del sistema:
+   * ADMIN, SUPERVISOR o ANALISTA.
+   */
+  async updateUserRole(id, idRole) {
+    if (!id || isNaN(id) || !idRole || isNaN(idRole)) {
+      return { success: false, error: 'invalid_id' };
+    }
+
+    const user = await userRepository.findById(id);
+    if (!user) {
+      return { success: false, error: 'user_not_found' };
+    }
+
+    const role = await roleRepository.findById(Number(idRole));
+    if (!role) {
+      return { success: false, error: 'role_not_found' };
+    }
+
+    const allowed = ['ADMIN', 'SUPERVISOR', 'ANALISTA'];
+    if (!allowed.includes(role.name.toUpperCase())) {
+      return { success: false, error: 'role_not_allowed' };
+    }
+
+    await userRepository.updateRole(id, role.id);
+    return { success: true, roleName: role.name };
+  }
 }
 
 module.exports = new UserService();

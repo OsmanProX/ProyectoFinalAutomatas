@@ -6,11 +6,12 @@
   var _isAdmin = _user && (_user.role || '').toString().toUpperCase() === 'ADMIN';
 
   function _canShow(key) {
+    if (key === 'inicio') return true;      // Inicio siempre disponible, no es opcion de permisos
     if (key === 'roles') return _isAdmin;
     if (_mp && Object.prototype.hasOwnProperty.call(_mp, key)) {
       return _mp[key] === true;
     }
-    if (key === 'inicio' || key === 'perfil') return true;
+    if (key === 'perfil') return true;
     return _user && _user.role_active !== false;
   }
 %>
@@ -28,7 +29,7 @@
     </a>
     <% } %>
     <% if (_canShow('usuarios')) { %>
-    <a href="#" class="sidebar-nav-item <%= _activePage === 'usuarios' ? 'active' : '' %>">
+    <a href="/users" class="sidebar-nav-item <%= _activePage === 'usuarios' ? 'active' : '' %>">
       <span class="icon">&#128101;</span>
       <span class="sidebar-text"><%= _t.dashboard_users || 'Usuarios' %></span>
     </a>

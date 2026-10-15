@@ -24,6 +24,13 @@
     <!-- CONTENIDO -->
     <div class="dashboard-content">
 
+      <% var _roleName = (user && user.role) ? String(user.role).toUpperCase() : ''; %>
+      <% if (_roleName === 'ADMIN' || _roleName === 'SUPERVISOR') { %>
+      <div class="dashboard-role">
+        <span class="role-badge role-badge-active"><%= user.role %></span>
+      </div>
+      <% } %>
+
       <div class="welcome-center">
         <h1><%= t.dashboard_welcome %>, <%= user.full_name %></h1>
       </div>

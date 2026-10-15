@@ -714,6 +714,50 @@ body {
   border: 1px solid #f0dfa0;
 }
 
+/* Badge del rol en el dashboard (solo ADMIN y SUPERVISOR) */
+.dashboard-role {
+  margin-bottom: 14px;
+}
+
+/* Pagina Usuarios */
+.user-avatar-sm {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.user-avatar-placeholder {
+  background: #eef0f7;
+  color: #7a80a0;
+  text-align: center;
+  line-height: 44px;
+  font-size: 20px;
+}
+
+.role-select {
+  padding: 7px 10px;
+  border: 1px solid #d7dcef;
+  border-radius: 8px;
+  font-size: 13px;
+  background: #fff;
+  color: #2c3050;
+  cursor: pointer;
+}
+
+.row-status {
+  display: inline-block;
+  margin-left: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.row-status-info { color: #3c4360; }
+.row-status-success { color: #1f6f3c; }
+.row-status-error { color: #b1303a; }
+
 /* ============================================
    MODAL DE PERMISOS DE MENU
    ============================================ */

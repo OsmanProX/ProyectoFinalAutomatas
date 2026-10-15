@@ -18,7 +18,7 @@ const INITIAL_USER_STATE = INACTIVE_STATE;
 
 const MENU_ITEMS = [
   { key: 'inicio',   route: '/users/dashboard', icon: '&#127968;', labelKey: 'nav_home' },
-  { key: 'usuarios', route: '#',                icon: '&#128101;', labelKey: 'dashboard_users' },
+  { key: 'usuarios', route: '/users',             icon: '&#128101;', labelKey: 'dashboard_users' },
   { key: 'analisis', route: '/analyze',         icon: '&#128196;', labelKey: 'nav_analysis' },
   { key: 'perfil',   route: '/perfil',          icon: '&#128100;', labelKey: 'nav_profile' },
   { key: 'roles',    route: '/roles',           icon: '&#128272;', labelKey: 'nav_roles' }

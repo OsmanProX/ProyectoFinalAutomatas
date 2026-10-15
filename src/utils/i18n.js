@@ -248,6 +248,19 @@ const translations = {
     roles_modal_saving: "Guardando…",
     roles_modal_saved: "Permisos guardados correctamente",
     roles_modal_error: "No se pudieron guardar los permisos",
+
+    // Usuarios
+    users_title: "Usuarios",
+    users_subtitle: "Lista de usuarios registrados; solo se puede modificar el rol",
+    users_col_photo: "Foto",
+    users_col_name: "Nombre completo",
+    users_col_nickname: "Nickname",
+    users_col_role: "Rol",
+    users_col_actions: "Acciones",
+    users_save: "Guardar",
+    users_saving: "Guardando…",
+    users_saved: "Rol actualizado correctamente",
+    users_error: "No se pudo actualizar el rol",
   },
   en: {
     // Login
@@ -498,6 +511,19 @@ const translations = {
     roles_modal_saving: "Saving…",
     roles_modal_saved: "Permissions saved successfully",
     roles_modal_error: "Could not save permissions",
+
+    // Users
+    users_title: "Users",
+    users_subtitle: "List of registered users; only the role can be modified",
+    users_col_photo: "Photo",
+    users_col_name: "Full name",
+    users_col_nickname: "Nickname",
+    users_col_role: "Role",
+    users_col_actions: "Actions",
+    users_save: "Save",
+    users_saving: "Saving…",
+    users_saved: "Role updated successfully",
+    users_error: "Could not update the role",
   }
 };
 
