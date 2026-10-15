@@ -108,7 +108,7 @@ const translations = {
     // Dashboard
     dashboard_title: "Panel de Control",
     dashboard_welcome: "Bienvenido",
-    dashboard_users: "Usuarios",
+    dashboard_users: "Gestión de usuarios",
     dashboard_actions: "Acciones",
     dashboard_logout: "Cerrar Sesión",
     dashboard_id: "ID",
@@ -250,8 +250,9 @@ const translations = {
     roles_modal_error: "No se pudieron guardar los permisos",
 
     // Usuarios
-    users_title: "Usuarios",
+    users_title: "Gestión de usuarios",
     users_subtitle: "Lista de usuarios registrados; solo se puede modificar el rol",
+    users_col_id: "ID",
     users_col_photo: "Foto",
     users_col_name: "Nombre completo",
     users_col_nickname: "Nickname",
@@ -513,8 +514,9 @@ const translations = {
     roles_modal_error: "Could not save permissions",
 
     // Users
-    users_title: "Users",
+    users_title: "User Management",
     users_subtitle: "List of registered users; only the role can be modified",
+    users_col_id: "ID",
     users_col_photo: "Photo",
     users_col_name: "Full name",
     users_col_nickname: "Nickname",

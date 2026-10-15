@@ -38,6 +38,7 @@
           <table class="roles-table">
             <thead>
               <tr>
+                <th><%= t.users_col_id %></th>
                 <th><%= t.users_col_photo %></th>
                 <th><%= t.users_col_name %></th>
                 <th><%= t.users_col_nickname %></th>
@@ -48,6 +49,7 @@
             <tbody>
               <% users.forEach(function(u) { %>
                 <tr data-user-id="<%= u.id %>">
+                  <td><%= u.id %></td>
                   <td>
                     <% if (u.photo && u.photo.length > 100) { %>
                       <img class="user-avatar-sm" src="<%= u.photo %>" alt="<%= u.nickname %>"
