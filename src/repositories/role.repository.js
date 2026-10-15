@@ -45,10 +45,6 @@ class RoleRepository {
     );
     return this.mapRow(rows[0]);
   }
-
-  async setActive(id, active) {
-    await pool.query('UPDATE roles SET active = ? WHERE id = ?', [active ? 1 : 0, id]);
-  }
 }
 
 module.exports = new RoleRepository();

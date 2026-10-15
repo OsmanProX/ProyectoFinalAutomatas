@@ -3,11 +3,12 @@
 -- Controla que opciones del sidebar puede ver/usar cada rol
 -- ============================================================================
 
+-- Nota: roles.id es INT (con signo); id_role debe ser INT igual o la FK falla
 CREATE TABLE IF NOT EXISTS role_menu_permissions (
-    id       INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    id_role  INT UNSIGNED NOT NULL,
-    menu_key VARCHAR(50)  NOT NULL,
-    active   BIT(1)       NOT NULL DEFAULT b'1',
+    id       INT NOT NULL AUTO_INCREMENT,
+    id_role  INT NOT NULL,
+    menu_key VARCHAR(50) NOT NULL,
+    active   BIT(1) NOT NULL DEFAULT b'1',
     PRIMARY KEY (id),
     CONSTRAINT uq_role_menu UNIQUE (id_role, menu_key),
     CONSTRAINT fk_rmp_role FOREIGN KEY (id_role) REFERENCES roles (id) ON DELETE CASCADE

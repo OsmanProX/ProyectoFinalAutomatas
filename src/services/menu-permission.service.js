@@ -37,6 +37,8 @@ class MenuPermissionService {
     }
 
     for (const item of MENU_ITEMS) {
+      // La opcion "roles" no se expone en el modal: solo ADMIN la ve, no se modifica aqui
+      if (item.key === 'roles') continue;
       const active = activeKeys.includes(item.key);
       await menuPermissionRepository.setPermission(Number(idRole), item.key, active);
     }

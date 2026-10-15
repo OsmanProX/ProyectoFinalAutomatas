@@ -53,7 +53,6 @@
                 <th><%= t.roles_col_name %></th>
                 <th><%= t.roles_col_description %></th>
                 <th><%= t.roles_col_state %></th>
-                <th><%= t.roles_col_actions %></th>
                 <th><%= t.roles_col_permissions %></th>
               </tr>
             </thead>
@@ -68,17 +67,6 @@
                     <span class="role-badge <%= r.active ? 'role-badge-active' : 'role-badge-inactive' %>">
                       <%= r.active ? t.roles_active : t.roles_inactive %>
                     </span>
-                  </td>
-                  <td>
-                    <% if (isAdminRole) { %>
-                      <span class="role-badge role-badge-protected"><%= t.roles_protected %></span>
-                    <% } else { %>
-                      <form method="POST" action="/roles/toggle/<%= r.id %>" style="display:inline">
-                        <button type="submit" class="btn btn-sm <%= r.active ? 'btn-danger' : 'btn-primary' %>">
-                          <%= r.active ? t.roles_deactivate : t.roles_activate %>
-                        </button>
-                      </form>
-                    <% } %>
                   </td>
                   <td>
                     <% if (isAdminRole) { %>
