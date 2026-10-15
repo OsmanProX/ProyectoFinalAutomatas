@@ -59,7 +59,7 @@ class UserRepository {
               r.name AS role_name
        FROM users u
        LEFT JOIN roles r ON r.id = u.id_Roles
-       ORDER BY u.full_name`
+       ORDER BY u.id`
     );
     return rows.map(row => ({
       id: row.id,
