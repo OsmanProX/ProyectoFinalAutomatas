@@ -9,6 +9,7 @@ const userRoutes = require('./routes/user.routes');
 const profileRoutes = require('./routes/profile.routes');
 const credentialRoutes = require('./routes/credential.routes');
 const passwordResetRoutes = require('./routes/password-reset.routes');
+const analysisRoutes = require('./routes/analysis.routes');
 const { authMiddleware } = require('./middlewares/auth.middleware');
 
 const app = express();
@@ -40,6 +41,7 @@ app.use((req, res, next) => {
 app.use('/', authRoutes);
 app.use('/users', authMiddleware, userRoutes);
 app.use('/perfil', authMiddleware, profileRoutes);
+app.use('/analyze', authMiddleware, analysisRoutes);
 app.use('/credencial', credentialRoutes);
 app.use('/recuperar', passwordResetRoutes);
 

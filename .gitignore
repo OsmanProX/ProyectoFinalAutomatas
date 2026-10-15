@@ -16,3 +16,6 @@ Thumbs.db
 # temp files
 *.tmp
 *.bak
+
+node_modules/
+.env
