@@ -35,4 +35,26 @@ function activeRoleMiddleware(req, res, next) {
   return next();
 }
 
-module.exports = { authMiddleware, adminOnly, activeRoleMiddleware };
+/**
+ * Bloquea el acceso a una seccion del menu si el rol del usuario
+ * no tiene ese menu activo en role_menu_permissions.
+ * Depende de res.locals.menuPermissions (lo refresca app.js en cada request).
+ */
+function menuPermissionMiddleware(menuKey) {
+  return (req, res, next) => {
+    if (!req.session || !req.session.user) {
+      return res.redirect('/login');
+    }
+    const perms = res.locals.menuPermissions;
+    // Si no hay permisos cargados, no se restringe (compatibilidad)
+    if (!perms || perms[menuKey] === undefined) {
+      return next();
+    }
+    if (perms[menuKey] === false) {
+      return res.redirect('/users/dashboard');
+    }
+    return next();
+  };
+}
+
+module.exports = { authMiddleware, adminOnly, activeRoleMiddleware, menuPermissionMiddleware };

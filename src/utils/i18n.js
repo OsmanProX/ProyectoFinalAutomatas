@@ -219,6 +219,7 @@ const translations = {
     nav_home: "Inicio",
     nav_language: "Idioma",
     nav_roles: "Roles y Permisos",
+    nav_analysis: "Análisis léxico",
     switch_lang: "English",
 
     // Roles y permisos
@@ -229,6 +230,7 @@ const translations = {
     roles_col_description: "Descripción",
     roles_col_state: "Estado",
     roles_col_actions: "Acciones",
+    roles_col_permissions: "Permisos",
     roles_active: "Activo",
     roles_inactive: "Inactivo",
     roles_activate: "Activar",
@@ -237,6 +239,15 @@ const translations = {
     roles_updated: "Estado del rol actualizado",
     roles_error_admin: "No se puede desactivar el rol ADMIN",
     roles_error_generic: "No se pudo actualizar el rol",
+    roles_button_permissions: "Permisos",
+    roles_permissions_saved: "Permisos del rol actualizados correctamente",
+    roles_error_modify_admin: "No se pueden modificar los permisos del rol ADMIN",
+    roles_modal_hint: "Marca las opciones del menú que este rol puede ver y usar",
+    roles_modal_cancel: "Cancelar",
+    roles_modal_save: "Guardar",
+    roles_modal_saving: "Guardando…",
+    roles_modal_saved: "Permisos guardados correctamente",
+    roles_modal_error: "No se pudieron guardar los permisos",
   },
   en: {
     // Login
@@ -458,6 +469,7 @@ const translations = {
     nav_home: "Home",
     nav_language: "Language",
     nav_roles: "Roles & Permissions",
+    nav_analysis: "Lexical Analysis",
     switch_lang: "Español",
 
     // Roles & permissions
@@ -468,6 +480,7 @@ const translations = {
     roles_col_description: "Description",
     roles_col_state: "Status",
     roles_col_actions: "Actions",
+    roles_col_permissions: "Permissions",
     roles_active: "Active",
     roles_inactive: "Inactive",
     roles_activate: "Activate",
@@ -476,6 +489,15 @@ const translations = {
     roles_updated: "Role status updated",
     roles_error_admin: "The ADMIN role cannot be deactivated",
     roles_error_generic: "Could not update the role",
+    roles_button_permissions: "Permissions",
+    roles_permissions_saved: "Role permissions updated successfully",
+    roles_error_modify_admin: "Cannot modify ADMIN role permissions",
+    roles_modal_hint: "Check the menu options this role can see and use",
+    roles_modal_cancel: "Cancel",
+    roles_modal_save: "Save",
+    roles_modal_saving: "Saving…",
+    roles_modal_saved: "Permissions saved successfully",
+    roles_modal_error: "Could not save permissions",
   }
 };
 

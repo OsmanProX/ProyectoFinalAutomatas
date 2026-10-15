@@ -16,6 +16,16 @@ const INACTIVE_STATE = 0;
 
 const INITIAL_USER_STATE = INACTIVE_STATE;
 
+const MENU_ITEMS = [
+  { key: 'inicio',   route: '/users/dashboard', icon: '&#127968;', labelKey: 'nav_home' },
+  { key: 'usuarios', route: '#',                icon: '&#128101;', labelKey: 'dashboard_users' },
+  { key: 'analisis', route: '/analyze',         icon: '&#128196;', labelKey: 'nav_analysis' },
+  { key: 'perfil',   route: '/perfil',          icon: '&#128100;', labelKey: 'nav_profile' },
+  { key: 'roles',    route: '/roles',           icon: '&#128272;', labelKey: 'nav_roles' }
+];
+
+const MENU_KEYS = MENU_ITEMS.map(item => item.key);
+
 module.exports = {
   ROLES,
   DEFAULT_ROLE,
@@ -25,5 +35,7 @@ module.exports = {
   DEFAULT_NOTIFICATION_METHOD,
   ACTIVE_STATE,
   INACTIVE_STATE,
-  INITIAL_USER_STATE
+  INITIAL_USER_STATE,
+  MENU_ITEMS,
+  MENU_KEYS
 };

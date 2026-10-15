@@ -12,7 +12,8 @@ const passwordResetRoutes = require('./routes/password-reset.routes');
 const analysisRoutes = require('./routes/analysis.routes');
 const roleRoutes = require('./routes/role.routes');
 const roleRepository = require('./repositories/role.repository');
-const { authMiddleware, activeRoleMiddleware } = require('./middlewares/auth.middleware');
+const menuPermissionRepository = require('./repositories/menu-permission.repository');
+const { authMiddleware, activeRoleMiddleware, menuPermissionMiddleware } = require('./middlewares/auth.middleware');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,10 +36,11 @@ app.use(session({
   cookie: { maxAge: 1000 * 60 * 60 * 2 }
 }));
 
-// Usuario en todas las vistas + estado ACTUAL del rol (si el admin lo desactiva,
-// el cambio se refleja sin necesidad de cerrar sesion)
+// Usuario en todas las vistas + estado ACTUAL del rol y permisos de menu
+// (si el admin los cambia, el cambio se refleja sin cerrar sesion)
 app.use(async (req, res, next) => {
   res.locals.user = req.session.user || null;
+  res.locals.menuPermissions = null;
   if (res.locals.user && res.locals.user.id_role) {
     try {
       const role = await roleRepository.findById(res.locals.user.id_role);
@@ -49,14 +51,19 @@ app.use(async (req, res, next) => {
     } catch (err) {
       // Si falla la consulta se conservan los valores de la sesion
     }
+    try {
+      res.locals.menuPermissions = await menuPermissionRepository.findByRole(res.locals.user.id_role);
+    } catch (err) {
+      // Si falla la consulta no se restringe el menu
+    }
   }
   next();
 });
 
 app.use('/', authRoutes);
 app.use('/users', authMiddleware, userRoutes);
-app.use('/perfil', authMiddleware, profileRoutes);
-app.use('/analyze', authMiddleware, activeRoleMiddleware, analysisRoutes);
+app.use('/perfil', authMiddleware, menuPermissionMiddleware('perfil'), profileRoutes);
+app.use('/analyze', authMiddleware, activeRoleMiddleware, menuPermissionMiddleware('analisis'), analysisRoutes);
 app.use('/roles', authMiddleware, roleRoutes);
 app.use('/credencial', credentialRoutes);
 app.use('/recuperar', passwordResetRoutes);
@@ -68,6 +75,36 @@ app.get('/', (req, res) => {
   res.redirect('/login');
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+// Migracion automatica: crea role_menu_permissions si no existe y puebla permisos por defecto
+async function migrateMenuPermissions() {
+  const pool = require('./config/db');
+  const { MENU_KEYS } = require('./config/constants');
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS role_menu_permissions (
+        id       INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        id_role  INT UNSIGNED NOT NULL,
+        menu_key VARCHAR(50)  NOT NULL,
+        active   BIT(1)       NOT NULL DEFAULT b'1',
+        PRIMARY KEY (id),
+        CONSTRAINT uq_role_menu UNIQUE (id_role, menu_key),
+        CONSTRAINT fk_rmp_role FOREIGN KEY (id_role) REFERENCES roles (id) ON DELETE CASCADE
+      )
+    `);
+    for (const key of MENU_KEYS) {
+      await pool.query(
+        "INSERT IGNORE INTO role_menu_permissions (id_role, menu_key, active) SELECT id, ?, b'1' FROM roles",
+        [key]
+      );
+    }
+    console.log('Migracion role_menu_permissions: tabla lista');
+  } catch (err) {
+    console.warn('No se pudo migrar role_menu_permissions:', err.message);
+  }
+}
+
+migrateMenuPermissions().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  });
 });

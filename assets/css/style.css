@@ -216,6 +216,18 @@ body {
   background: #d68910;
 }
 
+/* Boton contorno (acciones secundarias) */
+.btn-outline {
+  background: transparent;
+  color: #4361ee;
+  border: 1px solid #4361ee;
+}
+
+.btn-outline:hover {
+  background: #4361ee;
+  color: #fff;
+}
+
 /* Boton de reconocimiento facial */
 .btn-face {
   width: 100%;
@@ -700,6 +712,141 @@ body {
   background: #fff8e1;
   color: #8d6e00;
   border: 1px solid #f0dfa0;
+}
+
+/* ============================================
+   MODAL DE PERMISOS DE MENU
+   ============================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 17, 36, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal-box {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(15, 17, 36, 0.25);
+  width: 90%;
+  max-width: 460px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 22px;
+  border-bottom: 1px solid #eef0f7;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #2c3050;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 26px;
+  color: #6a7086;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+.modal-close:hover {
+  color: #b1303a;
+}
+
+.modal-body {
+  padding: 18px 22px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-hint {
+  font-size: 13px;
+  color: #6a7086;
+  margin-bottom: 14px;
+}
+
+.permission-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #eef0f7;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.permission-row:hover {
+  background: #fafbfe;
+  border-color: #d4d9ee;
+}
+
+.permission-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #4361ee;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.permission-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.permission-label {
+  font-size: 14px;
+  color: #2c3050;
+  font-weight: 500;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 22px;
+  border-top: 1px solid #eef0f7;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.modal-status {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.modal-status-info {
+  color: #14538a;
+}
+
+.modal-status-success {
+  color: #1f6f3c;
+}
+
+.modal-status-error {
+  color: #b1303a;
 }
 
 /* Seccion de foto en registro */
