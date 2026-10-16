@@ -12,6 +12,7 @@ class RegisterDTO {
     password,
     confirm_password,
     photo,
+    photo_modified,
     email,
     phone,
     birth_date,
@@ -22,6 +23,7 @@ class RegisterDTO {
     this.password = password || '';
     this.confirmPassword = confirm_password || '';
     this.photo = photo || null;
+    this.photoModified = photo_modified || null;
     this.email = normalizeEmail(email);
     this.phone = normalizePhone(phone);
     this.birthDate = birth_date || null;
@@ -49,6 +51,7 @@ class RegisterDTO {
       phone: this.phone,
       birthDate: this.birthDate,
       photo: this.photo,
+      photoModified: this.photoModified,
       notificationMethod: this.notificationMethod
     };
   }
