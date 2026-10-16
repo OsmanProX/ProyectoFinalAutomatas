@@ -1,0 +1,63 @@
+<%
+  var _t = (typeof t !== 'undefined' && t) ? t : {};
+  var _activePage = (typeof activePage !== 'undefined') ? activePage : '';
+  var _user = (typeof user !== 'undefined') ? user : null;
+  var _mp = (typeof menuPermissions !== 'undefined') ? menuPermissions : null;
+  var _isAdmin = _user && (_user.role || '').toString().toUpperCase() === 'ADMIN';
+
+  function _canShow(key) {
+    if (key === 'inicio') return true;      // Inicio siempre disponible, no es opcion de permisos
+    if (key === 'roles') return _isAdmin;
+    if (_mp && Object.prototype.hasOwnProperty.call(_mp, key)) {
+      return _mp[key] === true;
+    }
+    if (key === 'perfil') return true;
+    return _user && _user.role_active !== false;
+  }
+%>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <h2 class="sidebar-text">Mi App</h2>
+    <button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <% if (_canShow('inicio')) { %>
+    <a href="/users/dashboard" class="sidebar-nav-item <%= _activePage === 'inicio' ? 'active' : '' %>">
+      <span class="icon">&#127968;</span>
+      <span class="sidebar-text"><%= _t.nav_home || 'Inicio' %></span>
+    </a>
+    <% } %>
+    <% if (_canShow('usuarios')) { %>
+    <a href="/users" class="sidebar-nav-item <%= _activePage === 'usuarios' ? 'active' : '' %>">
+      <span class="icon">&#128101;</span>
+      <span class="sidebar-text"><%= _t.dashboard_users || 'Usuarios' %></span>
+    </a>
+    <% } %>
+    <% if (_canShow('analisis')) { %>
+    <a href="/analyze" class="sidebar-nav-item <%= _activePage === 'analisis' ? 'active' : '' %>">
+      <span class="icon">&#128196;</span>
+      <span class="sidebar-text"><%= _t.nav_analysis || 'Análisis léxico' %></span>
+    </a>
+    <% } %>
+    <% if (_canShow('perfil')) { %>
+    <a href="/perfil" class="sidebar-nav-item <%= _activePage === 'perfil' ? 'active' : '' %>">
+      <span class="icon">&#128100;</span>
+      <span class="sidebar-text"><%= _t.nav_profile || 'Mi perfil' %></span>
+    </a>
+    <% } %>
+    <% if (_canShow('roles')) { %>
+    <a href="/roles" class="sidebar-nav-item <%= _activePage === 'roles' ? 'active' : '' %>">
+      <span class="icon">&#128272;</span>
+      <span class="sidebar-text"><%= _t.nav_roles || 'Roles y Permisos' %></span>
+    </a>
+    <% } %>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="/logout" class="sidebar-nav-item">
+      <span class="icon">&#128682;</span>
+      <span class="sidebar-footer-text"><%= _t.dashboard_logout || 'Cerrar sesión' %></span>
+    </a>
+  </div>
+</aside>

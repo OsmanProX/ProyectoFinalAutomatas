@@ -10,38 +10,7 @@
 <body>
 
   <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <h2 class="sidebar-text">Mi App</h2>
-      <button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
-    </div>
-
-    <nav class="sidebar-nav">
-      <a href="#" class="sidebar-nav-item active">
-        <span class="icon">&#127968;</span>
-        <span class="sidebar-text"><%= t.nav_home %></span>
-      </a>
-      <a href="#" class="sidebar-nav-item">
-        <span class="icon">&#128101;</span>
-        <span class="sidebar-text"><%= t.dashboard_users %></span>
-      </a>
-      <a href="/analyze" class="sidebar-nav-item">
-        <span class="icon">&#128196;</span>
-        <span class="sidebar-text"><%= t.nav_analysis || 'Análisis léxico' %></span>
-      </a>
-      <a href="/perfil" class="sidebar-nav-item">
-        <span class="icon">&#128100;</span>
-        <span class="sidebar-text"><%= t.nav_profile %></span>
-      </a>
-    </nav>
-
-    <div class="sidebar-footer">
-      <a href="/logout" class="sidebar-nav-item">
-        <span class="icon">&#128682;</span>
-        <span class="sidebar-footer-text"><%= t.dashboard_logout %></span>
-      </a>
-    </div>
-  </aside>
+  <%- include('partials/sidebar', { activePage: 'inicio' }) %>
 
   <!-- CONTENIDO PRINCIPAL -->
   <div class="main-wrapper">
@@ -54,6 +23,13 @@
 
     <!-- CONTENIDO -->
     <div class="dashboard-content">
+
+      <% var _roleName = (user && user.role) ? String(user.role).toUpperCase() : ''; %>
+      <% if (_roleName === 'ADMIN' || _roleName === 'SUPERVISOR') { %>
+      <div class="dashboard-role">
+        <span class="role-badge role-badge-active"><%= user.role %></span>
+      </div>
+      <% } %>
 
       <div class="welcome-center">
         <h1><%= t.dashboard_welcome %>, <%= user.full_name %></h1>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= t.roles_title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/menu.css">
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <%- include('partials/sidebar', { activePage: 'roles' }) %>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="main-wrapper">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <%- include('partials/user-chip') %>
+      <a href="/lang/<%= lang === 'es' ? 'en' : 'es' %>" class="btn btn-sm"><%= t.switch_lang %></a>
+    </header>
+
+    <!-- CONTENIDO -->
+    <div class="dashboard-content">
+      <div class="roles-page">
+        <h1><%= t.roles_title %></h1>
+        <p class="roles-subtitle"><%= t.roles_subtitle %></p>
+
+        <% if (ok) { %>
+          <div class="alert alert-success"><%= t.roles_updated %></div>
+        <% } %>
+        <% if (saved) { %>
+          <div class="alert alert-success"><%= t.roles_permissions_saved %></div>
+        <% } %>
+        <% if (error) { %>
+          <div class="alert alert-error">
+            <% if (error === 'cannot_deactivate_admin') { %>
+              <%= t.roles_error_admin %>
+            <% } else if (error === 'cannot_modify_admin') { %>
+              <%= t.roles_error_modify_admin %>
+            <% } else { %>
+              <%= t.roles_error_generic %>
+            <% } %>
+          </div>
+        <% } %>
+
+        <div class="roles-card">
+          <table class="roles-table">
+            <thead>
+              <tr>
+                <th><%= t.roles_col_id %></th>
+                <th><%= t.roles_col_name %></th>
+                <th><%= t.roles_col_description %></th>
+                <th><%= t.roles_col_state %></th>
+                <th><%= t.roles_col_permissions %></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% roles.forEach(function(r) { %>
+                <% var isAdminRole = r.name.toUpperCase() === 'ADMIN'; %>
+                <tr>
+                  <td><%= r.id %></td>
+                  <td class="roles-name"><%= r.name %></td>
+                  <td><%= r.description || '' %></td>
+                  <td>
+                    <span class="role-badge <%= r.active ? 'role-badge-active' : 'role-badge-inactive' %>">
+                      <%= r.active ? t.roles_active : t.roles_inactive %>
+                    </span>
+                  </td>
+                  <td>
+                    <% if (isAdminRole) { %>
+                      <span class="role-badge role-badge-protected"><%= t.roles_protected %></span>
+                    <% } else { %>
+                      <button type="button"
+                              class="btn btn-sm btn-outline btn-permissions"
+                              data-role-id="<%= r.id %>"
+                              data-role-name="<%= r.name %>">
+                        <%= t.roles_button_permissions %>
+                      </button>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE PERMISOS -->
+  <div class="modal-overlay" id="permissionsModal" hidden>
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="permissionsModalTitle"></h2>
+        <button type="button" class="modal-close" id="permissionsModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-hint" id="permissionsModalHint"><%= t.roles_modal_hint %></p>
+        <div id="permissionsList"></div>
+      </div>
+      <div class="modal-footer">
+        <span class="modal-status" id="permissionsStatus"></span>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-sm btn-outline" id="permissionsCancel"><%= t.roles_modal_cancel %></button>
+          <button type="button" class="btn btn-sm btn-primary" id="permissionsSave"><%= t.roles_modal_save %></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script id="menu-items-data" type="application/json"><%- JSON.stringify(menuItems).replace(/</g, '\\u003c') %></script>
+  <script id="menu-permissions-data" type="application/json"><%- JSON.stringify(menuPermissions).replace(/</g, '\\u003c') %></script>
+  <script id="roles-i18n" type="application/json"><%- JSON.stringify({
+    menuLabels: {
+      inicio: t.nav_home,
+      usuarios: t.dashboard_users,
+      analisis: t.nav_analysis || 'Análisis léxico',
+      perfil: t.nav_profile,
+      roles: t.nav_roles
+    },
+    saving: t.roles_modal_saving,
+    saved: t.roles_modal_saved,
+    error: t.roles_modal_error
+  }).replace(/</g, '\\u003c') %></script>
+  <script src="/js/role-permissions.js"></script>
+  <script src="/js/menu.js"></script>
+</body>
+</html>
