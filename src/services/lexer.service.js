@@ -1,3 +1,5 @@
+// src/services/lexer.service.js
+
 // Listas de pronombres comunes según idioma
 const PRONOUNS = {
   es: ['yo', 'tú', 'tu', 'él', 'el', 'ella', 'nosotros', 'nosotras', 'vosotros', 'vosotras', 'ellos', 'ellas', 'usted', 'ustedes', 'me', 'te', 'se', 'nos', 'os', 'mi', 'mí'],
@@ -16,27 +18,24 @@ function analyzeText(text, lang = 'es') {
       mostRepeated: [],
       leastRepeated: [],
       pronouns: [],
-      properNouns: [],
-      wordsList: []
+      properNouns: []
     };
   }
 
-  // 1. Limpieza y tokenización (separación por palabras)
-  // Mantiene letras, números, acentos y espacios
+  // 1. Limpieza y tokenización
   const cleanText = text.replace(/[^\w\sáéíóúÁÉÍÓÚñÑ]/g, ' ');
   const words = cleanText.split(/\s+/).filter(w => w.length > 0);
 
   // a. Cantidad total de palabras
   const totalWords = words.length;
 
-  // 2. Conteo de frecuencia de cada palabra
+  // 2. Conteo de frecuencia
   const freqMap = {};
   words.forEach(word => {
     const wordLower = word.toLowerCase();
     freqMap[wordLower] = (freqMap[wordLower] || 0) + 1;
   });
 
-  // Ordenar palabras por frecuencia
   const sortedEntries = Object.entries(freqMap).sort((a, b) => b[1] - a[1]);
 
   // b. Palabras que más se repiten
@@ -51,23 +50,35 @@ function analyzeText(text, lang = 'es') {
     .filter(([_, count]) => count === minFreq)
     .map(([word, count]) => ({ word, count }));
 
-  // 3. Identificación de Pronombres y Nombres de Personas (Patrones)
+  // 3. Pronombres personales
   const langPronouns = PRONOUNS[lang] || PRONOUNS['es'];
   const pronounsFound = new Set();
-  const properNounsFound = new Set();
 
   words.forEach((word) => {
     const lowerWord = word.toLowerCase();
-
-    // d. Pronombres personales
     if (langPronouns.includes(lowerWord)) {
       pronounsFound.add(lowerWord);
     }
+  });
 
-    // e. Nombres propios / Personas (Inicia con Mayúscula)
-    if (/^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+$/.test(word)) {
-      properNounsFound.add(word);
-    }
+  // 4. Nombres Propios / Personas (Omitiendo la primera palabra de cada oración)
+  const properNounsFound = new Set();
+  const sentences = text.split(/[.!?]+/);
+
+  sentences.forEach(sentence => {
+    // Limpiamos la oración y la dividimos en palabras manteniendo sus mayúsculas
+    const sentenceWords = sentence
+      .replace(/[^\w\sáéíóúÁÉÍÓÚñÑ]/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .filter(w => w.length > 0);
+
+    // Evaluamos solo de la segunda palabra en adelante para ignorar el inicio de oración
+    sentenceWords.slice(1).forEach(word => {
+      if (/^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+$/.test(word)) {
+        properNounsFound.add(word);
+      }
+    });
   });
 
   return {
