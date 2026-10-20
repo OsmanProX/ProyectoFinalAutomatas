@@ -120,6 +120,10 @@
       <button type="button" class="btn-qr" id="btnQrLogin"><%= t.login_qr %></button>
 
       <div id="qrSection" class="qr-section" style="display:none">
+        <div class="qr-camera" id="qrCameraBox" hidden>
+          <label for="qrCamera"><%= t.login_qr_camera %></label>
+          <select id="qrCamera"></select>
+        </div>
         <div class="qr-viewer">
           <video id="qrVideo" autoplay muted playsinline></video>
           <span class="qr-frame"></span>
@@ -176,7 +180,8 @@
       notCredential: "<%= t.login_qr_not_credential %>",
       noCode: "<%= t.login_qr_no_code %>",
       invalid: "<%= t.login_qr_error_qr_invalid %>",
-      connectionError: "<%= t.face_connection_error %>"
+      connectionError: "<%= t.face_connection_error %>",
+      camera: "<%= t.login_qr_camera %>"
     };
   </script>
   <script src="/js/vendor/jsQR.js"></script>
