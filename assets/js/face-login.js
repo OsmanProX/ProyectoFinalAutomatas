@@ -20,6 +20,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const segmentedImg = document.getElementById('segmentedImg');
   const faceLoader = document.getElementById('faceLoader');
   const loaderText = document.getElementById('loaderText');
+  const cameraBox = document.getElementById('faceCameraBox');
+  const cameraSelect = document.getElementById('faceCamera');
+  // Misma cámara elegida que en el login con QR (se recuerda en este navegador)
+  const CLAVE_CAMARA = 'qrCameraId';
 
   let stream = null;
   let modalOpen = false;
@@ -31,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if (btnCapture) btnCapture.addEventListener('click', captureSnapshot);
   if (btnCloseCamera) btnCloseCamera.addEventListener('click', closeCamera);
   if (faceModalClose) faceModalClose.addEventListener('click', closeCamera);
+  if (cameraSelect) cameraSelect.addEventListener('change', cambiarCamara);
 
   if (faceModal) {
     faceModal.addEventListener('click', function (e) {
@@ -89,20 +94,73 @@ document.addEventListener('DOMContentLoaded', function () {
     openModal();
     hideAllPreviews();
     hideStatus();
-    if (captureLabel) captureLabel.textContent = i18n.face_capture;
+    if (captureLabel) captureLabel.textContent = i18n.capture;
 
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480, facingMode: 'user' }
-      });
+      stream = await pedirCamara(leerCamaraGuardada());
       video.srcObject = stream;
       await video.play();
+      await cargarCamaras();
       enableControls(false);
       showStatus('info', i18n.readyHint);
     } catch (err) {
       console.error('Error:', err);
       showStatus('error', i18n.cameraError);
       enableControls(false);
+    }
+  }
+
+  // ------------------------------------------------------------ selector de cámara
+  function leerCamaraGuardada() {
+    try { return localStorage.getItem(CLAVE_CAMARA); } catch (err) { return null; }
+  }
+
+  function guardarCamara(id) {
+    try { localStorage.setItem(CLAVE_CAMARA, id); } catch (err) { /* sin almacenamiento: no se recuerda */ }
+  }
+
+  /** Pide la cámara elegida; si ya no está conectada (p. ej. DroidCam apagado) usa la frontal */
+  async function pedirCamara(deviceId) {
+    const base = { width: 640, height: 480 };
+    if (deviceId) {
+      try {
+        return await navigator.mediaDevices.getUserMedia({ video: { ...base, deviceId: { exact: deviceId } } });
+      } catch (err) {
+        // se intenta con la cámara por defecto
+      }
+    }
+    return navigator.mediaDevices.getUserMedia({ video: { ...base, facingMode: 'user' } });
+  }
+
+  /** Llena la lista con las cámaras del equipo; solo se muestra si hay más de una */
+  async function cargarCamaras() {
+    if (!cameraSelect || !cameraBox || !navigator.mediaDevices.enumerateDevices) return;
+    const camaras = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'videoinput');
+    const pista = stream && stream.getVideoTracks()[0];
+    const actual = pista ? pista.getSettings().deviceId : '';
+    cameraSelect.textContent = '';
+    camaras.forEach((camara, indice) => {
+      const opcion = document.createElement('option');
+      opcion.value = camara.deviceId;
+      opcion.textContent = camara.label || `${i18n.camera || 'Cámara'} ${indice + 1}`;
+      if (camara.deviceId === actual) opcion.selected = true;
+      cameraSelect.appendChild(opcion);
+    });
+    cameraBox.hidden = camaras.length < 2;
+  }
+
+  async function cambiarCamara() {
+    const id = cameraSelect.value;
+    guardarCamara(id);
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    try {
+      stream = await pedirCamara(id);
+      video.srcObject = stream;
+      await video.play();
+      showStatus('info', i18n.readyHint);
+    } catch (err) {
+      console.error('Error:', err);
+      showStatus('error', i18n.cameraError);
     }
   }
 
@@ -131,9 +189,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (capturedPreview) capturedPreview.classList.remove('face-preview-hidden');
 
     if (btnVerify) btnVerify.disabled = false;
-    if (captureLabel) captureLabel.textContent = i18n.face_retake;
+    if (captureLabel) captureLabel.textContent = i18n.retake;
 
-    showStatus('info', i18n.face_ready_to_verify);
+    showStatus('info', i18n.readyToVerify);
   }
 
   async function verifyFace() {
@@ -143,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     if (!capturedImage) {
-      showStatus('error', i18n.face_no_capture);
+      showStatus('error', i18n.noCapture);
       return;
     }
     if (verifying) return;
@@ -155,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (segmentedPreview) segmentedPreview.classList.add('face-preview-hidden');
     if (faceLoader) {
       faceLoader.style.display = 'flex';
-      loaderText.textContent = i18n.face_segmenting;
+      loaderText.textContent = i18n.segmenting;
     }
     hideStatus();
 
@@ -192,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function () {
         enableControls(true);
         if (capturedPreview) capturedPreview.classList.remove('face-preview-hidden');
         if (btnVerify) btnVerify.disabled = true;
-        if (captureLabel) captureLabel.textContent = i18n.face_retake;
+        if (captureLabel) captureLabel.textContent = i18n.retake;
       }
     } catch (err) {
       console.error('Error:', err);
@@ -202,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function () {
       enableControls(true);
       if (capturedPreview) capturedPreview.classList.remove('face-preview-hidden');
       if (btnVerify) btnVerify.disabled = true;
-      if (captureLabel) captureLabel.textContent = i18n.face_retake;
+      if (captureLabel) captureLabel.textContent = i18n.retake;
     }
   }
 
@@ -248,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
     hideAllPreviews();
     hideStatus();
     capturedImage = null;
-    if (captureLabel) captureLabel.textContent = i18n.face_capture;
+    if (captureLabel) captureLabel.textContent = i18n.capture;
     if (btnVerify) btnVerify.disabled = true;
   }
 });

@@ -64,6 +64,11 @@
               <input type="text" id="faceNickname" class="face-nickname-input" placeholder="<%= t.face_nickname_placeholder %>" autocomplete="username">
             </div>
 
+            <div class="qr-camera" id="faceCameraBox" hidden>
+              <label for="faceCamera"><%= t.login_qr_camera %></label>
+              <select id="faceCamera"></select>
+            </div>
+
             <div class="face-stage">
               <div class="face-frame" id="liveFrame">
                 <video id="video" autoplay muted playsinline class="face-video"></video>
@@ -148,7 +153,7 @@
       promptNickname: "<%= t.face_prompt_nickname %>",
       loadingModels: "<%= t.face_loading_models %>",
       cameraError: "<%= t.face_camera_error %>",
-      readyHint: "<%= t.face_ready_hint %>",
+      readyHint: <%- JSON.stringify(t.face_ready_hint) %>,
       detecting: "<%= t.face_detecting %>",
       verifying: "<%= t.face_verifying %>",
       segmenting: "<%= t.face_segmenting %>",
@@ -164,8 +169,9 @@
       segmentationFailed: "<%= t.face_segmentation_failed %>",
       capture: "<%= t.face_capture %>",
       retake: "<%= t.face_retake %>",
-      readyToVerify: "<%= t.face_ready_to_verify %>",
-      noCapture: "<%= t.face_no_capture %>"
+      readyToVerify: <%- JSON.stringify(t.face_ready_to_verify) %>,
+      noCapture: "<%= t.face_no_capture %>",
+      camera: "<%= t.login_qr_camera %>"
     };
   </script>
   <script src="/js/face-login.js"></script>
