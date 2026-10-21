@@ -147,6 +147,9 @@ class AuthController {
           case 'validation_phone_invalid':
             errorMsg = t.validation_phone_invalid;
             break;
+          case 'validation_birth_date_invalid':
+            errorMsg = t.validation_birth_date_invalid;
+            break;
           case 'validation_photo_required':
             errorMsg = t.register_photo_required;
             break;

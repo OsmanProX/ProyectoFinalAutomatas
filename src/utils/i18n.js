@@ -35,7 +35,11 @@ const translations = {
     register_email: "Correo electrónico",
     register_email_hint: "Gmail: solo letras (a-z), números y puntos. Sin puntos seguidos, ni al inicio o final. Ejemplo: juan.perez@gmail.com",
     register_phone: "Teléfono",
-    register_phone_hint: "Solo números, con prefijo del país opcional. Ejemplo: +52 123 456 7890",
+    register_phone_hint: "Elige tu país y escribe tu número. Ejemplo: 5555 1234",
+    register_phone_country: "País del teléfono",
+    register_password_hint: "Ambas contraseñas deben coincidir",
+    register_password_match: "✓ Las contraseñas coinciden",
+    register_password_mismatch: "✗ Las contraseñas no coinciden",
     register_birth_date: "Fecha de nacimiento",
     register_photo: "Foto de perfil",
     register_take_photo: "Tomar foto",
@@ -103,6 +107,7 @@ const translations = {
     validation_email_required: "El correo electrónico es obligatorio",
     validation_email_invalid: "El correo electrónico no es válido",
     validation_phone_invalid: "El número de teléfono no es válido",
+    validation_birth_date_invalid: "Fecha de nacimiento no válida: el año debe tener 4 dígitos, desde 1900 y no puede ser una fecha futura",
     validation_server_error: "Error del servidor",
 
     // Dashboard
@@ -300,7 +305,11 @@ const translations = {
     register_email: "Email",
     register_email_hint: "Gmail: only letters (a-z), numbers and dots. No consecutive dots, none at the start or end. Example: juan.perez@gmail.com",
     register_phone: "Phone",
-    register_phone_hint: "Digits only, country prefix optional. Example: +52 123 456 7890",
+    register_phone_hint: "Choose your country and type your number. Example: 5555 1234",
+    register_phone_country: "Phone country",
+    register_password_hint: "Both passwords must match",
+    register_password_match: "✓ Passwords match",
+    register_password_mismatch: "✗ Passwords do not match",
     register_birth_date: "Birth date",
     register_photo: "Profile photo",
     register_take_photo: "Take photo",
@@ -368,6 +377,7 @@ const translations = {
     validation_email_required: "Email is required",
     validation_email_invalid: "The email address is not valid",
     validation_phone_invalid: "The phone number is not valid",
+    validation_birth_date_invalid: "Invalid birth date: the year must have 4 digits, from 1900 on, and it cannot be a future date",
     validation_server_error: "Server error",
 
     // Dashboard

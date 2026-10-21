@@ -104,6 +104,20 @@ class UserService {
     return { valid: true };
   }
 
+  /** Fecha opcional: formato AAAA-MM-DD, año de 4 dígitos, desde 1900 y no futura */
+  validateBirthDate(birthDate) {
+    if (!birthDate) return { valid: true };
+    const texto = String(birthDate);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(texto)) return { valid: false, error: 'validation_birth_date_invalid' };
+    const fecha = new Date(`${texto}T00:00:00Z`);
+    const hoy = new Date().toISOString().slice(0, 10);
+    if (Number.isNaN(fecha.getTime()) || fecha.toISOString().slice(0, 10) !== texto
+      || texto < '1900-01-01' || texto > hoy) {
+      return { valid: false, error: 'validation_birth_date_invalid' };
+    }
+    return { valid: true };
+  }
+
   validatePhone(phone) {
     if (!phone || phone.length === 0) {
       return { valid: true };
@@ -181,6 +195,11 @@ class UserService {
     const phoneValidation = this.validatePhone(registerDTO.phone);
     if (!phoneValidation.valid) {
       return { success: false, error: phoneValidation.error };
+    }
+
+    const birthDateValidation = this.validateBirthDate(registerDTO.birthDate);
+    if (!birthDateValidation.valid) {
+      return { success: false, error: birthDateValidation.error };
     }
 
     const notificationValidation = this.validateNotificationMethod(registerDTO.notificationMethod);

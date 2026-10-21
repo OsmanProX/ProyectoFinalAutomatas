@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
   <link rel="stylesheet" href="/css/photo-studio.css">
+  <link rel="stylesheet" href="/css/register-extras.css">
 </head>
 <body>
   <%
@@ -63,14 +64,25 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="phone"><%= t.register_phone %></label>
-            <input type="tel" id="phone" name="phone" value="<%= datos.phone || '' %>" inputmode="tel" maxlength="25"
-                   placeholder="+52 123 456 7890">
+            <label for="phoneLocal"><%= t.register_phone %></label>
+            <%# País (bandera + código) y número; se envía junto en el campo oculto "phone" %>
+            <div class="phone-field" id="phoneField">
+              <button type="button" class="phone-country" id="phoneCountryBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="<%= t.register_phone_country %>">
+                <img id="phoneFlag" src="https://flagcdn.com/w40/gt.png" alt="GT" width="24" height="18">
+                <span id="phoneDial">+502</span>
+                <span class="phone-caret">&#9662;</span>
+              </button>
+              <input type="tel" id="phoneLocal" inputmode="tel" maxlength="20" placeholder="5555 1234" autocomplete="tel-national">
+              <ul class="phone-list" id="phoneList" role="listbox" hidden></ul>
+            </div>
+            <input type="hidden" id="phone" name="phone" value="<%= datos.phone || '' %>">
             <small class="form-hint"><%= t.register_phone_hint %></small>
           </div>
           <div class="form-group">
             <label for="birth_date"><%= t.register_birth_date %></label>
-            <input type="date" id="birth_date" name="birth_date" value="<%= datos.birthDate || '' %>">
+            <input type="date" id="birth_date" name="birth_date" value="<%= datos.birthDate || '' %>"
+                   min="1900-01-01" max="<%= new Date().toISOString().slice(0, 10) %>">
+            <small class="form-hint birth-date-error" id="birthDateError" aria-live="polite" hidden><%= t.validation_birth_date_invalid %></small>
           </div>
         </div>
 
@@ -88,6 +100,10 @@
               <input type="password" id="confirm_password" name="confirm_password" required>
               <button type="button" class="btn-eye" id="toggleConfirmPassword">&#128065;</button>
             </div>
+            <small class="form-hint password-match" id="passwordMatch" aria-live="polite"
+                   data-hint="<%= t.register_password_hint %>"
+                   data-ok="<%= t.register_password_match %>"
+                   data-error="<%= t.register_password_mismatch %>"><%= t.register_password_hint %></small>
           </div>
         </div>
 
@@ -99,6 +115,10 @@
           </div>
 
           <div id="cameraSection" class="camera-section" style="display:none">
+            <div class="camera-picker" id="regCameraBox" hidden>
+              <label for="regCamera"><%= t.login_qr_camera %></label>
+              <select id="regCamera" data-label="<%= t.login_qr_camera %>"></select>
+            </div>
             <video id="regVideo" autoplay muted playsinline class="face-video"></video>
             <canvas id="regCanvas" class="face-canvas"></canvas>
             <div class="camera-controls">
@@ -158,6 +178,8 @@
   </script>
   <script id="studio-i18n" type="application/json"><%- JSON.stringify(textosEstudio).replace(/</g, '\\u003c') %></script>
   <script src="/js/photo-studio.js"></script>
+  <script src="/js/camera-picker.js"></script>
   <script src="/js/register-face.js"></script>
+  <script src="/js/register-extras.js"></script>
 </body>
 </html>
