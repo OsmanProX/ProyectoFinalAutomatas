@@ -6,6 +6,14 @@ const { getTranslation } = require('../utils/i18n');
 const { analyzeText } = require('../services/lexer.service');
 const { createAnalysisPDF } = require('../services/pdf.service');
 
+// Importamos el servicio de mensajería del proyecto para envíos por correo / SMS
+let messagingService = null;
+try {
+  messagingService = require('../services/messaging.service');
+} catch (e) {
+  console.log('messaging.service no encontrado o no configurado aún');
+}
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
@@ -59,19 +67,47 @@ router.post('/', (req, res) => {
   });
 });
 
-// POST /analyze/send-report -> Genera y descarga el reporte en formato PDF (Inciso f)
+// POST /analyze/send-report -> Genera el PDF, envía la notificación y permite su descarga (Inciso f)
 router.post('/send-report', async (req, res) => {
   try {
+    const channel = req.body.notifyChannel || 'email'; // 'email' o 'phone'
     const lastAnalysis = req.session ? req.session.lastAnalysis : null;
 
     if (!lastAnalysis) {
       return renderForm(req, res, 'No hay un análisis previo para generar el reporte PDF.');
     }
 
-    // Generar el buffer del archivo PDF
+    // 1. Generar el buffer del archivo PDF
     const pdfBuffer = await createAnalysisPDF(lastAnalysis);
 
-    // Configurar encabezados para forzar la descarga del PDF
+    // 2. Obtener la información del usuario logueado desde la sesión/request
+    const user = req.user || (req.session ? req.session.user : null);
+    const targetEmail = user?.email || req.session?.userEmail;
+    const targetPhone = user?.phone || req.session?.userPhone;
+
+    // 3. Intento de envío del reporte mediante messagingService
+    if (messagingService) {
+      try {
+        if (channel === 'email' && targetEmail) {
+          if (typeof messagingService.sendEmail === 'function') {
+            await messagingService.sendEmail({
+              to: targetEmail,
+              subject: 'Reporte de Análisis Léxico',
+              text: 'Adjunto encontrarás el reporte en formato PDF de tu análisis léxico.',
+              attachments: [{ filename: 'reporte_analisis_lexico.pdf', content: pdfBuffer }]
+            });
+          }
+        } else if (channel === 'phone' && targetPhone) {
+          if (typeof messagingService.sendSMS === 'function') {
+            await messagingService.sendSMS(targetPhone, 'Tu reporte de análisis léxico ha sido generado exitosamente.');
+          }
+        }
+      } catch (notifyErr) {
+        console.error('Aviso: No se pudo enviar la notificación por ' + channel, notifyErr);
+      }
+    }
+
+    // 4. Se entrega el PDF para descarga directa como respaldo
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="reporte_analisis_lexico.pdf"');
     return res.send(pdfBuffer);
