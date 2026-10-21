@@ -31,6 +31,9 @@
         <h1><%= T.analyze_title || 'Análisis léxico' %></h1>
         <p><%= T.analyze_help || 'Carga un archivo de texto (.txt), elige el idioma en que está escrito y presiona Procesar.' %></p>
 
+        <% if (typeof success !== 'undefined' && success) { %>
+          <div class="alert alert-success"><%= success %></div>
+        <% } %>
         <% if (typeof error !== 'undefined' && error) { %>
           <div class="alert alert-error"><%= error %></div>
         <% } %>
@@ -130,9 +133,13 @@
 
               <form action="/analyze/send-report" method="POST" style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
                 <div class="form-group" style="margin: 0;">
+                  <%# Solo se ofrecen los medios elegidos en el registro %>
+                  <% const metodo = (typeof user !== 'undefined' && user && user.notification_method) || 'correo_electronico'; %>
                   <select name="notifyChannel" required>
-                    <option value="email">Correo electrónico</option>
-                    <option value="phone">Teléfono / WhatsApp</option>
+                    <% if (metodo !== 'whatsapp') { %><option value="email">Correo electrónico</option><% } %>
+                    <% if (metodo !== 'correo_electronico') { %><option value="phone">Teléfono / WhatsApp</option><% } %>
+                    <% if (metodo === 'ambos') { %><option value="both">Correo y WhatsApp</option><% } %>
+                    <option value="download">Solo descargar</option>
                   </select>
                 </div>
                 <button type="submit" class="btn">Enviar Reporte PDF</button>

@@ -5,6 +5,9 @@ const { getTranslation } = require('../utils/i18n');
 // Importamos el analizador léxico y el generador de PDF que creaste
 const { analyzeText } = require('../services/lexer.service');
 const { createAnalysisPDF } = require('../services/pdf.service');
+// Envío del reporte por el medio de notificación del registro (correo / WhatsApp)
+const userRepository = require('../repositories/user.repository');
+const messagingService = require('../services/messaging.service');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -20,11 +23,19 @@ const upload = multer({
 const LANGS = ['es', 'en', 'ru', 'zh', 'ar'];
 
 // Renderiza el formulario con las traducciones y los resultados del análisis
-function renderForm(req, res, error = null, result = null) {
+function renderForm(req, res, error = null, result = null, success = null) {
   const lang = req.session ? (req.session.lang || 'es') : 'es';
   const t = getTranslation(lang);
-  res.render('analyze', { t, lang, error, result });
+  res.render('analyze', { t, lang, error, result, success });
 }
+
+// Canales permitidos según el método de notificación elegido en el registro
+const CANALES_POR_METODO = {
+  correo_electronico: ['email'],
+  whatsapp: ['phone'],
+  ambos: ['email', 'phone', 'both']
+};
+const METODO_POR_CANAL = { email: 'correo_electronico', phone: 'whatsapp', both: 'ambos' };
 
 // GET /analyze -> Muestra la vista principal
 router.get('/', (req, res) => {
@@ -70,6 +81,40 @@ router.post('/send-report', async (req, res) => {
 
     // Generar el buffer del archivo PDF
     const pdfBuffer = await createAnalysisPDF(lastAnalysis);
+
+    // Envío por correo y/o WhatsApp (según el medio elegido en el registro)
+    const canal = req.body ? req.body.notifyChannel : null;
+    if (canal && canal !== 'download') {
+      const user = req.session && req.session.user ? await userRepository.findById(req.session.user.id) : null;
+      if (!user) return renderForm(req, res, 'Tu sesión expiró. Inicia sesión de nuevo.');
+      const permitidos = CANALES_POR_METODO[user.notificationMethod] || ['email'];
+      if (!permitidos.includes(canal)) {
+        return renderForm(req, res, 'Ese medio no coincide con el que elegiste al registrarte.', lastAnalysis);
+      }
+
+      const archivo = 'reporte_analisis_lexico.pdf';
+      const resumen = `Total de palabras: ${lastAnalysis.totalWords}`;
+      const resultados = await messagingService.sendByPreference(METODO_POR_CANAL[canal], {
+        email: {
+          to: user.email,
+          subject: '📊 Tu reporte de análisis léxico',
+          html: `<p style="font-family:Arial,sans-serif">Hola, adjuntamos el reporte PDF de tu análisis léxico.<br>${resumen}</p>`,
+          attachments: [{ filename: archivo, content: pdfBuffer, contentType: 'application/pdf' }]
+        },
+        whatsapp: {
+          to: user.phone,
+          body: `📊 Hola, aquí está el reporte PDF de tu análisis léxico. ${resumen}`,
+          file: { content: pdfBuffer, filename: archivo, contentType: 'application/pdf' }
+        }
+      });
+
+      const enviados = resultados.filter((r) => r.ok).map((r) => (r.canal === 'whatsapp' ? 'WhatsApp' : 'correo'));
+      resultados.filter((r) => !r.ok).forEach((r) => console.warn(`Reporte no enviado por ${r.canal} (${r.error})`));
+      if (!enviados.length) {
+        return renderForm(req, res, 'No se pudo enviar el reporte. Intenta de nuevo o descárgalo.', lastAnalysis);
+      }
+      return renderForm(req, res, null, lastAnalysis, `Reporte enviado por ${enviados.join(' y ')}.`);
+    }
 
     // Configurar encabezados para forzar la descarga del PDF
     res.setHeader('Content-Type', 'application/pdf');
