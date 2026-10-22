@@ -1,0 +1,17 @@
+# No se copian a la imagen
+node_modules
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+.vscode
+.idea
+tests
+docs
+ejemplos
+sql
+*.log
+*.md
+Dockerfile
+docker-compose.yml
