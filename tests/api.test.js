@@ -26,6 +26,13 @@ mock.module(raiz('repositories/user.repository.js'), () => ({ findById: async (i
 mock.module(raiz('repositories/menu-permission.repository.js'), () => ({
   findByRole: async (idRole) => ({ analisis: idRole !== 2 })
 }));
+// La bitácora no escribe en la base de datos real durante las pruebas
+const bitacora = [];
+mock.module(raiz('repositories/login-audit.repository.js'), () => ({
+  insert: async (registro) => { bitacora.push(registro); },
+  find: async () => bitacora.slice().reverse(),
+  ensureTable: async () => {}
+}));
 
 const express = require('express');
 const apiRoutes = require('../src/routes/api.routes');
@@ -128,6 +135,16 @@ describe('API /api/analysis', () => {
     const otro = await (await login('sinpermiso', 'Secreta123')).json();
     const r = await pedir('/analysis', { method: 'POST', auth: otro.token, body: JSON.stringify({ language: 'es', text: 'hola' }) });
     expect(r.status).toBe(403);
+  });
+
+  test('la bitácora registra los logins de la API', async () => {
+    expect(bitacora.some((r) => r.method === 'api' && r.success && r.nickname === 'kevin')).toBe(true);
+    expect(bitacora.some((r) => r.method === 'api' && !r.success && r.detail === 'invalid_credentials')).toBe(true);
+    expect(bitacora.every((r) => !('password' in r))).toBe(true);
+  });
+
+  test('GET /audit/logins es solo para ADMIN', async () => {
+    expect((await pedir('/audit/logins', { auth: token })).status).toBe(403);
   });
 
   test('logout invalida el token', async () => {

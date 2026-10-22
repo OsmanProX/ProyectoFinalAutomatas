@@ -15,6 +15,7 @@ const roleRoutes = require('./routes/role.routes');
 const roleRepository = require('./repositories/role.repository');
 const menuPermissionRepository = require('./repositories/menu-permission.repository');
 const { authMiddleware, activeRoleMiddleware, menuPermissionMiddleware } = require('./middlewares/auth.middleware');
+const recaptchaService = require('./services/recaptcha.service');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -40,6 +41,12 @@ app.use(session({
   saveUninitialized: false,
   cookie: { maxAge: 1000 * 60 * 60 * 2 }
 }));
+
+// Clave pública del reCAPTCHA para las vistas de login y registro (null = desactivado)
+app.use((req, res, next) => {
+  res.locals.recaptchaSiteKey = recaptchaService.siteKey();
+  next();
+});
 
 // Usuario en todas las vistas + estado ACTUAL del rol y permisos de menu
 // (si el admin los cambia, el cambio se refleja sin cerrar sesion)

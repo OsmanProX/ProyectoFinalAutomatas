@@ -1,5 +1,6 @@
 const credentialService = require('../services/credential.service');
 const { getTranslation } = require('../utils/i18n');
+const loginAuditService = require('../services/login-audit.service');
 
 /** Código HTTP de cada error (los mensajes visibles salen de i18n, sin detalles internos) */
 const HTTP_POR_ERROR = { qr_invalid: 401, account_pending: 403, account_disabled: 403 };
@@ -16,6 +17,7 @@ class QrLoginController {
       const result = await credentialService.authenticateByQr(token);
 
       if (!result.success) {
+        loginAuditService.record(req, { method: 'qr', success: false, user: result.user, detail: result.error });
         return res.status(HTTP_POR_ERROR[result.error] || 401).json({
           success: false,
           error: result.error,
@@ -24,6 +26,7 @@ class QrLoginController {
       }
 
       req.session.user = result.user.toSession();
+      loginAuditService.record(req, { method: 'qr', success: true, user: result.user, detail: 'ok' });
       return res.json({ success: true, redirect: '/users/dashboard', nickname: result.user.nickname });
     } catch (err) {
       console.error('Error en login con QR:', err.message);

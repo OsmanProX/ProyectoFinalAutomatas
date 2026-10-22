@@ -4,6 +4,9 @@ const credentialService = require('../services/credential.service');
 const { getTranslation } = require('../utils/i18n');
 const { LoginDTO, RegisterDTO } = require('../dto');
 const { INACTIVE_STATE } = require('../config/constants');
+// reCAPTCHA en login/registro y bitácora de accesos (quién, cómo, cuándo, IP)
+const recaptchaService = require('../services/recaptcha.service');
+const loginAuditService = require('../services/login-audit.service');
 
 class AuthController {
   getLogin(req, res) {
@@ -21,7 +24,22 @@ class AuthController {
 
     try {
       const loginDTO = new LoginDTO(req.body);
+
+      // reCAPTCHA ("No soy un robot") antes de revisar la contraseña
+      const captchaOk = await recaptchaService.verify(req.body['g-recaptcha-response'], loginAuditService.clientIp(req));
+      if (!captchaOk) {
+        loginAuditService.record(req, { method: 'password', success: false, nickname: loginDTO.nickname, detail: 'recaptcha' });
+        return res.render('login', { t, lang, error: t.recaptcha_error, success: null });
+      }
+
       const result = await userService.authenticate(loginDTO);
+      loginAuditService.record(req, {
+        method: 'password',
+        success: result.success,
+        user: result.success ? result.user : null,
+        nickname: loginDTO.nickname,
+        detail: result.success ? 'ok' : result.error
+      });
 
       if (!result.success) {
         let errorMsg;
@@ -62,6 +80,17 @@ class AuthController {
 
     try {
       const registerDTO = new RegisterDTO(req.body);
+
+      // reCAPTCHA ("No soy un robot") antes de procesar la foto y guardar
+      const captchaOk = await recaptchaService.verify(req.body['g-recaptcha-response'], loginAuditService.clientIp(req));
+      if (!captchaOk) {
+        return res.render('register', {
+          t,
+          lang,
+          error: t.recaptcha_error,
+          values: registerDTO.toFormValues()
+        });
+      }
 
       if (!registerDTO.passwordsMatch()) {
         return res.render('register', {
@@ -190,6 +219,9 @@ class AuthController {
   }
 
   logout(req, res) {
+    if (req.session && req.session.user) {
+      loginAuditService.record(req, { method: 'logout', success: true, user: req.session.user, detail: 'logout' });
+    }
     req.session.destroy(() => {
       res.redirect('/login');
     });
@@ -203,15 +235,18 @@ class AuthController {
       const { nickname, image } = req.body;
 
       if (!nickname || !image) {
+        loginAuditService.record(req, { method: 'rostro', success: false, nickname, detail: 'missing_data' });
         return res.status(400).json({ success: false, error: 'missing_data' });
       }
 
       const user = await userService.findWithPhoto(nickname.trim().toLowerCase());
       if (!user) {
+        loginAuditService.record(req, { method: 'rostro', success: false, nickname, detail: 'user_not_found' });
         return res.status(401).json({ success: false, error: 'user_not_found' });
       }
 
       if (!user.isActive()) {
+        loginAuditService.record(req, { method: 'rostro', success: false, user, detail: user.state === INACTIVE_STATE ? 'account_pending' : 'account_disabled' });
         return res.status(401).json({
           success: false,
           error: user.state === INACTIVE_STATE ? 'account_pending' : 'account_disabled'
@@ -226,6 +261,7 @@ class AuthController {
 
       if (result.match) {
         req.session.user = user.toSession();
+        loginAuditService.record(req, { method: 'rostro', success: true, user, detail: 'ok' });
         return res.json({
           success: true,
           similarity: result.similarity,
@@ -250,6 +286,7 @@ class AuthController {
           errorCode = 'face_not_match';
       }
 
+      loginAuditService.record(req, { method: 'rostro', success: false, user, detail: errorCode });
       return res.status(401).json({
         success: false,
         error: errorCode,

@@ -52,6 +52,12 @@
       <span class="sidebar-text"><%= _t.nav_roles || 'Roles y Permisos' %></span>
     </a>
     <% } %>
+    <% if (_isAdmin) { %>
+    <a href="/users/bitacora" class="sidebar-nav-item <%= _activePage === 'bitacora' ? 'active' : '' %>">
+      <span class="icon">&#128203;</span>
+      <span class="sidebar-text"><%= _t.nav_audit || 'Bitácora de accesos' %></span>
+    </a>
+    <% } %>
   </nav>
 
   <div class="sidebar-footer">

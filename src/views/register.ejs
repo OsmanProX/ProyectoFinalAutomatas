@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
   <link rel="stylesheet" href="/css/photo-studio.css">
   <link rel="stylesheet" href="/css/register-extras.css">
+  <% if (typeof recaptchaSiteKey !== 'undefined' && recaptchaSiteKey) { %>
+    <script src="https://www.google.com/recaptcha/api.js?hl=<%= lang %>" async defer></script>
+  <% } %>
 </head>
 <body>
   <%
@@ -151,6 +154,13 @@
             <input type="file" id="fileInput" accept="image/*" style="display:none">
           </div>
         </div>
+
+        <%# reCAPTCHA v2: solo aparece si están las claves en .env %>
+        <% if (typeof recaptchaSiteKey !== 'undefined' && recaptchaSiteKey) { %>
+          <div class="form-group" style="display:flex;justify-content:center;overflow:hidden">
+            <div class="g-recaptcha" data-sitekey="<%= recaptchaSiteKey %>"></div>
+          </div>
+        <% } %>
 
         <button type="submit" class="btn btn-primary"><%= t.register_submit %></button>
       </form>

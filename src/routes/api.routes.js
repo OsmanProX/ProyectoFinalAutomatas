@@ -9,7 +9,9 @@ const { analyzeText, LANGUAGES, SUPPORTED_LANGUAGES } = require('../services/lex
 const { createAnalysisPDF } = require('../services/pdf.service');
 const { LoginDTO } = require('../dto');
 const { decodeTextFile, safeFileName, MAX_TEXT_BYTES } = require('../utils/text-file');
-const { jwtAuth, requireActiveRole, requireMenu } = require('../middlewares/jwt.middleware');
+const { jwtAuth, requireActiveRole, requireMenu, requireRole } = require('../middlewares/jwt.middleware');
+const loginAuditService = require('../services/login-audit.service');
+const loginAuditRepository = require('../repositories/login-audit.repository');
 
 /**
  * ============================================================================
@@ -80,6 +82,7 @@ router.post('/auth/login', async (req, res) => {
   const ip = req.ip;
   const espera = intentosBloqueados(ip);
   if (espera) {
+    loginAuditService.record(req, { method: 'api', success: false, nickname: req.body && req.body.nickname, detail: 'too_many_attempts' });
     res.set('Retry-After', String(espera));
     return error(res, 429, 'demasiados_intentos', `Demasiados intentos fallidos. Intenta de nuevo en ${Math.ceil(espera / 60)} minuto(s).`);
   }
@@ -92,6 +95,13 @@ router.post('/auth/login', async (req, res) => {
 
   try {
     const result = await userService.authenticate(new LoginDTO(body));
+    loginAuditService.record(req, {
+      method: 'api',
+      success: result.success,
+      user: result.success ? result.user : null,
+      nickname: body.nickname,
+      detail: result.success ? 'ok' : result.error
+    });
     if (!result.success) {
       if (result.error === 'credentials_required') return error(res, 400, 'credenciales_requeridas', 'Envía nickname y password.');
       if (result.error === 'account_pending') return error(res, 403, 'cuenta_pendiente', 'Tu cuenta aún no ha sido activada.');
@@ -139,6 +149,24 @@ router.get('/auth/me', jwtAuth, (req, res) => {
 router.post('/auth/logout', jwtAuth, (req, res) => {
   jwtService.revoke(req.tokenPayload);
   res.json({ success: true, message: 'Sesión cerrada: el token ya no es válido.' });
+});
+
+// Bitácora de accesos (solo ADMIN): GET /api/audit/logins?usuario=&metodo=&resultado=ok|fallido&limite=
+router.get('/audit/logins', jwtAuth, requireRole('ADMIN'), async (req, res) => {
+  try {
+    const q = req.query || {};
+    const texto = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+    const registros = await loginAuditRepository.find({
+      nickname: texto(q.usuario, 100) || undefined,
+      method: Object.prototype.hasOwnProperty.call(loginAuditService.METODOS, q.metodo) ? q.metodo : undefined,
+      success: ['ok', 'fallido'].includes(q.resultado) ? q.resultado === 'ok' : undefined,
+      limite: Number(q.limite) || 100
+    });
+    return res.json({ success: true, total: registros.length, registros });
+  } catch (err) {
+    console.error('Error en GET /api/audit/logins:', err.message);
+    return error(res, 500, 'error_servidor', 'No se pudo leer la bitácora.');
+  }
 });
 
 const accesoAnalisis = [jwtAuth, requireActiveRole, requireMenu('analisis')];

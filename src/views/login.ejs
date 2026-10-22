@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/qr-login.css">
   <link rel="stylesheet" href="/css/forgot-password.css">
+  <% if (typeof recaptchaSiteKey !== 'undefined' && recaptchaSiteKey) { %>
+    <script src="https://www.google.com/recaptcha/api.js?hl=<%= lang %>" async defer></script>
+  <% } %>
 </head>
 <body>
   <div class="lang-switcher">
@@ -36,6 +39,13 @@
           <input type="password" id="password" name="password" required>
         </div>
         <a href="/recuperar" class="forgot-link"><%= t.reset_forgot_link %></a>
+
+        <%# reCAPTCHA v2: solo aparece si están las claves en .env %>
+        <% if (typeof recaptchaSiteKey !== 'undefined' && recaptchaSiteKey) { %>
+          <div class="form-group" style="display:flex;justify-content:center;overflow:hidden">
+            <div class="g-recaptcha" data-sitekey="<%= recaptchaSiteKey %>"></div>
+          </div>
+        <% } %>
 
         <button type="submit" class="btn btn-primary"><%= t.login_submit %></button>
       </form>
