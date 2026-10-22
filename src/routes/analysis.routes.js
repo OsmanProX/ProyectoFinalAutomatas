@@ -131,6 +131,7 @@ router.post('/send-report', async (req, res) => {
         const MOTIVOS = {
           correo_no_configurado: 'el envío por correo no está configurado en el servidor',
           whatsapp_no_configurado: 'el envío por WhatsApp no está configurado en el servidor',
+          whatsapp_cuota: 'se alcanzó el límite mensual de mensajes de WhatsApp del plan gratis',
           telefono_invalido: 'el teléfono registrado no es válido',
           correo_destino_vacio: 'no hay un correo registrado'
         };

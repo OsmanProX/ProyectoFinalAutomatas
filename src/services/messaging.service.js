@@ -3,11 +3,14 @@ const nodemailer = require('nodemailer');
 /**
  * Envío de mensajes al usuario según su método de notificación:
  *   - Correo electrónico (SMTP con nodemailer)
- *   - WhatsApp: Green-API (preferido, permite adjuntar el PDF directamente)
- *               o Twilio (alternativa, necesita una URL pública para el archivo)
+ *   - WhatsApp: Wawp (preferido, plan gratis de 120 mensajes al mes),
+ *               Green-API (respaldo) o Twilio (necesita una URL pública para el archivo).
+ *               Se usa el primero que esté configurado en .env, en ese orden.
  *
  * Variables de entorno (.env), nunca en el código:
  *   Correo:    SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM
+ *   Wawp:      WAWP_INSTANCE_ID, WAWP_ACCESS_TOKEN (Dev Tools & API en app.wawp.net),
+ *              WAWP_API_URL (opcional, https://api.wawp.net por defecto)
  *   Green-API: GREEN_API_ID_INSTANCE, GREEN_API_TOKEN,
  *              GREEN_API_URL (apiUrl de la consola), GREEN_API_MEDIA_URL (mediaUrl de la consola)
  *   Twilio:    TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM,
@@ -25,6 +28,10 @@ class MessagingService {
     return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
   }
 
+  isWawpConfigured() {
+    return Boolean(process.env.WAWP_INSTANCE_ID && process.env.WAWP_ACCESS_TOKEN);
+  }
+
   isGreenApiConfigured() {
     return Boolean(process.env.GREEN_API_ID_INSTANCE && process.env.GREEN_API_TOKEN);
   }
@@ -35,7 +42,7 @@ class MessagingService {
   }
 
   isWhatsAppConfigured() {
-    return this.isGreenApiConfigured() || this.isTwilioConfigured();
+    return this.isWawpConfigured() || this.isGreenApiConfigured() || this.isTwilioConfigured();
   }
 
   getTransporter() {
@@ -68,7 +75,7 @@ class MessagingService {
    * @param {{ to: string, body: string,
    *           file?: { content: Buffer, filename: string, contentType?: string },
    *           mediaUrl?: string }} mensaje
-   *   file     -> se sube directo con Green-API (no necesita sitio público)
+   *   file     -> se envía directo con Wawp o Green-API (no necesita sitio público)
    *   mediaUrl -> enlace público que usa Twilio para descargar el archivo
    */
   async sendWhatsApp({ to, body, file, mediaUrl }) {
@@ -76,8 +83,52 @@ class MessagingService {
     const numero = this.normalizePhone(to);
     if (!numero) throw new Error('telefono_invalido');
 
+    if (this.isWawpConfigured()) return this.sendWawp(numero, body, file);
     if (this.isGreenApiConfigured()) return this.sendGreenApi(numero, body, file);
     return this.sendTwilio(numero, body, mediaUrl);
+  }
+
+  // ------------------------------------------------------------ Wawp
+  /**
+   * Wawp (https://api.wawp.net): instance_id y access_token van en la URL.
+   * Nunca se imprime la URL en consola para no exponer el token.
+   */
+  async wawpFetch(metodo, body) {
+    const base = (process.env.WAWP_API_URL || 'https://api.wawp.net').replace(/\/+$/, '');
+    const params = new URLSearchParams({
+      instance_id: process.env.WAWP_INSTANCE_ID,
+      access_token: process.env.WAWP_ACCESS_TOKEN
+    });
+    const respuesta = await fetch(`${base}/v2/send/${metodo}?${params}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(TIEMPO_MAXIMO_MS)
+    });
+    if (!respuesta.ok) {
+      console.error(`Wawp (${metodo}) respondió`, respuesta.status, (await respuesta.text()).slice(0, 200));
+      throw new Error([402, 429].includes(respuesta.status) ? 'whatsapp_cuota' : 'whatsapp_error_envio');
+    }
+    return respuesta.json().catch(() => ({}));
+  }
+
+  async sendWawp(numero, body, file) {
+    const chatId = `${numero.replace(/\D/g, '')}@c.us`;
+
+    // 1. Texto
+    if (body) await this.wawpFetch('text', { chatId, message: body });
+
+    // 2. PDF (credencial o reporte) en base64: no necesita que el sitio sea público
+    if (file && file.content) {
+      await this.wawpFetch('pdf', {
+        chatId,
+        file: {
+          data: Buffer.from(file.content).toString('base64'),
+          filename: file.filename || 'archivo.pdf',
+          mimetype: file.contentType || 'application/pdf'
+        }
+      });
+    }
   }
 
   // ------------------------------------------------------------ Green-API
@@ -91,7 +142,8 @@ class MessagingService {
     const respuesta = await fetch(url, { ...opciones, signal: AbortSignal.timeout(TIEMPO_MAXIMO_MS) });
     if (!respuesta.ok) {
       console.error(`Green-API (${metodo}) respondió`, respuesta.status, (await respuesta.text()).slice(0, 200));
-      throw new Error('whatsapp_error_envio');
+      // 466 = se acabó la cuota mensual del plan gratis
+      throw new Error(respuesta.status === 466 ? 'whatsapp_cuota' : 'whatsapp_error_envio');
     }
     return respuesta.json().catch(() => ({}));
   }
