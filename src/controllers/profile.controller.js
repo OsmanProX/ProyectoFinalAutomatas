@@ -55,7 +55,8 @@ class ProfileController {
     return this.enviarImagen(res, () => profileService.getOriginalPhoto(req.session.user.id), 'no-store');
   }
 
-  async enviarImagen(res, obtener, cache = 'private, max-age=300') {
+  // no-cache: el navegador siempre confirma con el servidor, así no muestra la foto de otro usuario
+  async enviarImagen(res, obtener, cache = 'private, no-cache') {
     try {
       const imagen = await obtener();
       if (!imagen) return res.status(404).end();

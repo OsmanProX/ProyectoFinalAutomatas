@@ -93,13 +93,32 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // Selector de cámara (misma elección que en el login con QR y con rostro)
+  const regCameraBox = document.getElementById('regCameraBox');
+  const regCameraSelect = document.getElementById('regCamera');
+  const picker = window.CameraPicker;
+  if (picker && regCameraSelect) {
+    regCameraSelect.addEventListener('change', async function () {
+      picker.guardar(regCameraSelect.value);
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      try {
+        stream = await picker.pedir(regCameraSelect.value);
+        regVideo.srcObject = stream;
+        regVideo.play();
+      } catch (err) {
+        showFormAlert(i18n.cameraError);
+      }
+    });
+  }
+
   async function openCamera() {
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480, facingMode: 'user' }
-      });
+      stream = picker
+        ? await picker.pedir(picker.guardada())
+        : await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
       regVideo.srcObject = stream;
       regVideo.play();
+      if (picker) await picker.llenar(regCameraSelect, regCameraBox, stream, regCameraSelect && regCameraSelect.dataset.label);
       cameraSection.style.display = 'block';
       photoPreview.style.display = 'none';
       cropperSection.style.display = 'none';

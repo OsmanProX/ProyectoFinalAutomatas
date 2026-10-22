@@ -61,13 +61,32 @@ document.addEventListener('DOMContentLoaded', function () {
   $('btnTakePhoto').addEventListener('click', async () => {
     estado(photoStatus, '');
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
+      const picker = window.CameraPicker;
+      stream = picker
+        ? await picker.pedir(picker.guardada())
+        : await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
       $('profileVideo').srcObject = stream;
       mostrarHerramienta('cameraBox');
+      if (picker) await picker.llenar($('profileCamera'), $('profileCameraBox'), stream, t.profile_camera);
     } catch (err) {
       estado(photoStatus, t.profile_camera_error, 'error');
     }
   });
+
+  // Cambiar de cámara (integrada, DroidCam, USB…); misma elección que en el login
+  if (window.CameraPicker && $('profileCamera')) {
+    $('profileCamera').addEventListener('change', async () => {
+      const picker = window.CameraPicker;
+      picker.guardar($('profileCamera').value);
+      if (stream) stream.getTracks().forEach((track) => track.stop());
+      try {
+        stream = await picker.pedir($('profileCamera').value);
+        $('profileVideo').srcObject = stream;
+      } catch (err) {
+        estado(photoStatus, t.profile_camera_error, 'error');
+      }
+    });
+  }
 
   $('btnCapture').addEventListener('click', () => {
     const video = $('profileVideo');

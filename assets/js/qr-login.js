@@ -6,6 +6,8 @@
  * 2. Cuando encuentra un QR de credencial (texto "LFA1.<id>.<secreto>") lo envía
  *    a POST /login/qr, donde el servidor lo valida contra el secreto cifrado.
  * 3. También permite subir una imagen/captura del QR (si no hay cámara).
+ * 4. Si hay varias cámaras (integrada, DroidCam, USB…) se elige en una lista;
+ *    la elección se recuerda en este navegador.
  * Muestra el tiempo total del login (requisito: menos de 15 segundos).
  * ============================================================================
  */
@@ -20,9 +22,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const btnCancel = document.getElementById('btnQrCancel');
   const btnUpload = document.getElementById('btnQrUpload');
   const fileInput = document.getElementById('qrFileInput');
+  const cameraBox = document.getElementById('qrCameraBox');
+  const cameraSelect = document.getElementById('qrCamera');
   if (!btnQr || !section || typeof window.jsQR !== 'function') return;
 
   const PREFIJO = 'LFA1.';
+  const CLAVE_CAMARA = 'qrCameraId';
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
@@ -36,10 +41,61 @@ document.addEventListener('DOMContentLoaded', function () {
   btnCancel.addEventListener('click', cerrar);
   btnUpload.addEventListener('click', () => fileInput.click());
   fileInput.addEventListener('change', leerImagen);
+  if (cameraSelect) cameraSelect.addEventListener('change', cambiarCamara);
 
   function mostrarEstado(texto, tipo) {
     status.textContent = texto;
     status.className = `face-status face-${tipo}`;
+  }
+
+  // ------------------------------------------------------------ cámara elegida (localStorage puede no estar disponible)
+  function leerCamaraGuardada() {
+    try { return localStorage.getItem(CLAVE_CAMARA); } catch (err) { return null; }
+  }
+
+  function guardarCamara(id) {
+    try { localStorage.setItem(CLAVE_CAMARA, id); } catch (err) { /* sin almacenamiento: no se recuerda */ }
+  }
+
+  /** Pide la cámara indicada; si no se indica (o ya no existe) usa la trasera/por defecto */
+  async function pedirCamara(deviceId) {
+    const base = { width: { ideal: 1280 }, height: { ideal: 720 } };
+    if (deviceId) {
+      try {
+        return await navigator.mediaDevices.getUserMedia({ video: { ...base, deviceId: { exact: deviceId } } });
+      } catch (err) {
+        // La cámara guardada se desconectó (p. ej. DroidCam apagado): se usa la de por defecto
+      }
+    }
+    return navigator.mediaDevices.getUserMedia({ video: { ...base, facingMode: { ideal: 'environment' } } });
+  }
+
+  /** Llena la lista con las cámaras del equipo (los nombres solo se ven después de dar permiso) */
+  async function cargarCamaras() {
+    if (!cameraSelect || !cameraBox || !navigator.mediaDevices.enumerateDevices) return;
+    const dispositivos = await navigator.mediaDevices.enumerateDevices();
+    const camaras = dispositivos.filter((d) => d.kind === 'videoinput');
+    const actual = stream && stream.getVideoTracks()[0] ? stream.getVideoTracks()[0].getSettings().deviceId : '';
+
+    cameraSelect.textContent = '';
+    camaras.forEach((camara, indice) => {
+      const opcion = document.createElement('option');
+      opcion.value = camara.deviceId;
+      opcion.textContent = camara.label || `${i18n.camera || 'Cámara'} ${indice + 1}`;
+      if (camara.deviceId === actual) opcion.selected = true;
+      cameraSelect.appendChild(opcion);
+    });
+    // Solo se muestra la lista si hay más de una cámara
+    cameraBox.hidden = camaras.length < 2;
+  }
+
+  async function iniciarVideo(deviceId) {
+    detenerCamara();
+    stream = await pedirCamara(deviceId);
+    video.srcObject = stream;
+    await video.play();
+    escaneando = true;
+    requestAnimationFrame(analizarCuadro);
   }
 
   async function abrir() {
@@ -48,14 +104,21 @@ document.addEventListener('DOMContentLoaded', function () {
     btnQr.style.display = 'none';
     mostrarEstado(i18n.hint, 'loading');
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
-      });
-      video.srcObject = stream;
-      await video.play();
-      escaneando = true;
+      await iniciarVideo(leerCamaraGuardada());
+      await cargarCamaras();
       mostrarEstado(i18n.scanning, 'loading');
-      requestAnimationFrame(analizarCuadro);
+    } catch (err) {
+      mostrarEstado(i18n.cameraError, 'error');
+    }
+  }
+
+  async function cambiarCamara() {
+    const id = cameraSelect.value;
+    guardarCamara(id);
+    mostrarEstado(i18n.hint, 'loading');
+    try {
+      await iniciarVideo(id);
+      mostrarEstado(i18n.scanning, 'loading');
     } catch (err) {
       mostrarEstado(i18n.cameraError, 'error');
     }

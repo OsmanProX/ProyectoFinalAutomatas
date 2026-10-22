@@ -64,6 +64,11 @@
               <input type="text" id="faceNickname" class="face-nickname-input" placeholder="<%= t.face_nickname_placeholder %>" autocomplete="username">
             </div>
 
+            <div class="qr-camera" id="faceCameraBox" hidden>
+              <label for="faceCamera"><%= t.login_qr_camera %></label>
+              <select id="faceCamera"></select>
+            </div>
+
             <div class="face-stage">
               <div class="face-frame" id="liveFrame">
                 <video id="video" autoplay muted playsinline class="face-video"></video>
@@ -120,6 +125,10 @@
       <button type="button" class="btn-qr" id="btnQrLogin"><%= t.login_qr %></button>
 
       <div id="qrSection" class="qr-section" style="display:none">
+        <div class="qr-camera" id="qrCameraBox" hidden>
+          <label for="qrCamera"><%= t.login_qr_camera %></label>
+          <select id="qrCamera"></select>
+        </div>
         <div class="qr-viewer">
           <video id="qrVideo" autoplay muted playsinline></video>
           <span class="qr-frame"></span>
@@ -144,7 +153,7 @@
       promptNickname: "<%= t.face_prompt_nickname %>",
       loadingModels: "<%= t.face_loading_models %>",
       cameraError: "<%= t.face_camera_error %>",
-      readyHint: "<%= t.face_ready_hint %>",
+      readyHint: <%- JSON.stringify(t.face_ready_hint) %>,
       detecting: "<%= t.face_detecting %>",
       verifying: "<%= t.face_verifying %>",
       segmenting: "<%= t.face_segmenting %>",
@@ -160,8 +169,9 @@
       segmentationFailed: "<%= t.face_segmentation_failed %>",
       capture: "<%= t.face_capture %>",
       retake: "<%= t.face_retake %>",
-      readyToVerify: "<%= t.face_ready_to_verify %>",
-      noCapture: "<%= t.face_no_capture %>"
+      readyToVerify: <%- JSON.stringify(t.face_ready_to_verify) %>,
+      noCapture: "<%= t.face_no_capture %>",
+      camera: "<%= t.login_qr_camera %>"
     };
   </script>
   <script src="/js/face-login.js"></script>
@@ -176,7 +186,8 @@
       notCredential: "<%= t.login_qr_not_credential %>",
       noCode: "<%= t.login_qr_no_code %>",
       invalid: "<%= t.login_qr_error_qr_invalid %>",
-      connectionError: "<%= t.face_connection_error %>"
+      connectionError: "<%= t.face_connection_error %>",
+      camera: "<%= t.login_qr_camera %>"
     };
   </script>
   <script src="/js/vendor/jsQR.js"></script>

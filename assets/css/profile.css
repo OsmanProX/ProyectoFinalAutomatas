@@ -250,3 +250,39 @@
     padding: 12px 14px;
   }
 }
+
+/* Selector de cámara (solo aparece si hay más de una) */
+.camera-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 360px;
+  margin: 0 auto 10px;
+  font-size: 13px;
+  color: #1a1a2e;
+}
+
+.camera-picker[hidden] {
+  display: none;
+}
+
+.camera-picker label {
+  font-weight: 600;
+  margin: 0;
+}
+
+.camera-picker select {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid #ccd0e0;
+  border-radius: 8px;
+  background: #fff;
+  color: #1a1a2e;
+  font-size: 13px;
+}
+
+.camera-picker select:focus {
+  outline: none;
+  border-color: #4361ee;
+}

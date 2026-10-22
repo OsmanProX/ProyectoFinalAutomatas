@@ -40,6 +40,10 @@
           </div>
 
           <div id="cameraBox" class="profile-tool" hidden>
+            <div class="camera-picker" id="profileCameraBox" hidden>
+              <label for="profileCamera"><%= t.login_qr_camera %></label>
+              <select id="profileCamera"></select>
+            </div>
             <video id="profileVideo" autoplay muted playsinline></video>
             <div class="profile-actions">
               <button type="button" class="btn btn-sm btn-accent" id="btnCapture"><%= t.profile_capture %></button>
@@ -130,6 +134,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
   <script src="/js/menu.js"></script>
   <script src="/js/photo-studio.js"></script>
+  <script src="/js/camera-picker.js"></script>
   <script src="/js/profile.js"></script>
 </body>
 </html>

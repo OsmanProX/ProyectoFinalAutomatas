@@ -1,10 +1,76 @@
 // src/services/lexer.service.js
 
-// Listas de pronombres comunes según idioma
-const PRONOUNS = {
-  es: ['yo', 'tú', 'tu', 'él', 'el', 'ella', 'nosotros', 'nosotras', 'vosotros', 'vosotras', 'ellos', 'ellas', 'usted', 'ustedes', 'me', 'te', 'se', 'nos', 'os', 'mi', 'mí'],
-  en: ['i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'their']
-};
+/**
+ * ============================================================================
+ * SERVICIO DE ANÁLISIS LÉXICO (fachada que usan la vista, el PDF y la API)
+ * ============================================================================
+ * - Español, inglés y ruso -> analizador completo (src/lexer/analizador.js):
+ *   autómata (AFD) + patrones (regex) + reglas del idioma + raíces Snowball.
+ * - Chino y árabe -> analizador básico (src/lexer/basico.js): mismo AFD,
+ *   segmentación de palabras (Intl.Segmenter) + listas + raíz Snowball árabe.
+ *
+ * Conserva los campos que ya usaban la vista y el PDF (totalWords, mostRepeated,
+ * leastRepeated, pronouns, properNouns) y agrega lo que pide el enunciado:
+ * nombres de personas, sustantivos y verbos (forma raíz) y otros patrones.
+ *
+ * Corrige además el error anterior: la limpieza con /[^\w\s...]/ solo conocía
+ * letras latinas, así que un texto en ruso, chino o árabe quedaba vacío.
+ * ============================================================================
+ */
+const { analizarTexto } = require('../lexer/analizador');
+const { analizarTextoBasico } = require('../lexer/basico');
+
+/** Idiomas del enunciado; "completo" = reglas propias, "basico" = análisis aproximado */
+const LANGUAGES = Object.freeze({
+  es: { name: 'Español', mode: 'completo' },
+  en: { name: 'Inglés', mode: 'completo' },
+  ru: { name: 'Ruso', mode: 'completo' },
+  zh: { name: 'Chino', mode: 'basico' },
+  ar: { name: 'Árabe', mode: 'basico' }
+});
+const SUPPORTED_LANGUAGES = Object.freeze(Object.keys(LANGUAGES));
+
+/** Nombre en español de cada patrón reconocido (para la vista, el PDF y la API) */
+const PATTERN_LABELS = Object.freeze({
+  CORREO: 'Correos electrónicos',
+  URL: 'Direcciones web (URL)',
+  FECHA: 'Fechas',
+  HORA: 'Horas',
+  TELEFONO: 'Teléfonos',
+  MONEDA: 'Montos de dinero',
+  PORCENTAJE: 'Porcentajes',
+  NUMERO: 'Números',
+  HASHTAG: 'Hashtags',
+  MENCION: 'Menciones (@usuario)',
+  SIGLA: 'Siglas y acrónimos',
+  CODIGO: 'Códigos alfanuméricos'
+});
+
+function isSupportedLanguage(lang) {
+  return Object.prototype.hasOwnProperty.call(LANGUAGES, lang);
+}
+
+function emptyResult(code) {
+  return {
+    language: { code, name: LANGUAGES[code].name, mode: LANGUAGES[code].mode },
+    totalWords: 0,
+    summary: { uniqueWords: 0, sentences: 0, characters: 0, avgWordLength: 0, timeMs: 0 },
+    mostRepeated: [],
+    leastRepeated: [],
+    leastRepeatedTotal: 0,
+    pronouns: [],
+    persons: [],
+    properNouns: [],
+    nouns: [],
+    verbs: [],
+    adverbs: [],
+    patterns: [],
+    automaton: { states: [], transitions: 0, tokensByCategory: {} }
+  };
+}
+
+const conteo = (clave) => (item) => ({ [clave]: item.palabra || item.nombre, count: item.frecuencia });
+const raices = (grupo) => ({ root: grupo.raiz, forms: grupo.formas, count: grupo.frecuencia });
 
 /**
  * Función principal para analizar el texto cargado (.txt)
@@ -12,84 +78,59 @@ const PRONOUNS = {
  * @param {string} lang - Idioma seleccionado (es, en, ru, zh, ar)
  */
 function analyzeText(text, lang = 'es') {
-  if (!text || text.trim().length === 0) {
-    return {
-      totalWords: 0,
-      mostRepeated: [],
-      leastRepeated: [],
-      pronouns: [],
-      properNouns: []
-    };
-  }
+  const code = isSupportedLanguage(lang) ? lang : 'es';
+  if (typeof text !== 'string' || text.trim().length === 0) return emptyResult(code);
 
-  // 1. Limpieza y tokenización
-  const cleanText = text.replace(/[^\w\sáéíóúÁÉÍÓÚñÑ]/g, ' ');
-  const words = cleanText.split(/\s+/).filter(w => w.length > 0);
-
-  // a. Cantidad total de palabras
-  const totalWords = words.length;
-
-  // 2. Conteo de frecuencia
-  const freqMap = {};
-  words.forEach(word => {
-    const wordLower = word.toLowerCase();
-    freqMap[wordLower] = (freqMap[wordLower] || 0) + 1;
-  });
-
-  const sortedEntries = Object.entries(freqMap).sort((a, b) => b[1] - a[1]);
-
-  // b. Palabras que más se repiten
-  const maxFreq = sortedEntries.length > 0 ? sortedEntries[0][1] : 0;
-  const mostRepeated = sortedEntries
-    .filter(([_, count]) => count === maxFreq)
-    .map(([word, count]) => ({ word, count }));
-
-  // c. Palabras que menos se repiten
-  const minFreq = sortedEntries.length > 0 ? sortedEntries[sortedEntries.length - 1][1] : 0;
-  const leastRepeated = sortedEntries
-    .filter(([_, count]) => count === minFreq)
-    .map(([word, count]) => ({ word, count }));
-
-  // 3. Pronombres personales
-  const langPronouns = PRONOUNS[lang] || PRONOUNS['es'];
-  const pronounsFound = new Set();
-
-  words.forEach((word) => {
-    const lowerWord = word.toLowerCase();
-    if (langPronouns.includes(lowerWord)) {
-      pronounsFound.add(lowerWord);
-    }
-  });
-
-  // 4. Nombres Propios / Personas (Omitiendo la primera palabra de cada oración)
-  const properNounsFound = new Set();
-  const sentences = text.split(/[.!?]+/);
-
-  sentences.forEach(sentence => {
-    // Limpiamos la oración y la dividimos en palabras manteniendo sus mayúsculas
-    const sentenceWords = sentence
-      .replace(/[^\w\sáéíóúÁÉÍÓÚñÑ]/g, ' ')
-      .trim()
-      .split(/\s+/)
-      .filter(w => w.length > 0);
-
-    // Evaluamos solo de la segunda palabra en adelante para ignorar el inicio de oración
-    sentenceWords.slice(1).forEach(word => {
-      if (/^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+$/.test(word)) {
-        properNounsFound.add(word);
-      }
-    });
-  });
+  const r = LANGUAGES[code].mode === 'completo'
+    ? analizarTexto(text, code)
+    : analizarTextoBasico(text, code);
 
   return {
-    totalWords,
-    mostRepeated,
-    leastRepeated,
-    pronouns: Array.from(pronounsFound),
-    properNouns: Array.from(properNounsFound)
+    language: { code, name: LANGUAGES[code].name, mode: LANGUAGES[code].mode },
+    // a. Cantidad total de palabras
+    totalWords: r.resumen.totalPalabras,
+    summary: {
+      uniqueWords: r.resumen.palabrasUnicas,
+      sentences: r.resumen.totalOraciones,
+      characters: r.resumen.totalCaracteres,
+      avgWordLength: r.resumen.promedioLetrasPorPalabra,
+      timeMs: r.resumen.tiempoMs
+    },
+    // b. Palabras que más se repiten (sin artículos, preposiciones ni pronombres);
+    //    si ninguna se repite, la lista queda vacía
+    mostRepeated: r.masRepetidas.filter((i) => i.frecuencia > 1).map(conteo('word')),
+    // c. Palabras que menos se repiten (las de frecuencia mínima)
+    leastRepeated: r.menosRepetidas.palabras.map((word) => ({ word, count: r.menosRepetidas.frecuencia })),
+    leastRepeatedTotal: r.menosRepetidas.total,
+    // d. Pronombres personales
+    pronouns: r.pronombresPersonales.map(conteo('word')),
+    // e. Nombres de personas y otros nombres propios (lugares, instituciones)
+    persons: r.nombresPersonas.map(conteo('name')),
+    properNouns: r.otrosNombresPropios.map(conteo('name')),
+    // f. y g. Sustantivos y verbos en forma raíz (con las formas encontradas)
+    nouns: r.sustantivos.map(raices),
+    verbs: r.verbos.map(raices),
+    // h. Otras clasificaciones reconocibles mediante un patrón
+    adverbs: r.adverbios.map(conteo('word')),
+    patterns: Object.entries(r.otrosPatrones)
+      .filter(([, items]) => items.length > 0)
+      .map(([category, items]) => ({
+        category,
+        label: PATTERN_LABELS[category] || category,
+        items: items.map((i) => ({ value: i.valor, count: i.frecuencia }))
+      })),
+    automaton: {
+      states: r.automata.estados,
+      transitions: r.automata.transiciones,
+      tokensByCategory: r.automata.tokensPorCategoria
+    }
   };
 }
 
 module.exports = {
-  analyzeText
+  analyzeText,
+  isSupportedLanguage,
+  LANGUAGES,
+  SUPPORTED_LANGUAGES,
+  PATTERN_LABELS
 };

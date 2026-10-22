@@ -72,3 +72,39 @@
 .btn-qr-upload:hover {
   background: #3a56d4;
 }
+
+/* Selector de cámara (solo aparece si hay más de una) */
+.qr-camera {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 320px;
+  margin: 0 auto 10px;
+  font-size: 13px;
+  color: #1a1a2e;
+}
+
+.qr-camera[hidden] {
+  display: none;
+}
+
+.qr-camera label {
+  font-weight: 600;
+  margin: 0;
+}
+
+.qr-camera select {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid #ccd0e0;
+  border-radius: 8px;
+  background: #fff;
+  color: #1a1a2e;
+  font-size: 13px;
+}
+
+.qr-camera select:focus {
+  outline: none;
+  border-color: #4361ee;
+}

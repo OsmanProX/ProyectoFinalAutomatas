@@ -123,6 +123,8 @@ class CredentialService {
           body: nueva
             ? `Hola ${user.fullName}, generaste una credencial nueva (${code}). El QR anterior ya no funciona.`
             : `¡Hola ${user.fullName}! 🎉 Tu registro quedó listo. Te enviamos tu credencial ${code}. Guárdala: con su código QR podrás iniciar sesión.`,
+          // Green-API sube el PDF directamente; Twilio lo descarga desde el enlace público firmado
+          file: { content: pdf, filename: archivo, contentType: 'application/pdf' },
           mediaUrl: `${process.env.PUBLIC_BASE_URL}/credencial/publica/${createSignedToken(userId, 120)}`
         }
       });

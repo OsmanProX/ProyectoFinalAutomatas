@@ -1,0 +1,209 @@
+/* ============================================
+   ANÁLISIS LÉXICO: resultados
+   60% fondo claro/blanco · 30% azul marino · 10% acento azul
+   ============================================ */
+.lex-divider {
+  margin: 20px 0;
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+.lex-meta {
+  margin: 4px 0 14px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.lex-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef0f7;
+  color: #1a1a2e;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Tarjetas de resumen */
+.lex-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.lex-stat {
+  padding: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f5f6fa;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.lex-stat span {
+  display: block;
+  color: #1a1a2e;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.lex-stat-main {
+  background: #1a1a2e;
+  border-color: #1a1a2e;
+  color: #c7cbe0;
+}
+
+.lex-stat-main span {
+  color: #fff;
+}
+
+/* Secciones */
+.lex-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.lex-box {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.lex-box-wide {
+  grid-column: 1 / -1;
+}
+
+.lex-box h3 {
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #4361ee;
+  color: #1a1a2e;
+  font-size: 16px;
+}
+
+.lex-box h4 {
+  margin: 14px 0 8px;
+  color: #1a1a2e;
+  font-size: 14px;
+}
+
+.lex-empty,
+.lex-note {
+  margin: 0 0 8px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.lex-empty {
+  font-style: italic;
+}
+
+/* Palabras como "chips" */
+.lex-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lex-chips li {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eef0f7;
+  color: #1a1a2e;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.lex-chips li b {
+  margin-left: 4px;
+  color: #4361ee;
+}
+
+.lex-chips-light li {
+  background: #f5f6fa;
+}
+
+/* Tablas de raíces */
+.lex-table-wrap {
+  max-height: 320px;
+  overflow: auto;
+}
+
+.lex-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.lex-table th,
+.lex-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #eef0f7;
+  text-align: start;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.lex-table th {
+  position: sticky;
+  top: 0;
+  background: #f5f6fa;
+  color: #1a1a2e;
+}
+
+.lex-table td:last-child,
+.lex-table th:last-child {
+  width: 56px;
+  text-align: center;
+}
+
+/* Patrones */
+.lex-patterns {
+  display: grid;
+  grid-template-columns: minmax(150px, max-content) 1fr;
+  gap: 6px 14px;
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.lex-patterns dt {
+  color: #1a1a2e;
+  font-weight: 600;
+}
+
+.lex-patterns dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Formulario del reporte */
+.lex-report-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+  .lex-patterns {
+    grid-template-columns: 1fr;
+  }
+
+  .lex-patterns dd {
+    margin-bottom: 6px;
+  }
+
+  .lex-stat span {
+    font-size: 22px;
+  }
+}

@@ -1,0 +1,223 @@
+{
+  "info": {
+    "name": "Proyecto Autómatas - API JWT",
+    "description": "API REST del proyecto final de Lenguajes Formales y Autómatas. Ejecute primero 'Login': guarda el token en {{token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      }
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nickname\": \"tu_nickname\",\n  \"password\": \"tu_password\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login correcto', () => pm.response.to.have.status(200));",
+              "const datos = pm.response.json();",
+              "if (datos.token) pm.collectionVariables.set('token', datos.token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mi usuario",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/auth/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Idiomas",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/analysis/languages",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "analysis",
+            "languages"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Analizar texto (JSON)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/analysis",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "analysis"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"language\": \"es\",\n  \"text\": \"El ingeniero Juan Pérez llegó a la Universidad Mariano Gálvez el 15/03/2026. Él dijo que la educación es importante.\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Analizar archivo .txt",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/analysis",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "analysis"
+          ]
+        },
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "language",
+              "value": "es",
+              "type": "text"
+            },
+            {
+              "key": "file",
+              "type": "file",
+              "src": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Reporte PDF",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/analysis/report",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "analysis",
+            "report"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"language\": \"en\",\n  \"text\": \"John Smith wrote the report. She studies automata.\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Logout",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/auth/logout",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "logout"
+          ]
+        }
+      }
+    }
+  ]
+}

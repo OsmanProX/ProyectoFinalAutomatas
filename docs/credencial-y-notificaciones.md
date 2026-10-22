@@ -27,7 +27,14 @@ SMTP_USER=correo.del.proyecto@gmail.com
 SMTP_PASS=contraseña_de_aplicacion_de_16_letras
 MAIL_FROM="Proyecto Autómatas <correo.del.proyecto@gmail.com>"
 
-# WhatsApp con Twilio (requiere el sitio publicado con https)
+# WhatsApp con Green-API (recomendado: envía el PDF directo, no necesita sitio público)
+# Datos de la consola de green-api.com (instancia autorizada con el QR de WhatsApp)
+GREEN_API_ID_INSTANCE=
+GREEN_API_TOKEN=
+GREEN_API_URL=https://XXXX.api.greenapi.com
+GREEN_API_MEDIA_URL=https://XXXX.media.greenapi.com
+
+# Alternativa: WhatsApp con Twilio (requiere el sitio publicado con https)
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_WHATSAPP_FROM=+14155238886
@@ -46,7 +53,7 @@ aparece: `Credencial LFA-...: no se envió por correo_electronico (correo_no_con
 | Archivo | Responsabilidad |
 |---|---|
 | `src/services/credential.service.js` | Genera el token QR, diseña el PDF y lo envía |
-| `src/services/messaging.service.js` | Envío por correo (nodemailer) y WhatsApp (Twilio) |
+| `src/services/messaging.service.js` | Envío por correo (nodemailer) y WhatsApp (Green-API o Twilio) |
 | `src/repositories/credential.repository.js` | Tabla `user_credentials` |
 | `src/utils/crypto.js` | Cifrado AES-256-GCM y enlaces firmados (HMAC) |
 | `src/routes/credential.routes.js` | `GET /credencial/publica/:token` (enlace temporal para WhatsApp) |
