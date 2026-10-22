@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "bun run --watch src/app.js",
     "start": "bun run src/app.js",
-    "encrypt": "bun run src/scripts/encrypt.js"
+    "encrypt": "bun run src/scripts/encrypt.js",
+    "test": "bun test"
   },
   "dependencies": {
     "@vladmandic/face-api": "^1.7.15",

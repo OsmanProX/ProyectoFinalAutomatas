@@ -1,0 +1,5 @@
+El ingeniero Juan Pérez llegó a la Universidad Mariano Gálvez el 15/03/2026 a las 08:30. Él dijo que la educación es la base del desarrollo. María López y Carlos estudian juntos todos los días; ellos quieren aprender más sobre autómatas y lenguajes formales.
+
+Nosotros trabajamos en un proyecto de análisis léxico. La profesora nos explicó que un autómata finito reconoce lenguajes regulares. Yo pienso que la teoría de la computación es fascinante, aunque a veces resulta difícil. Gabriel García Márquez escribió novelas maravillosas, y su obra todavía inspira a muchos estudiantes.
+
+Para más información, escriba a soporte@miumg.edu.gt o visite https://www.umg.edu.gt. También puede llamar al 2411-1800. El costo del curso es Q1500.00 y el 95% de los alumnos aprobó. La UMG y la USAC organizaron un congreso con el Sr. Rodríguez. ¡Qué gran oportunidad! Rápidamente se llenaron los cupos. #Autómatas2026 @kevin_dev

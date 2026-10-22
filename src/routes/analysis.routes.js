@@ -3,15 +3,16 @@ const multer = require('multer');
 const { getTranslation } = require('../utils/i18n');
 
 // Importamos el analizador léxico y el generador de PDF que creaste
-const { analyzeText } = require('../services/lexer.service');
+const { analyzeText, SUPPORTED_LANGUAGES } = require('../services/lexer.service');
 const { createAnalysisPDF } = require('../services/pdf.service');
+const { decodeTextFile, safeFileName, MAX_TEXT_BYTES } = require('../utils/text-file');
 // Envío del reporte por el medio de notificación del registro (correo / WhatsApp)
 const userRepository = require('../repositories/user.repository');
 const messagingService = require('../services/messaging.service');
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  limits: { fileSize: MAX_TEXT_BYTES }, // 5 MB
   fileFilter: (req, file, cb) => {
     const okExt = file.originalname.toLowerCase().endsWith('.txt');
     const okMime = file.mimetype === 'text/plain';
@@ -20,7 +21,7 @@ const upload = multer({
   }
 });
 
-const LANGS = ['es', 'en', 'ru', 'zh', 'ar'];
+const LANGS = SUPPORTED_LANGUAGES; // es, en, ru, zh, ar
 
 // Renderiza el formulario con las traducciones y los resultados del análisis
 function renderForm(req, res, error = null, result = null, success = null) {
@@ -47,22 +48,34 @@ router.post('/', (req, res) => {
   upload.single('file')(req, res, (err) => {
 
     if (err || !req.file) {
-      return renderForm(req, res, err ? err.message : 'Selecciona un archivo .txt');
+      const mensaje = err && err.code === 'LIMIT_FILE_SIZE' ? 'El archivo supera el límite de 5 MB' : (err ? err.message : 'Selecciona un archivo .txt');
+      return renderForm(req, res, mensaje);
     }
 
-    const language = LANGS.includes(req.body.language) ? req.body.language : 'es';
-    const text = req.file.buffer.toString('utf8');
+    if (!LANGS.includes(req.body.language)) {
+      return renderForm(req, res, 'Selecciona un idioma válido');
+    }
+    const language = req.body.language;
+    // UTF-8 o "ANSI" (Windows-1252), sin perder tildes ni ñ
+    const text = decodeTextFile(req.file.buffer);
 
     if (!text.trim()) {
       return renderForm(req, res, 'El archivo está vacío');
     }
 
     // Ejecutar el Análisis Léxico
-    const result = analyzeText(text, language);
+    let result;
+    try {
+      result = analyzeText(text, language);
+    } catch (analysisError) {
+      console.error('Error en el análisis léxico:', analysisError);
+      return renderForm(req, res, 'No se pudo analizar el archivo. Verifica que sea un texto válido.');
+    }
 
     // Guardar el resultado en la sesión para generar el PDF posteriormente
     if (req.session) {
       req.session.lastAnalysis = result;
+      req.session.lastAnalysisFile = safeFileName(req.file.originalname);
     }
 
     // Renderizar la vista pasando los resultados
@@ -80,7 +93,10 @@ router.post('/send-report', async (req, res) => {
     }
 
     // Generar el buffer del archivo PDF
-    const pdfBuffer = await createAnalysisPDF(lastAnalysis);
+    const pdfBuffer = await createAnalysisPDF(lastAnalysis, {
+      user: req.session.user ? req.session.user.nickname : undefined,
+      fileName: req.session.lastAnalysisFile
+    });
 
     // Envío por correo y/o WhatsApp (según el medio elegido en el registro)
     const canal = req.body ? req.body.notifyChannel : null;
@@ -111,7 +127,15 @@ router.post('/send-report', async (req, res) => {
       const enviados = resultados.filter((r) => r.ok).map((r) => (r.canal === 'whatsapp' ? 'WhatsApp' : 'correo'));
       resultados.filter((r) => !r.ok).forEach((r) => console.warn(`Reporte no enviado por ${r.canal} (${r.error})`));
       if (!enviados.length) {
-        return renderForm(req, res, 'No se pudo enviar el reporte. Intenta de nuevo o descárgalo.', lastAnalysis);
+        // Motivo claro para el usuario (sin datos sensibles); el detalle queda en la consola del servidor
+        const MOTIVOS = {
+          correo_no_configurado: 'el envío por correo no está configurado en el servidor',
+          whatsapp_no_configurado: 'el envío por WhatsApp no está configurado en el servidor',
+          telefono_invalido: 'el teléfono registrado no es válido',
+          correo_destino_vacio: 'no hay un correo registrado'
+        };
+        const motivos = [...new Set(resultados.map((r) => MOTIVOS[r.error] || 'el servicio de envío no respondió'))];
+        return renderForm(req, res, `No se pudo enviar el reporte: ${motivos.join(' y ')}. Puedes elegir "Solo descargar".`, lastAnalysis);
       }
       return renderForm(req, res, null, lastAnalysis, `Reporte enviado por ${enviados.join(' y ')}.`);
     }
@@ -127,4 +151,4 @@ router.post('/send-report', async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = router;
