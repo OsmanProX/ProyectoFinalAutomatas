@@ -11,7 +11,7 @@ const nodemailer = require('nodemailer');
  *   Correo:    SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM
  *   Wawp:      WAWP_INSTANCE_ID, WAWP_ACCESS_TOKEN (Dev Tools & API en app.wawp.net),
  *              WAWP_API_URL (opcional, https://api.wawp.net por defecto)
- *              WHATSAPP_TEXTO_APARTE (opcional): true = texto y PDF en 2 mensajes;
+ *   Wawp y Green-API: WHATSAPP_TEXTO_APARTE (opcional): true = texto y PDF en 2 mensajes;
  *              vacío o false = PDF con el texto como descripción (1 mensaje)
  *   Green-API: GREEN_API_ID_INSTANCE, GREEN_API_TOKEN,
  *              GREEN_API_URL (apiUrl de la consola), GREEN_API_MEDIA_URL (mediaUrl de la consola)
@@ -162,8 +162,13 @@ class MessagingService {
     const apiUrl = process.env.GREEN_API_URL || 'https://api.green-api.com';
     const mediaUrl = process.env.GREEN_API_MEDIA_URL || 'https://media.green-api.com';
 
-    // 1. Texto (en un PDF el "caption" no se muestra, por eso va como mensaje aparte)
-    if (body) {
+    const conArchivo = Boolean(file && file.content);
+    // Igual que con Wawp: por defecto el texto va como descripción del PDF (1 mensaje);
+    // con WHATSAPP_TEXTO_APARTE=true, o si no hay archivo, el texto va en su propio mensaje
+    const textoAparte = !conArchivo || process.env.WHATSAPP_TEXTO_APARTE === 'true';
+
+    // 1. Texto
+    if (body && textoAparte) {
       await this.greenFetch(this.greenUrl(apiUrl, 'sendMessage'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -172,10 +177,11 @@ class MessagingService {
     }
 
     // 2. Archivo (credencial o reporte en PDF), subido directamente
-    if (file && file.content) {
+    if (conArchivo) {
       const form = new FormData();
       form.append('chatId', chatId);
       form.append('fileName', file.filename || 'archivo.pdf');
+      if (body && !textoAparte) form.append('caption', body);
       form.append('file', new Blob([file.content], { type: file.contentType || 'application/pdf' }), file.filename || 'archivo.pdf');
       await this.greenFetch(this.greenUrl(mediaUrl, 'sendFileByUpload'), { method: 'POST', body: form }, 'sendFileByUpload');
     }
