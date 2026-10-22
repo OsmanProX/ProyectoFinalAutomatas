@@ -11,6 +11,8 @@ const nodemailer = require('nodemailer');
  *   Correo:    SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM
  *   Wawp:      WAWP_INSTANCE_ID, WAWP_ACCESS_TOKEN (Dev Tools & API en app.wawp.net),
  *              WAWP_API_URL (opcional, https://api.wawp.net por defecto)
+ *              WHATSAPP_TEXTO_APARTE (opcional): true = texto y PDF en 2 mensajes;
+ *              vacío o false = PDF con el texto como descripción (1 mensaje)
  *   Green-API: GREEN_API_ID_INSTANCE, GREEN_API_TOKEN,
  *              GREEN_API_URL (apiUrl de la consola), GREEN_API_MEDIA_URL (mediaUrl de la consola)
  *   Twilio:    TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM,
@@ -115,13 +117,16 @@ class MessagingService {
   async sendWawp(numero, body, file) {
     const chatId = `${numero.replace(/\D/g, '')}@c.us`;
 
-    // 1. Texto
-    if (body) await this.wawpFetch('text', { chatId, message: body });
-
-    // 2. PDF (credencial o reporte) en base64: no necesita que el sitio sea público
+    // Por defecto: un solo mensaje (el PDF con el texto como descripción) para
+    // gastar 1 mensaje del plan en vez de 2. Con WHATSAPP_TEXTO_APARTE=true el
+    // texto va primero en su propio mensaje. El PDF va en base64: no necesita
+    // que el sitio sea público.
     if (file && file.content) {
-      await this.wawpFetch('pdf', {
+      const textoAparte = process.env.WHATSAPP_TEXTO_APARTE === 'true';
+      if (textoAparte && body) await this.wawpFetch('text', { chatId, message: body });
+      return this.wawpFetch('pdf', {
         chatId,
+        caption: textoAparte ? undefined : (body || undefined),
         file: {
           data: Buffer.from(file.content).toString('base64'),
           filename: file.filename || 'archivo.pdf',
@@ -129,6 +134,10 @@ class MessagingService {
         }
       });
     }
+
+    // Sin archivo: solo texto
+    if (body) return this.wawpFetch('text', { chatId, message: body });
+    return null;
   }
 
   // ------------------------------------------------------------ Green-API
