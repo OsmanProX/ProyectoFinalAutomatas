@@ -101,7 +101,11 @@ class AuthController {
         });
       }
 
-      if (registerDTO.photo) {
+      // Primero se validan los campos: si algo está mal (p. ej. contraseña de 4
+      // caracteres) se muestra ese error y no se llama a la API de rostro
+      let result = userService.validateFields(registerDTO);
+
+      if (result.success && registerDTO.photo) {
         try {
           const segmented = await faceService.segment(registerDTO.photo);
           registerDTO.photo = segmented && !segmented.startsWith('data:')
@@ -118,7 +122,7 @@ class AuthController {
         }
       }
 
-      const result = await userService.register(registerDTO);
+      if (result.success) result = await userService.register(registerDTO);
       if (!result.success) {
         let errorMsg;
         switch (result.error) {
