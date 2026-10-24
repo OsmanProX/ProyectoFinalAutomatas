@@ -31,12 +31,12 @@
       <form action="/login" method="POST">
         <div class="form-group">
           <label for="nickname"><%= t.login_nickname %></label>
-          <input type="text" id="nickname" name="nickname" required>
+          <input type="text" id="nickname" name="nickname" required maxlength="100" autocomplete="username">
         </div>
 
         <div class="form-group">
           <label for="password"><%= t.login_password %></label>
-          <input type="password" id="password" name="password" required>
+          <input type="password" id="password" name="password" required maxlength="100" autocomplete="current-password">
         </div>
         <a href="/recuperar" class="forgot-link"><%= t.reset_forgot_link %></a>
 
@@ -71,7 +71,7 @@
           <div id="faceSection" class="face-section">
             <div class="face-nickname-group">
               <label for="faceNickname" class="face-nickname-label"><%= t.login_nickname %></label>
-              <input type="text" id="faceNickname" class="face-nickname-input" placeholder="<%= t.face_nickname_placeholder %>" autocomplete="username">
+              <input type="text" id="faceNickname" class="face-nickname-input" placeholder="<%= t.face_nickname_placeholder %>" autocomplete="username" maxlength="100">
             </div>
 
             <div class="qr-camera" id="faceCameraBox" hidden>
