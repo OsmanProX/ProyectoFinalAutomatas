@@ -1,4 +1,6 @@
 const nodemailer = require('nodemailer');
+// Registro de cada WhatsApp enviado; su estado lo actualiza el webhook de Wawp (sin polling)
+const whatsappLogRepository = require('../repositories/whatsapp-log.repository');
 
 /**
  * Envío de mensajes al usuario según su método de notificación:
@@ -76,18 +78,40 @@ class MessagingService {
    * WhatsApp con texto y, opcionalmente, un archivo.
    * @param {{ to: string, body: string,
    *           file?: { content: Buffer, filename: string, contentType?: string },
-   *           mediaUrl?: string }} mensaje
+   *           mediaUrl?: string, tipo?: string, userId?: number }} mensaje
    *   file     -> se envía directo con Wawp o Green-API (no necesita sitio público)
    *   mediaUrl -> enlace público que usa Twilio para descargar el archivo
+   *   tipo     -> para el registro: credencial, reporte, codigo_recuperacion...
    */
-  async sendWhatsApp({ to, body, file, mediaUrl }) {
+  async sendWhatsApp({ to, body, file, mediaUrl, tipo, userId }) {
     if (!this.isWhatsAppConfigured()) throw new Error('whatsapp_no_configurado');
     const numero = this.normalizePhone(to);
     if (!numero) throw new Error('telefono_invalido');
 
-    if (this.isWawpConfigured()) return this.sendWawp(numero, body, file);
-    if (this.isGreenApiConfigured()) return this.sendGreenApi(numero, body, file);
-    return this.sendTwilio(numero, body, mediaUrl);
+    let proveedor = 'twilio';
+    if (this.isWawpConfigured()) proveedor = 'wawp';
+    else if (this.isGreenApiConfigured()) proveedor = 'green-api';
+    const registro = { userId: userId || null, tipo: tipo || (file ? 'archivo' : 'texto'), proveedor, destino: enmascararTelefono(numero) };
+
+    try {
+      let respuesta;
+      if (proveedor === 'wawp') respuesta = await this.sendWawp(numero, body, file);
+      else if (proveedor === 'green-api') respuesta = await this.sendGreenApi(numero, body, file);
+      else respuesta = await this.sendTwilio(numero, body, mediaUrl);
+      // "aceptado" = el proveedor lo recibió; el webhook lo pasa a enviado / entregado / leído
+      this.registrarEnvio({ ...registro, messageId: idDelMensaje(respuesta), estado: 'aceptado', error: null });
+      return respuesta;
+    } catch (err) {
+      this.registrarEnvio({ ...registro, messageId: null, estado: 'fallido', error: err.message });
+      throw err;
+    }
+  }
+
+  /** Se guarda en segundo plano: si la base de datos falla, el envío no se afecta */
+  registrarEnvio(registro) {
+    whatsappLogRepository.insert(registro).catch((err) => {
+      console.warn('No se pudo guardar el registro del WhatsApp:', err.message);
+    });
   }
 
   // ------------------------------------------------------------ Wawp
@@ -167,9 +191,11 @@ class MessagingService {
     // con WHATSAPP_TEXTO_APARTE=true, o si no hay archivo, el texto va en su propio mensaje
     const textoAparte = !conArchivo || process.env.WHATSAPP_TEXTO_APARTE === 'true';
 
+    let ultimo = null;
+
     // 1. Texto
     if (body && textoAparte) {
-      await this.greenFetch(this.greenUrl(apiUrl, 'sendMessage'), {
+      ultimo = await this.greenFetch(this.greenUrl(apiUrl, 'sendMessage'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chatId, message: body })
@@ -183,8 +209,9 @@ class MessagingService {
       form.append('fileName', file.filename || 'archivo.pdf');
       if (body && !textoAparte) form.append('caption', body);
       form.append('file', new Blob([file.content], { type: file.contentType || 'application/pdf' }), file.filename || 'archivo.pdf');
-      await this.greenFetch(this.greenUrl(mediaUrl, 'sendFileByUpload'), { method: 'POST', body: form }, 'sendFileByUpload');
+      ultimo = await this.greenFetch(this.greenUrl(mediaUrl, 'sendFileByUpload'), { method: 'POST', body: form }, 'sendFileByUpload');
     }
+    return ultimo;
   }
 
   // ------------------------------------------------------------ Twilio (alternativa)
@@ -245,4 +272,21 @@ class MessagingService {
   }
 }
 
+/** "+50258381311" -> "+502 ****1311" (el registro no guarda el número completo) */
+function enmascararTelefono(numero) {
+  const d = String(numero || '').replace(/\D/g, '');
+  if (d.length < 8) return null;
+  return `+${d.slice(0, d.length - 8)} ****${d.slice(-4)}`;
+}
+
+/** Id del mensaje en la respuesta del proveedor (Wawp: id._serialized; Green-API: idMessage) */
+function idDelMensaje(respuesta) {
+  if (!respuesta || typeof respuesta !== 'object') return null;
+  const id = respuesta.id && typeof respuesta.id === 'object' ? respuesta.id._serialized || respuesta.id.id : respuesta.id;
+  const valor = id || respuesta.idMessage || respuesta.messageId || (respuesta.key && respuesta.key.id) || null;
+  return valor ? String(valor).slice(0, 150) : null;
+}
+
 module.exports = new MessagingService();
+module.exports.enmascararTelefono = enmascararTelefono;
+module.exports.idDelMensaje = idDelMensaje;

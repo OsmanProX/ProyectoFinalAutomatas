@@ -28,6 +28,7 @@ Generar una clave: `bun -e "console.log(require('crypto').randomBytes(48).toStri
 | POST | `/api/analysis` | JWT + permiso *analisis* | Análisis léxico → JSON |
 | POST | `/api/analysis/report` | JWT + permiso *analisis* | Análisis léxico → PDF |
 | GET | `/api/audit/logins` | JWT + rol **ADMIN** | Bitácora de accesos (filtros: `usuario`, `metodo`, `resultado=ok\|fallido`, `limite`) |
+| GET | `/api/audit/whatsapp` | JWT + rol **ADMIN** | Envíos de WhatsApp y su estado de entrega (webhook de Wawp, sin polling) |
 
 El análisis acepta:
 - **JSON:** `{ "language": "es", "text": "Juan Pérez llegó..." }`

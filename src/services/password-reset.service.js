@@ -55,7 +55,7 @@ class PasswordResetService {
     const user = await userRepository.findById(userId);
     const resultados = await messagingService.sendByPreference(user.notificationMethod, {
       email: { to: user.email, subject: `🔑 Tu código para restablecer la contraseña: ${codigo}`, html: this.emailHtml(user, codigo) },
-      whatsapp: { to: user.phone, body: `Tu código para restablecer la contraseña de @${user.nickname} es: ${codigo}. Vence en ${MINUTOS_VIGENCIA} minutos. Si no lo pediste, ignora este mensaje.` }
+      whatsapp: { to: user.phone, tipo: 'codigo_recuperacion', userId: user.id, body: `Tu código para restablecer la contraseña de @${user.nickname} es: ${codigo}. Vence en ${MINUTOS_VIGENCIA} minutos. Si no lo pediste, ignora este mensaje.` }
     });
 
     if (!resultados.some((r) => r.ok)) {
@@ -115,7 +115,7 @@ class PasswordResetService {
       const texto = `Hola ${user.fullName}, la contraseña de @${user.nickname} fue restablecida el ${fecha}. Si no fuiste tú, contacta al administrador.`;
       await messagingService.sendByPreference(user.notificationMethod, {
         email: { to: user.email, subject: '🔒 Tu contraseña fue restablecida', html: `<p style="font-family:Arial,sans-serif">${texto.replace(/[<>&]/g, '')}</p>` },
-        whatsapp: { to: user.phone, body: texto }
+        whatsapp: { to: user.phone, tipo: 'aviso_recuperacion', userId: user.id, body: texto }
       });
     } catch (err) {
       console.error('Error al avisar el restablecimiento:', err.message);

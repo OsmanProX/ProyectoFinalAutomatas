@@ -11,6 +11,7 @@ const credentialRoutes = require('./routes/credential.routes');
 const passwordResetRoutes = require('./routes/password-reset.routes');
 const analysisRoutes = require('./routes/analysis.routes');
 const apiRoutes = require('./routes/api.routes');
+const webhookRoutes = require('./routes/webhook.routes');
 const roleRoutes = require('./routes/role.routes');
 const roleRepository = require('./repositories/role.repository');
 const menuPermissionRepository = require('./repositories/menu-permission.repository');
@@ -26,6 +27,8 @@ app.set('views', path.join(__dirname, 'views'));
 // API REST con JWT (Authorization: Bearer <token>). Va antes de la sesión y del
 // lector de JSON de la web: tiene su propio lector, límites y errores en JSON.
 app.use('/api', apiRoutes);
+// Webhook de Wawp (estado de entrega de los WhatsApp, sin polling). Público, protegido con clave en la URL
+app.use('/webhooks', webhookRoutes);
 
 // Límite de 4 MB: el registro envía la foto original y la modificada (data URL)
 app.use(express.json({ limit: '4mb' }));

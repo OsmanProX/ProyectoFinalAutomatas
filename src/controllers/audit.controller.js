@@ -1,8 +1,28 @@
 const loginAuditRepository = require('../repositories/login-audit.repository');
+const whatsappLogRepository = require('../repositories/whatsapp-log.repository');
 const { METODOS, DETALLES, describeAgent } = require('../services/login-audit.service');
 const { getTranslation } = require('../utils/i18n');
 
 const RE_FECHA = /^\d{4}-\d{2}-\d{2}$/;
+const ESTADOS_WHATSAPP = Object.freeze({
+  aceptado: 'Aceptado por Wawp', enviado: 'Enviado', entregado: 'Entregado', leido: 'Leído',
+  reproducido: 'Reproducido', pendiente: 'Pendiente', error: 'Error de WhatsApp', fallido: 'No se envió'
+});
+const fechaGt = (d) => d.toLocaleString('es-GT', { timeZone: 'America/Guatemala', hour12: false });
+/** Últimos WhatsApp enviados (si falla, la bitácora de accesos se muestra igual) */
+async function ultimosWhatsapp() {
+  try {
+    return (await whatsappLogRepository.find({ limite: 50 })).map((w) => ({
+      ...w,
+      fecha: fechaGt(w.createdAt),
+      actualizado: fechaGt(w.updatedAt),
+      estadoTexto: ESTADOS_WHATSAPP[w.estado] || w.estado
+    }));
+  } catch (err) {
+    console.warn('No se pudo leer el registro de WhatsApp:', err.message);
+    return [];
+  }
+}
 /** Inicio del día en Guatemala (UTC-6, sin horario de verano) */
 const inicioDiaGt = (texto) => new Date(`${texto}T00:00:00-06:00`);
 
@@ -42,10 +62,10 @@ class AuditController {
         detalleTexto: DETALLES[r.detail] || r.detail || '',
         navegador: describeAgent(r.userAgent)
       }));
-      res.render('bitacora', { t, lang, registros, filtros, metodos: METODOS, error: null });
+      res.render('bitacora', { t, lang, registros, filtros, metodos: METODOS, error: null, envios: await ultimosWhatsapp() });
     } catch (err) {
       console.error('Error al leer la bitácora:', err.message);
-      res.render('bitacora', { t, lang, registros: [], filtros, metodos: METODOS, error: 'No se pudo cargar la bitácora. Intenta de nuevo.' });
+      res.render('bitacora', { t, lang, registros: [], filtros, metodos: METODOS, error: 'No se pudo cargar la bitácora. Intenta de nuevo.', envios: await ultimosWhatsapp() });
     }
   }
 }

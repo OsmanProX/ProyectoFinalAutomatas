@@ -119,6 +119,8 @@ router.post('/send-report', async (req, res) => {
         },
         whatsapp: {
           to: user.phone,
+          tipo: 'reporte',
+          userId: user.id,
           body: `📊 Hola, aquí está el reporte PDF de tu análisis léxico. ${resumen}`,
           file: { content: pdfBuffer, filename: archivo, contentType: 'application/pdf' }
         }

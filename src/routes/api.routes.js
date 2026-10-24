@@ -12,6 +12,7 @@ const { decodeTextFile, safeFileName, MAX_TEXT_BYTES } = require('../utils/text-
 const { jwtAuth, requireActiveRole, requireMenu, requireRole } = require('../middlewares/jwt.middleware');
 const loginAuditService = require('../services/login-audit.service');
 const loginAuditRepository = require('../repositories/login-audit.repository');
+const whatsappLogRepository = require('../repositories/whatsapp-log.repository');
 
 /**
  * ============================================================================
@@ -166,6 +167,17 @@ router.get('/audit/logins', jwtAuth, requireRole('ADMIN'), async (req, res) => {
   } catch (err) {
     console.error('Error en GET /api/audit/logins:', err.message);
     return error(res, 500, 'error_servidor', 'No se pudo leer la bitácora.');
+  }
+});
+
+// Envíos de WhatsApp y su estado de entrega (solo ADMIN): GET /api/audit/whatsapp?limite=50
+router.get('/audit/whatsapp', jwtAuth, requireRole('ADMIN'), async (req, res) => {
+  try {
+    const registros = await whatsappLogRepository.find({ limite: Number((req.query || {}).limite) || 50 });
+    return res.json({ success: true, total: registros.length, registros });
+  } catch (err) {
+    console.error('Error en GET /api/audit/whatsapp:', err.message);
+    return error(res, 500, 'error_servidor', 'No se pudo leer el registro de WhatsApp.');
   }
 });
 

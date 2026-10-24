@@ -120,6 +120,8 @@ class CredentialService {
         },
         whatsapp: {
           to: user.phone,
+          tipo: nueva ? 'credencial_nueva' : 'credencial',
+          userId,
           body: nueva
             ? `Hola ${user.fullName}, generaste una credencial nueva (${code}). El QR anterior ya no funciona.`
             : `¡Hola ${user.fullName}! 🎉 Tu registro quedó listo. Te enviamos tu credencial ${code}. Guárdala: con su código QR podrás iniciar sesión.`,
