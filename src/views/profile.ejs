@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
   <link rel="stylesheet" href="/css/photo-studio.css">
   <link rel="stylesheet" href="/css/profile.css">
+  <link rel="stylesheet" href="/css/password-match.css">
 </head>
 <body class="profile-body">
 
@@ -83,6 +84,11 @@
             <div class="form-group">
               <label for="confirm_password"><%= t.profile_confirm_password %></label>
               <input type="password" id="confirm_password" autocomplete="new-password" required>
+              <small class="form-hint password-match" data-password-match aria-live="polite"
+                     data-for="new_password" data-confirm="confirm_password"
+                     data-hint="<%= t.register_password_hint %>"
+                     data-ok="<%= t.register_password_match %>"
+                     data-error="<%= t.register_password_mismatch %>"><%= t.register_password_hint %></small>
             </div>
             <button type="submit" class="btn btn-accent btn-block" id="btnPassword"><%= t.profile_password_submit %></button>
           </form>
@@ -136,5 +142,6 @@
   <script src="/js/photo-studio.js"></script>
   <script src="/js/camera-picker.js"></script>
   <script src="/js/profile.js"></script>
+  <script src="/js/password-match.js"></script>
 </body>
 </html>
