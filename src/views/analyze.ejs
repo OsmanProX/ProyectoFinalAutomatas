@@ -52,6 +52,27 @@
           <div class="form-group">
             <label for="file"><%= T.analyze_file || 'Archivo de texto (.txt)' %></label>
             <input type="file" id="file" name="file" accept=".txt,text/plain" required>
+            <%# Vista previa del archivo (assets/js/analyze-preview.js) %>
+            <% const EN = L === 'en'; %>
+            <div class="file-preview" id="filePreview" hidden aria-live="polite"
+                 data-lines="<%= EN ? 'lines' : 'líneas' %>"
+                 data-words="<%= EN ? 'words' : 'palabras' %>"
+                 data-chars="<%= EN ? 'characters' : 'caracteres' %>"
+                 data-partial="<%= EN ? 'Showing only the beginning of the file. The whole file will be analyzed.' : 'Se muestra solo el inicio del archivo. Se analizará el archivo completo.' %>"
+                 data-not-txt="<%= EN ? 'Only .txt files are allowed.' : 'Solo se permiten archivos .txt.' %>"
+                 data-too-big="<%= EN ? 'The file is larger than 5 MB' : 'El archivo supera el límite de 5 MB' %>"
+                 data-empty="<%= EN ? 'The file is empty.' : 'El archivo está vacío.' %>"
+                 data-read-error="<%= EN ? 'The file could not be read.' : 'No se pudo leer el archivo.' %>">
+              <div class="file-preview-head">
+                <div>
+                  <strong id="fpName"></strong>
+                  <small id="fpInfo"></small>
+                </div>
+                <button type="button" class="file-preview-clear" id="fpClear"><%= EN ? 'Remove' : 'Quitar' %></button>
+              </div>
+              <pre class="file-preview-text" id="fpText" dir="auto"></pre>
+              <small class="file-preview-note" id="fpNote"></small>
+            </div>
           </div>
 
           <div class="form-group">
@@ -237,5 +258,6 @@
   </div>
 
   <script src="/js/menu.js"></script>
+  <script src="/js/analyze-preview.js"></script>
 </body>
 </html>

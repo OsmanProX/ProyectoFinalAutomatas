@@ -34,11 +34,13 @@
         <div class="form-row">
           <div class="form-group">
             <label for="full_name"><%= t.register_full_name %></label>
-            <input type="text" id="full_name" name="full_name" value="<%= datos.fullName || '' %>" required>
+            <input type="text" id="full_name" name="full_name" value="<%= datos.fullName || '' %>" required minlength="2" maxlength="100" autocomplete="name">
+            <small class="form-hint"><%= t.register_fullname_hint %></small>
           </div>
           <div class="form-group">
             <label for="nickname"><%= t.register_nickname %></label>
-            <input type="text" id="nickname" name="nickname" value="<%= datos.nickname || '' %>" required>
+            <input type="text" id="nickname" name="nickname" value="<%= datos.nickname || '' %>" required minlength="4" maxlength="30" pattern="[A-Za-z0-9_]+" autocomplete="username">
+            <small class="form-hint"><%= t.register_nickname_hint %></small>
           </div>
         </div>
 
@@ -93,14 +95,15 @@
           <div class="form-group">
             <label for="password"><%= t.register_password %></label>
             <div class="input-password">
-              <input type="password" id="password" name="password" required>
+              <input type="password" id="password" name="password" required minlength="6" maxlength="100">
               <button type="button" class="btn-eye" id="togglePassword">&#128065;</button>
             </div>
+            <small class="form-hint"><%= t.register_password_limit %></small>
           </div>
           <div class="form-group">
             <label for="confirm_password"><%= t.register_confirm_password %></label>
             <div class="input-password">
-              <input type="password" id="confirm_password" name="confirm_password" required>
+              <input type="password" id="confirm_password" name="confirm_password" required minlength="6" maxlength="100">
               <button type="button" class="btn-eye" id="toggleConfirmPassword">&#128065;</button>
             </div>
             <small class="form-hint password-match" id="passwordMatch" aria-live="polite"

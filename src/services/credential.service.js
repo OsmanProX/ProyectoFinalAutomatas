@@ -143,9 +143,10 @@ class CredentialService {
           to: user.phone,
           tipo: nueva ? 'credencial_nueva' : 'credencial',
           userId,
-          body: nueva
+          body: (nueva
             ? `Hola ${user.fullName}, generaste una credencial nueva (${code}). El QR anterior ya no funciona.`
-            : `¡Hola ${user.fullName}! 🎉 Tu registro quedó listo. Te enviamos tu credencial ${code}. Guárdala: con su código QR podrás iniciar sesión.`,
+            : `¡Hola ${user.fullName}! 🎉 Tu registro quedó listo. Te enviamos tu credencial ${code}. Guárdala: con su código QR podrás iniciar sesión.`)
+            + this.datosWhatsapp(user, code, nueva),
           // Green-API sube el PDF directamente; Twilio lo descarga desde el enlace público firmado
           file: { content: pdf, filename: archivo, contentType: 'application/pdf' },
           mediaUrl: `${process.env.PUBLIC_BASE_URL}/credencial/publica/${createSignedToken(userId, 120)}`
@@ -305,6 +306,27 @@ class CredentialService {
     doc.rect(0, ALTO - 8, ANCHO, 8).fill(franja);
   }
 
+  /** Datos del usuario que van en el mensaje (nunca la contraseña) */
+  datosUsuario(user, code) {
+    const metodos = { whatsapp: 'WhatsApp', correo_electronico: 'Correo electrónico', ambos: 'Correo y WhatsApp' };
+    return [
+      ['Nombre', user.fullName],
+      ['Usuario', user.nickname ? `@${user.nickname}` : ''],
+      ['Correo', user.email],
+      ['Teléfono', user.phone],
+      ['Rol', typeof user.roleDisplayName === 'function' ? user.roleDisplayName() : user.role],
+      ['Notificaciones', metodos[user.notificationMethod] || user.notificationMethod],
+      ['No. de credencial', code]
+    ].filter(([, valor]) => valor);
+  }
+
+  /** Bloque de datos para el texto de WhatsApp (va como descripción del PDF) */
+  datosWhatsapp(user, code, nueva = false) {
+    const lineas = this.datosUsuario(user, code).map(([campo, valor]) => `• ${campo}: ${valor}`);
+    return `\n\n📋 *Tus datos*\n${lineas.join('\n')}\n\n🔐 En el PDF va tu credencial con el código QR para iniciar sesión.`
+      + (nueva ? '' : '\n⏳ Tu cuenta quedará activa cuando el administrador la apruebe.');
+  }
+
   emailHtml(user, code, nueva = false, conLogo = false) {
     const escapar = (s) => String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     return `
@@ -323,6 +345,14 @@ class CredentialService {
           <p>Adjuntamos tu <b>credencial de inscripción ${escapar(code)}</b> en PDF, con la foto que personalizaste.</p>
           <p>Guárdala bien: con su <b>código QR</b> podrás iniciar sesión sin escribir tu contraseña.</p>
           <p style="color:#6b7280;font-size:13px">Usuario: <b>@${escapar(user.nickname)}</b></p>
+          <h3 style="margin:18px 0 8px;color:#1a1a2e;font-size:15px">📋 Tus datos</h3>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;font-size:14px">
+            ${this.datosUsuario(user, code).map(([campo, valor]) => `<tr>
+              <td style="padding:7px 10px;border-bottom:1px solid #eef0f7;color:#6b7280;width:40%">${escapar(campo)}</td>
+              <td style="padding:7px 10px;border-bottom:1px solid #eef0f7;color:#1a1a2e;font-weight:600">${escapar(valor)}</td>
+            </tr>`).join('')}
+          </table>
+          <p style="margin-top:16px">🔐 El <b>código QR</b> está en la credencial PDF adjunta.${nueva ? '' : ' Tu cuenta quedará activa cuando el administrador la apruebe.'}</p>
         </div>
         <div style="height:6px;background:linear-gradient(90deg,#ff3cac,#784ba0,#4361ee)"></div>
       </div>`;
