@@ -1,0 +1,129 @@
+// Diagrama Entidad-Relación - Proyecto Final Lenguajes Formales y Autómatas (UMG 2026)
+// Generar: dot -Tpng -Gdpi=150 entidad-relacion.dot -o entidad-relacion.png
+digraph ER {
+  graph [rankdir=LR, splines=true, nodesep=0.55, ranksep=1.1, pad=0.4, bgcolor="white",
+         fontname="DejaVu Sans", fontsize=20, labelloc=t,
+         label=<<b>Diagrama Entidad-Relación</b><br/><font point-size="12" color="#6b7280">Base de datos MySQL · Proyecto Final Lenguajes Formales y Autómatas · UMG 2026</font>>];
+  node  [shape=plain, fontname="DejaVu Sans", fontsize=11];
+  edge  [fontname="DejaVu Sans", fontsize=10, color="#1a1a2e", penwidth=1.4, arrowsize=0.9];
+
+  roles [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="5" color="#1a1a2e">
+      <tr><td colspan="3" bgcolor="#1a1a2e"><font color="white"><b>roles</b></font></td></tr>
+      <tr><td bgcolor="#eef0f7"><b>PK</b></td><td align="left" port="id"><b>id</b></td><td align="left" port="ide">INT AI</td></tr>
+      <tr><td bgcolor="#eef0f7">UQ</td><td align="left">name</td><td align="left">VARCHAR(45)</td></tr>
+      <tr><td></td><td align="left">description</td><td align="left">VARCHAR(255)</td></tr>
+      <tr><td></td><td align="left">active</td><td align="left">BIT(1)</td></tr>
+    </table>>];
+
+  users [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="5" color="#1a1a2e">
+      <tr><td colspan="3" bgcolor="#1a1a2e"><font color="white"><b>users</b></font></td></tr>
+      <tr><td bgcolor="#eef0f7"><b>PK</b></td><td align="left" port="id"><b>id</b></td><td align="left" port="ide">INT UNSIGNED AI</td></tr>
+      <tr><td></td><td align="left">full_name</td><td align="left">VARCHAR(150)</td></tr>
+      <tr><td></td><td align="left">nickname</td><td align="left">VARCHAR(150)</td></tr>
+      <tr><td bgcolor="#eef0f7">UQ</td><td align="left">email</td><td align="left">VARCHAR(255)</td></tr>
+      <tr><td></td><td align="left">phone</td><td align="left">VARCHAR(20)</td></tr>
+      <tr><td></td><td align="left">birth_date</td><td align="left">DATE</td></tr>
+      <tr><td></td><td align="left">password</td><td align="left">VARCHAR(200) · bcrypt</td></tr>
+      <tr><td></td><td align="left">photo</td><td align="left">LONGTEXT · foto original</td></tr>
+      <tr><td></td><td align="left">photo_edit</td><td align="left">LONGTEXT</td></tr>
+      <tr><td></td><td align="left">state</td><td align="left">TINYINT(1) · 0/1</td></tr>
+      <tr><td></td><td align="left">role</td><td align="left">ENUM(admin, supervisor, analitico)</td></tr>
+      <tr><td bgcolor="#dbe4ff" port="fkw"><b>FK</b></td><td align="left" port="id_Roles"><b>id_Roles</b></td><td align="left">INT → roles.id</td></tr>
+      <tr><td></td><td align="left">notification_method</td><td align="left">ENUM(whatsapp, correo_electronico, ambos)</td></tr>
+      <tr><td></td><td align="left">create_at</td><td align="left">DATETIME</td></tr>
+    </table>>];
+
+  role_menu_permissions [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="5" color="#1a1a2e">
+      <tr><td colspan="3" bgcolor="#1a1a2e"><font color="white"><b>role_menu_permissions</b></font></td></tr>
+      <tr><td bgcolor="#eef0f7"><b>PK</b></td><td align="left"><b>id</b></td><td align="left">INT AI</td></tr>
+      <tr><td bgcolor="#dbe4ff" port="fkw"><b>FK</b></td><td align="left" port="id_role"><b>id_role</b></td><td align="left">INT → roles.id</td></tr>
+      <tr><td bgcolor="#eef0f7">UQ*</td><td align="left">menu_key</td><td align="left">VARCHAR(50)</td></tr>
+      <tr><td></td><td align="left">active</td><td align="left">BIT(1)</td></tr>
+      <tr><td colspan="3" align="left"><font point-size="9" color="#6b7280">* único: (id_role, menu_key)</font></td></tr>
+    </table>>];
+
+  user_credentials [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="5" color="#1a1a2e">
+      <tr><td colspan="3" bgcolor="#1a1a2e"><font color="white"><b>user_credentials</b></font></td></tr>
+      <tr><td bgcolor="#dbe4ff" port="fkw"><b>PK FK</b></td><td align="left" port="user_id"><b>user_id</b></td><td align="left">INT UNSIGNED</td></tr>
+      <tr><td bgcolor="#eef0f7">UQ</td><td align="left">credential_code</td><td align="left">VARCHAR(20)</td></tr>
+      <tr><td></td><td align="left">qr_token_enc</td><td align="left">VARCHAR(255) · cifrado</td></tr>
+      <tr><td></td><td align="left">issued_at</td><td align="left">DATETIME</td></tr>
+      <tr><td></td><td align="left">sent_channel</td><td align="left">VARCHAR(20)</td></tr>
+      <tr><td></td><td align="left">sent_at</td><td align="left">DATETIME</td></tr>
+    </table>>];
+
+  user_photos [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="5" color="#1a1a2e">
+      <tr><td colspan="3" bgcolor="#1a1a2e"><font color="white"><b>user_photos</b></font></td></tr>
+      <tr><td bgcolor="#dbe4ff" port="fkw"><b>PK FK</b></td><td align="left" port="user_id"><b>user_id</b></td><td align="left">INT UNSIGNED</td></tr>
+      <tr><td></td><td align="left">photo_modified</td><td align="left">MEDIUMTEXT · con filtros</td></tr>
+      <tr><td></td><td align="left">updated_at</td><td align="left">DATETIME</td></tr>
+    </table>>];
+
+  password_resets [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="5" color="#1a1a2e">
+      <tr><td colspan="3" bgcolor="#1a1a2e"><font color="white"><b>password_resets</b></font></td></tr>
+      <tr><td bgcolor="#dbe4ff" port="fkw"><b>PK FK</b></td><td align="left" port="user_id"><b>user_id</b></td><td align="left">INT UNSIGNED</td></tr>
+      <tr><td></td><td align="left">code_hash</td><td align="left">CHAR(64) · SHA-256</td></tr>
+      <tr><td></td><td align="left">expires_at</td><td align="left">DATETIME</td></tr>
+      <tr><td></td><td align="left">attempts</td><td align="left">TINYINT</td></tr>
+      <tr><td></td><td align="left">created_at</td><td align="left">DATETIME</td></tr>
+    </table>>];
+
+  login_audit [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="5" color="#4361ee">
+      <tr><td colspan="3" bgcolor="#4361ee"><font color="white"><b>login_audit</b> (bitácora)</font></td></tr>
+      <tr><td bgcolor="#eef0f7"><b>PK</b></td><td align="left"><b>id</b></td><td align="left">BIGINT AI</td></tr>
+      <tr><td bgcolor="#eef0f7" port="fkw">IDX</td><td align="left" port="user_id">user_id</td><td align="left">INT · sin FK</td></tr>
+      <tr><td></td><td align="left">nickname</td><td align="left">VARCHAR(100)</td></tr>
+      <tr><td></td><td align="left">method</td><td align="left">VARCHAR(20)</td></tr>
+      <tr><td></td><td align="left">success</td><td align="left">TINYINT(1)</td></tr>
+      <tr><td></td><td align="left">detail</td><td align="left">VARCHAR(40)</td></tr>
+      <tr><td></td><td align="left">ip</td><td align="left">VARCHAR(45)</td></tr>
+      <tr><td></td><td align="left">forwarded_for</td><td align="left">VARCHAR(255)</td></tr>
+      <tr><td></td><td align="left">user_agent</td><td align="left">VARCHAR(255)</td></tr>
+      <tr><td bgcolor="#eef0f7">IDX</td><td align="left">created_at</td><td align="left">DATETIME (UTC)</td></tr>
+    </table>>];
+
+  whatsapp_log [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="5" color="#4361ee">
+      <tr><td colspan="3" bgcolor="#4361ee"><font color="white"><b>whatsapp_log</b> (bitácora)</font></td></tr>
+      <tr><td bgcolor="#eef0f7"><b>PK</b></td><td align="left"><b>id</b></td><td align="left">BIGINT AI</td></tr>
+      <tr><td port="fkw"></td><td align="left" port="user_id">user_id</td><td align="left">INT · sin FK</td></tr>
+      <tr><td></td><td align="left">tipo</td><td align="left">VARCHAR(30)</td></tr>
+      <tr><td></td><td align="left">proveedor</td><td align="left">VARCHAR(20)</td></tr>
+      <tr><td></td><td align="left">destino</td><td align="left">VARCHAR(30) · enmascarado</td></tr>
+      <tr><td bgcolor="#eef0f7">IDX</td><td align="left">message_id</td><td align="left">VARCHAR(150)</td></tr>
+      <tr><td></td><td align="left">estado</td><td align="left">VARCHAR(20)</td></tr>
+      <tr><td></td><td align="left">ack</td><td align="left">TINYINT</td></tr>
+      <tr><td></td><td align="left">error</td><td align="left">VARCHAR(40)</td></tr>
+      <tr><td bgcolor="#eef0f7">IDX</td><td align="left">created_at</td><td align="left">DATETIME (UTC)</td></tr>
+      <tr><td></td><td align="left">updated_at</td><td align="left">DATETIME (UTC)</td></tr>
+    </table>>];
+
+  // Relaciones con llave foránea (pata de gallo)
+  roles:ide:e -> users:fkw:w                 [dir=both, arrowtail=teetee, arrowhead=crowodot, label="1 : N\nasigna rol\n(ON UPDATE CASCADE)"];
+  roles:ide:e -> role_menu_permissions:fkw:w [dir=both, arrowtail=teetee, arrowhead=crowodot, label="1 : N\npermisos de menú"];
+  users:ide:e -> user_credentials:fkw:w      [dir=both, arrowtail=teetee, arrowhead=teeodot, label="1 : 0..1  credencial QR"];
+  users:ide:e -> user_photos:fkw:w           [dir=both, arrowtail=teetee, arrowhead=teeodot, label="1 : 0..1  foto modificada"];
+  users:ide:e -> password_resets:fkw:w       [dir=both, arrowtail=teetee, arrowhead=teeodot, label="1 : 0..1  código vigente"];
+  // Relaciones lógicas (sin FK: la bitácora se conserva aunque se borre el usuario)
+  users:ide:e -> login_audit:fkw:w  [dir=both, arrowtail=teetee, arrowhead=crowodot, style=dashed, color="#4361ee", fontcolor="#4361ee", label="1 : N (lógica)  accesos"];
+  users:ide:e -> whatsapp_log:fkw:w [dir=both, arrowtail=teetee, arrowhead=crowodot, style=dashed, color="#4361ee", fontcolor="#4361ee", label="1 : N (lógica)  envíos WhatsApp"];
+  { rank=same; roles; }
+  { rank=same; users; role_menu_permissions; }
+  { rank=same; user_credentials; user_photos; password_resets; login_audit; whatsapp_log; }
+  roles -> leyenda [style=invis];
+
+  leyenda [label=<
+    <table border="0" cellborder="0" cellspacing="2" cellpadding="3">
+      <tr><td align="left"><b>Leyenda</b></td></tr>
+      <tr><td align="left">PK = llave primaria · FK = llave foránea · UQ = único · IDX = índice · AI = autoincremento</td></tr>
+      <tr><td align="left">Línea continua = relación con FK (tablas hijas de users: ON DELETE CASCADE) · Línea punteada = relación lógica sin FK</td></tr>
+      <tr><td align="left">Notación pata de gallo: ┼ uno · ○&lt; cero o muchos · ○┼ cero o uno</td></tr>
+    </table>>];
+}
