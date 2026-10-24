@@ -142,6 +142,33 @@ class UserService {
     return { valid: true };
   }
 
+  /**
+   * Valida los campos del registro SIN tocar la base de datos ni la API facial.
+   * El controlador la llama antes de procesar la foto, para mostrar primero el
+   * error del campo (contraseña corta, apodo inválido...) y no gastar una llamada
+   * a la API de rostro. register() vuelve a validar todo igual.
+   * @returns {{ success: boolean, error?: string }}
+   */
+  validateFields(registerDTO) {
+    const validaciones = [
+      () => this.validateFullName(registerDTO.fullName),
+      () => this.validateNickname(registerDTO.nickname),
+      () => this.validateRole(registerDTO.role),
+      () => this.validateEmail(registerDTO.email),
+      () => this.validatePhone(registerDTO.phone),
+      () => this.validateBirthDate(registerDTO.birthDate),
+      () => this.validateNotificationMethod(registerDTO.notificationMethod),
+      () => this.validatePassword(registerDTO.password),
+      () => (registerDTO.passwordsMatch() ? { valid: true } : { valid: false, error: 'passwords_not_match' }),
+      () => this.validatePhotos(registerDTO.photo, registerDTO.photoModified)
+    ];
+    for (const validar of validaciones) {
+      const resultado = validar();
+      if (!resultado.valid) return { success: false, error: resultado.error };
+    }
+    return { success: true };
+  }
+
   async authenticate(loginDTO) {
     if (!loginDTO.isValid()) {
       return { success: false, error: 'credentials_required' };
