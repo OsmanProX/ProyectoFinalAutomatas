@@ -10,16 +10,20 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-backend-wasm": "^4.22.0",
     "@vladmandic/face-api": "^1.7.15",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "ejs": "^6.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "jpeg-js": "^0.4.4",
     "multer": "^2.4.0",
     "mysql2": "^3.24.2",
     "nodemailer": "^10.0.15",
     "pdfkit": "^0.20.2",
+    "pngjs": "^7.0.0",
     "qrcode": "^1.5.4",
     "validator": "^13.15.35"
   },

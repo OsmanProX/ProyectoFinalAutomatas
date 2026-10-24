@@ -10,6 +10,7 @@ const profileRoutes = require('./routes/profile.routes');
 const credentialRoutes = require('./routes/credential.routes');
 const passwordResetRoutes = require('./routes/password-reset.routes');
 const analysisRoutes = require('./routes/analysis.routes');
+const faceRoutes = require('./routes/face.routes');
 const apiRoutes = require('./routes/api.routes');
 const webhookRoutes = require('./routes/webhook.routes');
 const roleRoutes = require('./routes/role.routes');
@@ -24,6 +25,9 @@ const PORT = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Segmentacion y verificacion facial locales (reemplazan la API externa).
+// Va ANTES de /api: ese router tiene un 404 catch-all para todo /api/*.
+app.use('/api/rostro', faceRoutes);
 // API REST con JWT (Authorization: Bearer <token>). Va antes de la sesión y del
 // lector de JSON de la web: tiene su propio lector, límites y errores en JSON.
 app.use('/api', apiRoutes);

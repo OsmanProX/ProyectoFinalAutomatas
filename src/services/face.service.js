@@ -1,4 +1,15 @@
-const FACE_API_BASE = process.env.FACE_API_BASE || 'https://reversal-sedate-catnip.ngrok-free.dev';
+const faceLocal = require('./face-local.service');
+
+/**
+ * Servicio facial usado por auth.controller (registro y login facial).
+ *
+ * Antes llamaba a una API externa (ngrok). Ahora delega en el motor local
+ * face-local.service, pero se mantiene igual su API publica:
+ *   - segment(image)            -> base64 del rostro segmentado (o lanza error con .code)
+ *   - verify(live, stored)      -> { match, similarity, segmentedImage, detail } (nunca lanza)
+ * y los mismos codigos de error: invalid_image, invalid_image_format,
+ * segmentar_failed, missing_image.
+ */
 
 function stripDataUrl(image) {
   if (!image) return image;
@@ -10,108 +21,24 @@ function stripDataUrl(image) {
 function isLikelyBase64(value) {
   if (!value || typeof value !== 'string') return false;
   const stripped = stripDataUrl(value);
-  return stripped.length > 100 && /^[A-Za-z0-9+/=]+$/.test(stripped);
+  return stripped.length > 100 && /^[A-Za-z0-9+/=\s]+$/.test(stripped);
 }
 
 class FaceService {
-  async callSegmentar(rostroBase64) {
-    const url = `${FACE_API_BASE}/api/Rostro/Segmentar`;
-    const image = stripDataUrl(rostroBase64);
-    const payload = { RostroA: image, RostroB: image };
-
-    console.log('[FaceAPI] Segmentar →', url);
-    console.log('[FaceAPI] Payload size:', payload.RostroA ? payload.RostroA.length : 0, 'chars');
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const raw = await response.text();
-    console.log('[FaceAPI] Segmentar status:', response.status);
-    console.log('[FaceAPI] Segmentar response (primeros 500 chars):', raw.substring(0, 500));
-
-    let data;
-    try {
-      data = JSON.parse(raw);
-    } catch (e) {
-      throw new Error(`segmentar_respuesta_no_json: ${raw.substring(0, 200)}`);
-    }
-
-    const resultado = data.resultado === true;
-    const segmentado = data.segmentado === true;
-    const errorMsg = data.error || data.mensaje || data.message || null;
-
-    if (!response.ok) {
-      const err = new Error(`segmentar_http_${response.status}: ${errorMsg || raw.substring(0, 100)}`);
-      err.code = 'segmentar_failed';
-      err.detail = data;
-      throw err;
-    }
-
-    if (resultado === false || segmentado === false) {
-      const err = new Error(`segmentar_fallo: ${errorMsg || 'sin detalle'}`);
-      err.code = 'segmentar_failed';
-      err.detail = data;
-      throw err;
-    }
-
-    if (!data.rostro) {
-      const err = new Error('segmentar_sin_rostro');
-      err.code = 'segmentar_failed';
-      err.detail = data;
-      throw err;
-    }
-
-    return data.rostro;
-  }
-
-  async callVerificar(rostroABase64, rostroBBase64) {
-    const url = `${FACE_API_BASE}/api/Rostro/Verificar`;
-    const payload = {
-      RostroA: stripDataUrl(rostroABase64),
-      RostroB: stripDataUrl(rostroBBase64)
-    };
-
-    console.log('[FaceAPI] Verificar →', url);
-    console.log('[FaceAPI] Payload sizes - A:', payload.RostroA.length, 'B:', payload.RostroB.length);
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const raw = await response.text();
-    console.log('[FaceAPI] Verificar status:', response.status);
-    console.log('[FaceAPI] Verificar response:', raw.substring(0, 500));
-
-    let data;
-    try {
-      data = JSON.parse(raw);
-    } catch (e) {
-      throw new Error(`verificar_respuesta_no_json: ${raw.substring(0, 200)}`);
-    }
-
-    if (!response.ok) {
-      const msg = data && (data.error || data.mensaje) || `http_${response.status}`;
-      const err = new Error(`verificar_fallo: ${msg}`);
-      err.code = 'verificar_http_error';
-      err.detail = data;
-      throw err;
-    }
-
-    return data;
-  }
-
   async segment(imageBase64) {
     if (!imageBase64 || !isLikelyBase64(imageBase64)) {
       const err = new Error('imagen_invalida');
       err.code = 'invalid_image';
       throw err;
     }
-    return await this.callSegmentar(imageBase64);
+    try {
+      return await faceLocal.segmentar(imageBase64);
+    } catch (err) {
+      if (err.code) throw err;
+      const e = new Error(err.message || 'segmentacion_fallida');
+      e.code = 'segmentar_failed';
+      throw e;
+    }
   }
 
   async verify(liveImageBase64, storedImageBase64) {
@@ -124,40 +51,20 @@ class FaceService {
     }
 
     try {
-      const segmentedLive = await this.callSegmentar(liveImageBase64);
+      const resultado = await faceLocal.verificar(liveImageBase64, storedImageBase64);
 
-      const result = await this.callVerificar(segmentedLive, storedImageBase64);
-
-      console.log('[FaceAPI] Verificar resultado completo:', JSON.stringify(result).substring(0, 500));
-
-      const match = result.coincide === true
-        || result.match === true
-        || result.esIgual === true
-        || result.verificado === true;
-
-      let similarity = result.similitud
-        ?? result.similarity
-        ?? result.score
-        ?? result.porcentaje
-        ?? result.porcentajeSimilitud
-        ?? result.confianza
-        ?? null;
-
-      if (similarity !== null && typeof similarity === 'number') {
-        if (similarity >= 0 && similarity <= 1) {
-          similarity = Math.round(similarity * 10000) / 100;
-        } else {
-          similarity = Math.round(similarity * 100) / 100;
-        }
-      }
-
-      console.log('[FaceAPI] Match:', match, '| Similarity:', similarity);
+      console.log('[Rostro] Verificar → coincide:', resultado.coincide,
+        '| score:', resultado.score, '| distancia:', resultado.distancia);
 
       return {
-        match,
-        similarity,
-        segmentedImage: segmentedLive,
-        detail: result
+        match: resultado.coincide === true,
+        similarity: resultado.score,
+        segmentedImage: resultado.segmentadoA,
+        detail: {
+          coincide: resultado.coincide,
+          score: resultado.score,
+          distancia: resultado.distancia
+        }
       };
     } catch (err) {
       console.error('Error en verificación facial:', err.message);
