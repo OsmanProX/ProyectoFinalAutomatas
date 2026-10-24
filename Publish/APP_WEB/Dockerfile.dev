@@ -1,0 +1,17 @@
+FROM oven/bun:alpine
+
+# Instalamos certificados por si acaso
+RUN apk add --no-cache ca-certificates
+
+WORKDIR /app
+
+# Copiamos dependencias e instalamos
+COPY package.json bun.lockb ./
+RUN bun install
+
+# Copiamos el resto del código
+COPY . .
+
+EXPOSE 8080
+
+CMD ["bun", "run", "index.ts"]

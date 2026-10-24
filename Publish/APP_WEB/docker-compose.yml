@@ -1,0 +1,26 @@
+services:
+  api-automatas:
+    restart: unless-stopped
+    image: img-api-automatas:dev
+    container_name: cont-api-automatas-dev
+    build:
+      context: ./app/sitio_web   # <-- Aquí le decimos dónde está tu código Bun
+      dockerfile: Dockerfile.dev
+    command: ["bun", "--watch", "run", "index.ts"] 
+    volumes:
+      - ./app/sitio_web:/app
+      - /app/node_modules
+    ports:
+      - "5028:8080"              # El puerto 5028 de tu servidor apuntará al 8080 del contenedor
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      # --- CONEXIÓN A TU BASE DE DATOS MYSQL ---
+      # Como el contenedor de MySQL está en la misma máquina, usamos host.docker.internal
+      - DB_HOST=host.docker.internal
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=MysqlAutomata28
+      - DB_NAME=tu_base_de_datos
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
