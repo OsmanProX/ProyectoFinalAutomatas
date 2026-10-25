@@ -51,10 +51,11 @@ class FaceService {
     }
 
     try {
+      const inicio = Date.now();
       const resultado = await faceLocal.verificar(liveImageBase64, storedImageBase64);
 
       console.log('[Rostro] Verificar → coincide:', resultado.coincide,
-        '| score:', resultado.score, '| distancia:', resultado.distancia);
+        '| score:', resultado.score, '| distancia:', resultado.distancia, `| ${Date.now() - inicio} ms`);
 
       return {
         match: resultado.coincide === true,

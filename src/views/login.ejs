@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/css/qr-login.css">
   <link rel="stylesheet" href="/css/forgot-password.css">
   <%# reCAPTCHA: el script se carga en assets/js/recaptcha-widget.js según la versión (2 o 3) %>
+  <link rel="stylesheet" href="/css/face-guide.css">
   <link rel="stylesheet" href="/css/theme.css">
 </head>
 <body>
@@ -87,7 +88,7 @@
 
             <div class="face-stage">
               <div class="face-frame" id="liveFrame">
-                <video id="video" autoplay muted playsinline class="face-video"></video>
+                <video id="video" autoplay muted playsinline class="face-video" data-face-guide></video>
                 <div class="face-overlay">
                   <div class="face-overlay-corner tl"></div>
                   <div class="face-overlay-corner tr"></div>
@@ -208,6 +209,7 @@
   </script>
   <script src="/js/vendor/jsQR.js"></script>
   <script src="/js/qr-login.js"></script>
+  <script src="/js/face-guide.js"></script>
   <script src="/js/theme.js"></script>
   <script src="/js/recaptcha-widget.js"></script>
 </body>

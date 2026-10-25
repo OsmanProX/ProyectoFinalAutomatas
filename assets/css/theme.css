@@ -545,6 +545,14 @@ table td {
   overflow: hidden;
 }
 
+/* Sin esto, en modo oscuro el navegador pinta un fondo blanco detrás del
+   iframe de Google (borde blanco a la derecha y abajo de la casilla), porque
+   la página y el iframe tienen distinto color-scheme */
+.recaptcha-box iframe {
+  color-scheme: light;
+  border-radius: 4px;
+}
+
 .recaptcha-box[data-version="3"] {
   min-height: 0;
   margin: 0;

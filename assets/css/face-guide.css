@@ -1,0 +1,173 @@
+/* ============================================================================
+   GUÍA DEL ROSTRO (assets/js/face-guide.js)
+   Silueta sobre la cámara: rojo = corregir, amarillo = casi, verde = listo
+   ============================================================================ */
+.face-guide {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+  --fg-color: #ef4444;
+}
+
+.face-guide-marco {
+  position: relative;
+}
+
+.face-guide-marco > video {
+  display: block;
+}
+
+.face-guide[data-estado="amarillo"] { --fg-color: #f59e0b; }
+.face-guide[data-estado="verde"]    { --fg-color: #22c55e; }
+
+.face-guide-capa {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.face-guide.activa .face-guide-capa {
+  opacity: 1;
+}
+
+.face-guide-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.fg-sombra {
+  fill: rgba(5, 10, 20, 0.42);
+}
+
+.fg-ovalo,
+.fg-hombros,
+.fg-rostro path {
+  fill: none;
+  stroke: var(--fg-color);
+  stroke-linecap: round;
+  transition: stroke 0.25s ease;
+}
+
+.fg-ovalo {
+  stroke-width: 4;
+  stroke-dasharray: 10 8;
+  filter: drop-shadow(0 0 6px var(--fg-color));
+}
+
+.face-guide[data-estado="verde"] .fg-ovalo {
+  stroke-dasharray: none;
+  animation: fg-latido 1.4s ease-in-out infinite;
+}
+
+.fg-hombros {
+  stroke-width: 3;
+  opacity: 0.55;
+  stroke-dasharray: 8 8;
+}
+
+.fg-rostro path {
+  stroke-width: 2.5;
+  opacity: 0.35;
+}
+
+@keyframes fg-latido {
+  0%, 100% { stroke-width: 4; }
+  50%      { stroke-width: 6; }
+}
+
+/* Estado DEBAJO del video: no tapa la imagen */
+.face-guide-estado {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--fg-color);
+  border-radius: 10px;
+  background: var(--surface-2, #f3f6fb);
+  color: var(--text-strong, #0f1b33);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: left;
+  transition: border-color 0.25s ease;
+}
+
+.face-guide.activa .face-guide-estado {
+  display: flex;
+}
+
+.fg-punto {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--fg-color);
+  box-shadow: 0 0 8px var(--fg-color);
+}
+
+/* En el login con rostro la guía reemplaza las esquinas blancas */
+.face-frame:has(.face-guide) .face-overlay {
+  display: none;
+}
+
+/* ---------- Efecto de escaneo dentro del óvalo ---------- */
+.fg-stop {
+  stop-color: var(--fg-color);
+  transition: stop-color 0.25s ease;
+}
+
+.fg-punto-malla {
+  fill: var(--fg-color);
+}
+
+.fg-malla {
+  opacity: 0.22;
+}
+
+.fg-linea {
+  fill: var(--fg-color);
+  filter: drop-shadow(0 0 4px var(--fg-color));
+}
+
+/* La barra baja y sube por todo el óvalo (la línea va de y = 40 a y = 238) */
+.fg-barra {
+  transform: translateY(0);
+  animation: fg-escanear 2.2s ease-in-out infinite alternate;
+}
+
+.face-guide:not(.activa) .fg-barra {
+  animation-play-state: paused;
+}
+
+/* En verde el escaneo va más lento y suave: ya encontró el rostro */
+.face-guide[data-estado="verde"] .fg-barra {
+  animation-duration: 3.2s;
+}
+
+.face-guide[data-estado="verde"] .fg-malla {
+  opacity: 0.32;
+}
+
+@keyframes fg-escanear {
+  from { transform: translateY(-12px); }
+  to   { transform: translateY(186px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .face-guide[data-estado="verde"] .fg-ovalo,
+  .fg-barra {
+    animation: none;
+  }
+
+  .fg-barra {
+    display: none;
+  }
+}

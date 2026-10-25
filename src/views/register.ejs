@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/css/photo-studio.css">
   <link rel="stylesheet" href="/css/register-extras.css">
   <%# reCAPTCHA: el script se carga en assets/js/recaptcha-widget.js según la versión (2 o 3) %>
+  <link rel="stylesheet" href="/css/face-guide.css">
   <link rel="stylesheet" href="/css/theme.css">
 </head>
 <body>
@@ -126,7 +127,7 @@
               <label for="regCamera"><%= t.login_qr_camera %></label>
               <select id="regCamera" data-label="<%= t.login_qr_camera %>"></select>
             </div>
-            <video id="regVideo" autoplay muted playsinline class="face-video"></video>
+            <video id="regVideo" autoplay muted playsinline class="face-video" data-face-guide></video>
             <canvas id="regCanvas" class="face-canvas"></canvas>
             <div class="camera-controls">
               <button type="button" class="btn btn-sm btn-primary" id="btnCapture"><%= t.register_capture_photo %></button>
@@ -200,6 +201,7 @@
   <script src="/js/camera-picker.js"></script>
   <script src="/js/register-face.js"></script>
   <script src="/js/register-extras.js"></script>
+  <script src="/js/face-guide.js"></script>
   <script src="/js/theme.js"></script>
   <script src="/js/recaptcha-widget.js"></script>
 </body>

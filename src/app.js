@@ -39,6 +39,8 @@ app.use(express.json({ limit: '4mb' }));
 app.use(express.urlencoded({ extended: true, limit: '4mb' }));
 
 app.use(express.static(path.join(__dirname, '..', 'assets')));
+// face-api.js para el navegador (guía del rostro en la cámara); solo la carpeta dist
+app.use('/vendor/face-api', express.static(path.join(__dirname, '..', 'node_modules', '@vladmandic', 'face-api', 'dist'), { index: false }));
 app.use('/js', express.static(path.join(__dirname, '..', 'assets', 'js')));
 app.use('/css', express.static(path.join(__dirname, '..', 'assets', 'css')));
 
@@ -127,5 +129,9 @@ async function migrateMenuPermissions() {
 migrateMenuPermissions().then(() => {
   app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    // Reconocimiento facial: carga los modelos en segundo plano para que el primer login sea rápido
+    require('./services/face-local.service').precalentar()
+      .then(() => console.log('[Rostro] Modelos listos'))
+      .catch((err) => console.warn('[Rostro] No se pudieron precargar los modelos:', err.message));
   });
 });
