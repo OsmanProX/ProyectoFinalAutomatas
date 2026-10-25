@@ -176,8 +176,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (verifying) return;
 
-    const w = video.videoWidth || 640;
-    const h = video.videoHeight || 480;
+    // Se envía a 640 px como máximo: el servidor la reduce a ese tamaño de todos
+    // modos, así la foto pesa menos y la verificación responde más rápido
+    const escala = Math.min(1, 640 / (video.videoWidth || 640));
+    const w = Math.round((video.videoWidth || 640) * escala);
+    const h = Math.round((video.videoHeight || 480) * escala);
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext('2d');
@@ -242,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
         showStatus('success', i18n.verified + simText);
         setTimeout(() => {
           window.location.href = data.redirect || '/users/dashboard';
-        }, 1800);
+        }, 900);
       } else {
         const message = mapError(data.error, data.similarity);
         showStatus('error', message);
@@ -309,4 +312,4 @@ document.addEventListener('DOMContentLoaded', function () {
     if (captureLabel) captureLabel.textContent = i18n.capture;
     if (btnVerify) btnVerify.disabled = true;
   }
-});
+});

@@ -38,9 +38,15 @@ app.use('/webhooks', webhookRoutes);
 app.use(express.json({ limit: '4mb' }));
 app.use(express.urlencoded({ extended: true, limit: '4mb' }));
 
+// Rendimiento: los modelos del rostro (varios MB) y las imágenes casi no cambian;
+// el navegador los guarda 7 días y no los vuelve a descargar en cada página.
+// (CSS y JS siguen sin caché larga para que los cambios se vean al recargar.)
+const CACHE_LARGO = { maxAge: '7d', index: false };
+app.use('/models', express.static(path.join(__dirname, '..', 'assets', 'models'), CACHE_LARGO));
+app.use('/img', express.static(path.join(__dirname, '..', 'assets', 'img'), CACHE_LARGO));
 app.use(express.static(path.join(__dirname, '..', 'assets')));
 // face-api.js para el navegador (guía del rostro en la cámara); solo la carpeta dist
-app.use('/vendor/face-api', express.static(path.join(__dirname, '..', 'node_modules', '@vladmandic', 'face-api', 'dist'), { index: false }));
+app.use('/vendor/face-api', express.static(path.join(__dirname, '..', 'node_modules', '@vladmandic', 'face-api', 'dist'), CACHE_LARGO));
 app.use('/js', express.static(path.join(__dirname, '..', 'assets', 'js')));
 app.use('/css', express.static(path.join(__dirname, '..', 'assets', 'css')));
 

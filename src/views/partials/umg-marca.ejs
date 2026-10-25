@@ -1,0 +1,12 @@
+<%# Logo de la UMG en las páginas de acceso (login, registro y recuperar contraseña) %>
+<% var _en = (typeof lang !== 'undefined' && lang === 'en'); %>
+<div class="auth-marca">
+  <span class="auth-marca-sello">
+    <img src="/img/logo-umg-128.webp" width="64" height="64" alt="Universidad Mariano Gálvez de Guatemala" decoding="async" fetchpriority="high">
+  </span>
+  <span class="auth-marca-texto">
+    <strong>Universidad Mariano Gálvez</strong>
+    <span><%= _en ? 'Lexical Analyzer' : 'Analizador Léxico' %></span>
+    <small><%= _en ? 'Formal Languages and Automata · 2026' : 'Lenguajes Formales y Autómatas · 2026' %></small>
+  </span>
+</div>

@@ -13,6 +13,7 @@
   <%# reCAPTCHA: el script se carga en assets/js/recaptcha-widget.js según la versión (2 o 3) %>
   <link rel="stylesheet" href="/css/face-guide.css">
   <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/ui-pro.css">
 </head>
 <body>
   <%
@@ -24,6 +25,7 @@
 
   <div class="auth-container">
     <div class="card card-register">
+      <%- include('partials/umg-marca') %>
       <h1><%= t.register_title %></h1>
 
       <div id="formAlert" class="alert alert-error"<%- error ? '' : ' style="display:none"' %>><%= error || '' %></div>
@@ -202,6 +204,7 @@
   <script src="/js/register-face.js"></script>
   <script src="/js/register-extras.js"></script>
   <script src="/js/face-guide.js"></script>
+  <script src="/js/ui-pro.js"></script>
   <script src="/js/theme.js"></script>
   <script src="/js/recaptcha-widget.js"></script>
 </body>

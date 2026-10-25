@@ -19,7 +19,7 @@
 (function () {
   'use strict';
 
-  var INTERVALO_MS = 320;
+  var INTERVALO_MS = 160; // revisión cada ~0.16 s (antes 0.32 s): respuesta más rápida
   var SCRIPT_FACEAPI = '/vendor/face-api/face-api.js';
   var MODELOS = '/models';
 
@@ -151,13 +151,32 @@
     return n ? suma / n : 0;
   }
 
+  /**
+   * rostro = brillo del centro de la cara (mejillas y nariz, sin cabello)
+   * fondo  = brillo de los costados del cuadro (sin la cara)
+   * Una pared blanca detrás NO es contraluz si la cara se ve con buena luz:
+   * solo se avisa cuando la cara de verdad queda oscura contra un fondo claro.
+   */
   function evaluarLuz(rostro, fondo) {
-    if (rostro < 55) return { nivel: 0, texto: TXT.oscuro };
-    if (rostro > 225) return { nivel: 0, texto: TXT.brillo };
-    if (fondo - rostro > 50 && rostro < 130) return { nivel: 1, texto: TXT.contraluz };
-    if (rostro < 85) return { nivel: 1, texto: TXT.pocaLuz };
-    if (rostro > 205) return { nivel: 1, texto: TXT.brillo };
+    // Umbrales calibrados con cámaras de laptop (la cámara se expone para la
+    // pared clara y la cara queda ~70-90; aun así el reconocimiento funciona)
+    if (rostro < 35) return { nivel: 0, texto: TXT.oscuro };
+    if (rostro > 235) return { nivel: 0, texto: TXT.brillo };
+    if (fondo - rostro > 95 && rostro < 70) return { nivel: 1, texto: TXT.contraluz };
+    if (rostro < 55) return { nivel: 1, texto: TXT.pocaLuz };
+    if (rostro > 220) return { nivel: 1, texto: TXT.brillo };
     return { nivel: 2, texto: '' };
+  }
+
+  /** Centro de la cara dentro del cuadro que da el detector (evita cabello y fondo) */
+  function brilloCentroRostro(ctx, b) {
+    return brillo(ctx, b.x + b.width * 0.25, b.y + b.height * 0.35, b.width * 0.5, b.height * 0.5);
+  }
+
+  /** Costados izquierdo y derecho del cuadro (18 % de cada lado): el fondo real */
+  function brilloFondo(ctx, W, H) {
+    var franja = Math.max(1, Math.round(W * 0.18));
+    return (brillo(ctx, 0, 0, franja, H) + brillo(ctx, W - franja, 0, franja, H)) / 2;
   }
 
   // ------------------------------------------------------------------ posición
@@ -172,9 +191,11 @@
     if (dx > 1 || dy > 1) return { nivel: 0, texto: TXT.centrar };
     if (tam < 0.42) return { nivel: 0, texto: TXT.acercar };
     if (tam > 1.25) return { nivel: 0, texto: TXT.alejar };
-    if (dx > 0.38 || dy > 0.38) return { nivel: 1, texto: TXT.centrar };
-    if (tam < 0.58) return { nivel: 1, texto: TXT.acercar };
-    if (tam > 1.08) return { nivel: 1, texto: TXT.alejar };
+    // Margen más amplio para el verde (antes 0.38 / 0.58 / 1.08): no hace falta
+    // estar perfecto, el servidor compara con buena precisión igual
+    if (dx > 0.5 || dy > 0.5) return { nivel: 1, texto: TXT.centrar };
+    if (tam < 0.52) return { nivel: 1, texto: TXT.acercar };
+    if (tam > 1.15) return { nivel: 1, texto: TXT.alejar };
     return { nivel: 2, texto: '' };
   }
 
@@ -253,7 +274,7 @@
       var inicio = performance.now();
       self.revisar(function () {
         var duracion = performance.now() - inicio;
-        if (self.activa) self.programar(Math.max(INTERVALO_MS, duracion * 2));
+        if (self.activa) self.programar(Math.max(INTERVALO_MS, duracion * 1.25));
       });
     }, ms);
   };
@@ -279,14 +300,24 @@
       this.ocupado = false;
       return fin();
     }
-    var fondo = brillo(this.ctx, 0, 0, W, H);
+    var fondo = brilloFondo(this.ctx, W, H);
     var rxPx = OVALO.rxAlto * H;
     var zonaOvalo = brillo(this.ctx, W / 2 - rxPx * 0.7, H * (OVALO.cy - OVALO.ry * 0.7), rxPx * 1.4, H * OVALO.ry * 1.4);
 
     var terminar = function (posicion, luzRostro) {
-      var luz = evaluarLuz(luzRostro, fondo);
+      // Promedio suave de la luz: un cuadro con sombra no cambia el color de golpe
+      self.luzSuave = self.luzSuave == null ? luzRostro : self.luzSuave * 0.4 + luzRostro * 0.6;
+      var luz = evaluarLuz(self.luzSuave, fondo);
       // Gana el problema más grave; si empatan, primero la posición
       var final = luz.nivel < posicion.nivel ? luz : posicion;
+      // Estabilidad: si ya estaba en verde, solo baja si el problema se repite 2 veces
+      if (self.nivelActual === 2 && final.nivel === 1) {
+        self.racha = (self.racha || 0) + 1;
+        if (self.racha < 2) { self.ocupado = false; return fin(); }
+      } else {
+        self.racha = 0;
+      }
+      self.nivelActual = final.nivel;
       self.mostrar(final.nivel, final.nivel === 2 ? TXT.listo : final.texto);
       self.ocupado = false;
       fin();
@@ -309,12 +340,14 @@
     api.detectSingleFace(this.lienzo, new api.SsdMobilenetv1Options({ minConfidence: 0.4 }))
       .then(function (det) {
         if (!det) {
+          self.nivelActual = 0;
+          self.luzSuave = null;
           self.mostrar(0, TXT.sinRostro);
           self.ocupado = false;
           return fin();
         }
         var b = det.box;
-        terminar(evaluarPosicion(b, W, H), brillo(self.ctx, b.x, b.y, b.width, b.height));
+        terminar(evaluarPosicion(b, W, H), brilloCentroRostro(self.ctx, b));
       })
       .catch(function () { self.ocupado = false; fin(); });
   };

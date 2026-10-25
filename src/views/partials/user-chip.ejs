@@ -2,6 +2,7 @@
 <% if (user) { %>
 <div class="user-chip">
   <img class="user-chip-avatar" src="/perfil/foto?u=<%= user.id %>" alt="<%= t.profile_photo_alt %>"
+       width="40" height="40" decoding="async"
        onerror="this.style.visibility='hidden'">
   <div class="user-chip-text">
     <span class="user-chip-name"><%= user.full_name %></span>
