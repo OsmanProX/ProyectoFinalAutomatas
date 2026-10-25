@@ -94,6 +94,68 @@
     }
   }
 
+  /* ---------------------------------------------------------------- 5 */
+  // Celular y tablet: el menú lateral se abre como cajón desde el botón ☰
+  // (en computadora sigue igual, fijo a la izquierda)
+  var lateral = document.getElementById('sidebar');
+  var barraSup = document.querySelector('.topbar');
+  if (lateral && barraSup) {
+    var esIngles = (document.documentElement.lang || '').indexOf('en') === 0;
+    var boton = document.createElement('button');
+    boton.type = 'button';
+    boton.className = 'ui-hamburguesa';
+    boton.setAttribute('aria-controls', 'sidebar');
+    boton.setAttribute('aria-expanded', 'false');
+    boton.setAttribute('aria-label', esIngles ? 'Open menu' : 'Abrir menú');
+    boton.innerHTML = '<span></span><span></span><span></span>';
+
+    var logo = document.createElement('a');
+    logo.className = 'ui-topbar-logo';
+    logo.href = '/users/dashboard';
+    logo.innerHTML = '<img src="/img/logo-umg-128.webp" width="34" height="34" alt="UMG" decoding="async">';
+
+    barraSup.insertBefore(logo, barraSup.firstChild);
+    barraSup.insertBefore(boton, barraSup.firstChild);
+
+    var velo = document.createElement('div');
+    velo.className = 'ui-velo';
+    velo.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(velo);
+
+    var abrirMenu = function (abrir) {
+      document.body.classList.toggle('ui-menu-abierto', abrir);
+      boton.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+      boton.setAttribute('aria-label', abrir ? (esIngles ? 'Close menu' : 'Cerrar menú') : (esIngles ? 'Open menu' : 'Abrir menú'));
+    };
+    boton.addEventListener('click', function () {
+      abrirMenu(!document.body.classList.contains('ui-menu-abierto'));
+    });
+    velo.addEventListener('click', function () { abrirMenu(false); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') abrirMenu(false);
+    });
+    // Si se agranda la ventana (p. ej. se gira la tablet), se cierra solo
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 900) abrirMenu(false);
+    });
+    window.addEventListener('pageshow', function () { abrirMenu(false); });
+  }
+
+  /* ---------------------------------------------------------------- 6 */
+  // Tablas de Usuarios y Roles: en celular cada fila se ve como tarjeta;
+  // cada celda recibe el título de su columna (data-label) para mostrarlo
+  document.querySelectorAll('table.roles-table').forEach(function (tabla) {
+    var titulos = Array.prototype.map.call(tabla.querySelectorAll('thead th'), function (th) {
+      return th.textContent.trim();
+    });
+    tabla.querySelectorAll('tbody tr').forEach(function (tr) {
+      Array.prototype.forEach.call(tr.children, function (td, i) {
+        if (!td.hasAttribute('data-label')) td.setAttribute('data-label', titulos[i] || '');
+      });
+    });
+    tabla.classList.add('ui-apilable');
+  });
+
   /* ---------------------------------------------------------------- 4 */
   var form = document.getElementById('analyzeForm');
   if (!form) return;

@@ -87,7 +87,7 @@
 .profile-grid > .profile-card,
 .analysis-results > *,
 .lex-grid > * {
-  animation: ui-entrar var(--dur-slow) var(--ease-out) both;
+  animation: ui-entrar var(--dur-slow) var(--ease-out) backwards;
 }
 
 .dashboard-content > :nth-child(2),
@@ -116,7 +116,7 @@
 }
 
 .alert {
-  animation: ui-alerta 0.4s var(--ease-out) both;
+  animation: ui-alerta 0.4s var(--ease-out) backwards;
 }
 
 /* Botones: responden al pasar el mouse y al presionar */
@@ -215,7 +215,7 @@ tbody tr:hover {
 
 /* Fotos: aparecen sin "parpadeo" cuando terminan de cargar */
 .user-chip-avatar {
-  animation: ui-aparecer 0.4s var(--ease-out) both;
+  animation: ui-aparecer 0.4s var(--ease-out) backwards;
 }
 
 /* Secciones largas (resultados): el navegador no las dibuja hasta que se ven */
@@ -1112,7 +1112,7 @@ tbody tr:hover {
   border-radius: 16px;
   background: var(--surface);
   transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) ease, border-color var(--dur) ease;
-  animation: ui-entrar var(--dur-slow) var(--ease-out) both;
+  animation: ui-entrar var(--dur-slow) var(--ease-out) backwards;
   animation-delay: calc(0.25s + var(--i, 0) * 0.08s);
 }
 
@@ -1203,7 +1203,7 @@ tbody tr:hover {
     box-shadow var(--dur) ease,
     border-color var(--dur) ease,
     background-color var(--dur) ease;
-  animation: ui-entrar var(--dur-slow) var(--ease-out) both;
+  animation: ui-entrar var(--dur-slow) var(--ease-out) backwards;
   animation-delay: calc(0.2s + var(--i, 0) * 0.07s);
 }
 
@@ -1768,12 +1768,12 @@ tbody tr:hover {
 
 /* Vista previa: entra con animación */
 .file-preview:not([hidden]) {
-  animation: ui-entrar 0.4s var(--ease-out) both;
+  animation: ui-entrar 0.4s var(--ease-out) backwards;
 }
 
 /* Resultados: los chips de palabras aparecen en cascada */
 .lex-chips li {
-  animation: ui-aparecer 0.35s var(--ease-out) both;
+  animation: ui-aparecer 0.35s var(--ease-out) backwards;
 }
 
 .lex-chips li:nth-child(2) { animation-delay: 0.03s; }
@@ -2080,6 +2080,397 @@ tbody tr:hover {
   .auth-marca {
     flex-direction: column;
     text-align: center;
+  }
+}
+
+/* ============================================================================
+   8. ADAPTABLE A CUALQUIER PANTALLA (escritorio, laptop, tablet, Android, iOS)
+   ============================================================================
+   Puntos de corte:
+     > 900 px   computadora / laptop: menú lateral fijo (como siempre)
+     ≤ 900 px   tablet y celular: menú como cajón con el botón ☰
+     ≤ 700 px   tablas de Usuarios y Roles como tarjetas
+     ≤ 600 px   celular: márgenes y tarjetas más compactas
+     ≤ 400 px   celulares pequeños (Android de 360 px, iPhone SE de 320 px)
+   ============================================================================ */
+
+/* Base para Android / iOS */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  -webkit-tap-highlight-color: rgba(var(--accent-rgb), 0.15);
+  overflow-wrap: break-word;
+}
+
+img,
+video {
+  max-width: 100%;
+}
+
+/* En iOS/Android 100vh incluye la barra del navegador: dvh es la altura real */
+.auth-container,
+.main-wrapper {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Las tablas nunca se cortan: si no caben, se desplazan dentro de su tarjeta */
+.roles-card {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Resultados del análisis: las cajas se adaptan al ancho disponible */
+.lex-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+}
+
+.lex-box {
+  min-width: 0;
+}
+
+/* Botón ☰ y logo de la barra superior (solo se muestran en tablet / celular) */
+.ui-hamburguesa,
+.ui-topbar-logo {
+  display: none;
+}
+
+.ui-hamburguesa {
+  flex-shrink: 0;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  cursor: pointer;
+  transition: background-color var(--dur) ease, border-color var(--dur) ease;
+}
+
+.ui-hamburguesa span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--text-strong);
+  transition: transform var(--dur) var(--ease-out), opacity var(--dur) ease;
+}
+
+/* ☰ se convierte en ✕ cuando el menú está abierto */
+.ui-menu-abierto .ui-hamburguesa span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.ui-menu-abierto .ui-hamburguesa span:nth-child(2) { opacity: 0; }
+.ui-menu-abierto .ui-hamburguesa span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+.ui-topbar-logo {
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.ui-topbar-logo img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.45);
+}
+
+.ui-velo {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  background: rgba(5, 10, 20, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* ---------------------------------------------------------------- ≤ 900 px */
+@media (max-width: 900px) {
+  /* Menú como cajón (por encima del contenido) */
+  .sidebar,
+  .sidebar.collapsed {
+    width: min(290px, 86vw);
+    transform: translateX(-105%);
+    box-shadow: none;
+    transition: transform 0.32s var(--ease-out), box-shadow 0.32s ease;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .ui-menu-abierto .sidebar {
+    transform: none;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.45);
+  }
+
+  .ui-menu-abierto {
+    overflow: hidden;
+  }
+
+  .ui-menu-abierto .ui-velo {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Dentro del cajón se ven los textos completos (en lugar del riel de iconos) */
+  .sidebar .sidebar-text,
+  .sidebar.collapsed .sidebar-text,
+  .sidebar .sidebar-footer-text,
+  .sidebar.collapsed .sidebar-footer-text,
+  .sidebar .theme-label {
+    display: revert;
+  }
+
+  .sidebar .sidebar-brand,
+  .sidebar.collapsed .sidebar-brand {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 18px 16px;
+  }
+
+  .sidebar .sidebar-toggle {
+    display: none;
+  }
+
+  .sidebar .sidebar-nav-item,
+  .sidebar.collapsed .sidebar-nav-item {
+    justify-content: flex-start;
+    padding: 14px 20px;
+  }
+
+  .sidebar .sidebar-footer,
+  .sidebar.collapsed .sidebar-footer {
+    align-items: stretch;
+    padding: 16px 20px;
+  }
+
+  .sidebar-footer .theme-switch {
+    flex-direction: row;
+    border-radius: 999px;
+  }
+
+  .main-wrapper,
+  .sidebar.collapsed ~ .main-wrapper {
+    margin-left: 0;
+  }
+
+  .ui-hamburguesa {
+    display: inline-flex;
+  }
+
+  .ui-topbar-logo {
+    display: block;
+  }
+
+  .topbar {
+    gap: 10px;
+    padding: 10px 16px;
+  }
+
+  .topbar .user-chip {
+    min-width: 0;
+  }
+
+  .user-chip-text {
+    min-width: 0;
+  }
+
+  .user-chip-nick {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Páginas de administración: margen interno */
+  .dashboard-content:not(.ui-inicio) {
+    padding: 20px 16px 32px;
+  }
+
+  .ui-inicio {
+    padding: 20px 16px 32px;
+  }
+
+  /* Campos de 16 px: así iOS no hace zoom al tocar un campo */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: 16px !important; /* gana a los tamaños de cada página */
+  }
+
+  /* Botones y elementos táctiles de al menos ~40 px */
+  .btn-sm,
+  .role-select {
+    min-height: 40px;
+  }
+
+  .ui-metricas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------------------------------------------------------------- ≤ 700 px */
+@media (max-width: 700px) {
+  /* Usuarios y Roles: cada fila es una tarjeta con "Columna: valor" */
+  .roles-card:has(.ui-apilable) {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .ui-apilable thead {
+    display: none;
+  }
+
+  .ui-apilable,
+  .ui-apilable tbody,
+  .ui-apilable tr,
+  .ui-apilable td {
+    display: block;
+    width: 100%;
+  }
+
+  .ui-apilable tbody tr {
+    margin-bottom: 12px;
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: 0 2px 10px rgba(var(--shadow-rgb), 0.06);
+  }
+
+  .ui-apilable tbody tr:last-child {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ui-apilable tbody tr:hover {
+    background: var(--surface);
+  }
+
+  .roles-table.ui-apilable td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    text-align: right;
+  }
+
+  .ui-apilable td:last-child {
+    border-bottom: 0;
+  }
+
+  .ui-apilable td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    max-width: 45%;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-weight: 700;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .ui-apilable td[data-label=""]::before {
+    display: none;
+  }
+
+  .ui-apilable .role-select {
+    flex: 1;
+    max-width: 62%;
+  }
+
+  .ui-apilable td:last-child .btn {
+    flex: 1;
+  }
+}
+
+/* ---------------------------------------------------------------- ≤ 600 px */
+@media (max-width: 600px) {
+  .card {
+    padding: 24px 18px;
+    border-radius: 16px;
+  }
+
+  .auth-container {
+    padding: 64px 14px 24px;
+  }
+
+  .lang-switcher {
+    top: 10px;
+    right: 10px;
+    gap: 6px;
+  }
+
+  .card h1,
+  .roles-page h1 {
+    font-size: 24px;
+  }
+
+  .ana-idioma-saludo {
+    font-size: 16px;
+  }
+
+  .ui-acciones {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ui-seccion-titulo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .ui-sello {
+    text-align: center;
+    flex-direction: column;
+  }
+}
+
+/* Ventanas emergentes (rostro, permisos): nunca más altas que la pantalla,
+   también con el celular acostado */
+@media (max-width: 600px), (max-height: 760px) {
+  .modal-box,
+  .face-modal {
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+/* ---------------------------------------------------------------- ≤ 400 px */
+@media (max-width: 400px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .ui-metricas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ui-hero h1 {
+    font-size: 24px;
+  }
+
+  .ui-cinta {
+    transform: scale(0.88);
+  }
+
+  .ana-pasos li {
+    padding: 8px 10px;
+  }
+
+  .lang-switcher .btn-lang {
+    padding-left: 12px;
+    padding-right: 12px;
   }
 }
 
