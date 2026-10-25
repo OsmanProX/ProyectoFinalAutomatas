@@ -8,8 +8,9 @@ router.get('/', menuPermissionMiddleware('usuarios'), (req, res) => userControll
 router.get('/dashboard', (req, res) => userController.getDashboard(req, res));
 // Bitácora de accesos (auditoría de login), solo ADMIN
 router.get('/bitacora', adminOnly, (req, res) => auditController.getPage(req, res));
-router.post('/toggle/:id', activeRoleMiddleware, (req, res) => userController.toggleUserState(req, res));
-router.post('/delete/:id', activeRoleMiddleware, (req, res) => userController.deleteUser(req, res));
+// Cambiar estado y borrar usuarios: solo ADMIN (antes cualquier usuario con sesión podía)
+router.post('/toggle/:id', adminOnly, activeRoleMiddleware, (req, res) => userController.toggleUserState(req, res));
+router.post('/delete/:id', adminOnly, activeRoleMiddleware, (req, res) => userController.deleteUser(req, res));
 router.post('/:id/role', adminOnly, (req, res) => userController.updateRole(req, res));
 
 module.exports = router;

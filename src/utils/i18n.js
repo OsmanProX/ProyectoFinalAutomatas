@@ -31,7 +31,7 @@ const translations = {
     register_has_account: "¿Ya tienes cuenta?",
     register_login: "Inicia sesión",
     register_error_password: "Las contraseñas no coinciden",
-    register_error_exists: "El apodo ya existe",
+    register_error_exists: "Ese apodo ya está en uso. Elige otro (no importan mayúsculas ni tildes: Kevin y kevin son el mismo)",
     register_error_email_exists: "El correo electrónico ya está registrado",
     register_success: "Cuenta creada correctamente. Tu cuenta quedó inactiva hasta que el administrador valide tu correo electrónico",
     register_email: "Correo electrónico",
@@ -276,6 +276,7 @@ const translations = {
     users_saving: "Guardando…",
     users_saved: "Rol y estado actualizados correctamente",
     users_error: "No se pudo actualizar el usuario",
+    users_error_self: "No puedes quitarte el rol ADMIN ni desactivar tu propia cuenta",
   },
   en: {
     // Login
@@ -309,7 +310,7 @@ const translations = {
     register_has_account: "Already have an account?",
     register_login: "Log in",
     register_error_password: "Passwords do not match",
-    register_error_exists: "Nickname already exists",
+    register_error_exists: "That nickname is already taken. Choose another one (case and accents don't matter: Kevin and kevin are the same)",
     register_error_email_exists: "That email address is already registered",
     register_success: "Account created successfully. Your account stays inactive until the administrator validates your email address",
     register_email: "Email",
@@ -554,6 +555,7 @@ const translations = {
     users_saving: "Saving…",
     users_saved: "Role and state updated successfully",
     users_error: "Could not update the user",
+    users_error_self: "You can't remove your own ADMIN role or deactivate your own account",
   }
 };
 

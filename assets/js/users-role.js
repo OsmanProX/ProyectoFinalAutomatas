@@ -28,6 +28,9 @@
           if (result.ok && result.data.success) {
             status.textContent = i18n.saved || 'Rol actualizado';
             status.className = 'row-status row-status-success';
+          } else if (result.data && result.data.error === 'self_change') {
+            status.textContent = i18n.errorSelf || 'No puedes quitarte el rol ADMIN ni desactivar tu propia cuenta';
+            status.className = 'row-status row-status-error';
           } else {
             status.textContent = i18n.error || 'No se pudo actualizar el rol';
             status.className = 'row-status row-status-error';

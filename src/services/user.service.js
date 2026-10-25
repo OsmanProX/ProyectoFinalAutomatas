@@ -248,8 +248,15 @@ class UserService {
       return { success: false, error: photoValidation.error };
     }
 
-    // El apodo NO es unico: pueden existir usuarios con apodos repetidos.
-    // La unicidad la unica que importa es el correo electronico.
+    // El apodo debe ser ÚNICO: el login (contraseña, rostro y API) y "Recuperar
+    // contraseña" buscan al usuario por apodo; con apodos repetidos el segundo
+    // usuario no podría entrar. MySQL compara sin distinguir mayúsculas ni tildes
+    // (Kevin = kevin = kévin), por eso el mensaje lo explica.
+    const existing = await userRepository.findByNickname(registerDTO.nickname);
+    if (existing) {
+      return { success: false, error: 'nickname_exists' };
+    }
+
     const emailTaken = await userRepository.findByEmail(
       registerDTO.email,
       normalizeEmailForComparison(registerDTO.email)

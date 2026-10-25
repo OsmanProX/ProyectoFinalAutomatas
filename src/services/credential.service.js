@@ -320,11 +320,16 @@ class CredentialService {
     ].filter(([, valor]) => valor);
   }
 
+  /** La cuenta ya puede iniciar sesión (los usuarios nuevos nacen activos) */
+  cuentaActiva(user) {
+    return typeof user.isActive === 'function' ? user.isActive() : Number(user.state) === 1;
+  }
+
   /** Bloque de datos para el texto de WhatsApp (va como descripción del PDF) */
   datosWhatsapp(user, code, nueva = false) {
     const lineas = this.datosUsuario(user, code).map(([campo, valor]) => `• ${campo}: ${valor}`);
     return `\n\n📋 *Tus datos*\n${lineas.join('\n')}\n\n🔐 En el PDF va tu credencial con el código QR para iniciar sesión.`
-      + (nueva ? '' : '\n⏳ Tu cuenta quedará activa cuando el administrador la apruebe.');
+      + (nueva || this.cuentaActiva(user) ? '' : '\n⏳ Tu cuenta quedará activa cuando el administrador la apruebe.');
   }
 
   emailHtml(user, code, nueva = false, conLogo = false) {
@@ -352,7 +357,7 @@ class CredentialService {
               <td style="padding:7px 10px;border-bottom:1px solid #eef0f7;color:#1a1a2e;font-weight:600">${escapar(valor)}</td>
             </tr>`).join('')}
           </table>
-          <p style="margin-top:16px">🔐 El <b>código QR</b> está en la credencial PDF adjunta.${nueva ? '' : ' Tu cuenta quedará activa cuando el administrador la apruebe.'}</p>
+          <p style="margin-top:16px">🔐 El <b>código QR</b> está en la credencial PDF adjunta.${nueva || this.cuentaActiva(user) ? '' : ' Tu cuenta quedará activa cuando el administrador la apruebe.'}</p>
         </div>
         <div style="height:6px;background:linear-gradient(90deg,#ff3cac,#784ba0,#4361ee)"></div>
       </div>`;
