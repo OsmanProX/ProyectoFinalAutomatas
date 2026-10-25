@@ -17,7 +17,16 @@
 %>
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-brand">
-    <h2 class="sidebar-text">Mi App</h2>
+    <h2 class="sidebar-text">
+      <%# Logo: autómata de dos estados (q0 → q1, q1 de aceptación) %>
+      <svg class="brand-logo" viewBox="0 0 34 22" aria-hidden="true">
+        <circle class="estado" cx="7" cy="11" r="5.5"/>
+        <path class="flecha" d="M13 11h8m-3-3 3 3-3 3"/>
+        <circle class="estado" cx="27.5" cy="11" r="5.5"/>
+        <circle class="estado" cx="27.5" cy="11" r="2.8"/>
+      </svg>
+      <span>Analizador Léxico</span>
+    </h2>
     <button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
   </div>
 

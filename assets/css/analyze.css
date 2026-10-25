@@ -5,12 +5,12 @@
 .lex-divider {
   margin: 20px 0;
   border: 0;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border);
 }
 
 .lex-meta {
   margin: 4px 0 14px;
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 14px;
 }
 
@@ -19,8 +19,8 @@
   margin-left: 6px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: #eef0f7;
-  color: #1a1a2e;
+  background: var(--surface-3);
+  color: var(--text-strong);
   font-size: 12px;
   font-weight: 600;
 }
@@ -35,29 +35,29 @@
 
 .lex-stat {
   padding: 14px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 10px;
-  background: #f5f6fa;
-  color: #6b7280;
+  background: var(--surface-2);
+  color: var(--text-muted);
   font-size: 13px;
 }
 
 .lex-stat span {
   display: block;
-  color: #1a1a2e;
+  color: var(--text-strong);
   font-size: 26px;
   font-weight: 700;
   line-height: 1.2;
 }
 
 .lex-stat-main {
-  background: #1a1a2e;
-  border-color: #1a1a2e;
-  color: #c7cbe0;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary-muted);
 }
 
 .lex-stat-main span {
-  color: #fff;
+  color: var(--on-primary);
 }
 
 /* Secciones */
@@ -70,9 +70,9 @@
 .lex-box {
   min-width: 0;
   padding: 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 10px;
-  background: #fff;
+  background: var(--surface);
 }
 
 .lex-box-wide {
@@ -82,21 +82,21 @@
 .lex-box h3 {
   margin: 0 0 10px;
   padding-bottom: 6px;
-  border-bottom: 2px solid #4361ee;
-  color: #1a1a2e;
+  border-bottom: 2px solid var(--accent);
+  color: var(--text-strong);
   font-size: 16px;
 }
 
 .lex-box h4 {
   margin: 14px 0 8px;
-  color: #1a1a2e;
+  color: var(--text-strong);
   font-size: 14px;
 }
 
 .lex-empty,
 .lex-note {
   margin: 0 0 8px;
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
@@ -117,19 +117,19 @@
 .lex-chips li {
   padding: 4px 10px;
   border-radius: 999px;
-  background: #eef0f7;
-  color: #1a1a2e;
+  background: var(--surface-3);
+  color: var(--text-strong);
   font-size: 13px;
   overflow-wrap: anywhere;
 }
 
 .lex-chips li b {
   margin-left: 4px;
-  color: #4361ee;
+  color: var(--accent-text);
 }
 
 .lex-chips-light li {
-  background: #f5f6fa;
+  background: var(--surface-2);
 }
 
 /* Tablas de raíces */
@@ -147,7 +147,7 @@
 .lex-table th,
 .lex-table td {
   padding: 6px 8px;
-  border-bottom: 1px solid #eef0f7;
+  border-bottom: 1px solid var(--border);
   text-align: start;
   vertical-align: top;
   overflow-wrap: anywhere;
@@ -156,8 +156,8 @@
 .lex-table th {
   position: sticky;
   top: 0;
-  background: #f5f6fa;
-  color: #1a1a2e;
+  background: var(--surface-2);
+  color: var(--text-strong);
 }
 
 .lex-table td:last-child,
@@ -176,7 +176,7 @@
 }
 
 .lex-patterns dt {
-  color: #1a1a2e;
+  color: var(--text-strong);
   font-weight: 600;
 }
 
@@ -212,10 +212,10 @@
 .file-preview {
   margin-top: 10px;
   padding: 12px;
-  border: 1px solid #e5e7eb;
-  border-left: 4px solid #4361ee;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
   border-radius: 10px;
-  background: #f5f6fa;
+  background: var(--surface-2);
 }
 
 .file-preview-head {
@@ -227,30 +227,30 @@
 
 .file-preview-head strong {
   display: block;
-  color: #1a1a2e;
+  color: var(--text-strong);
   font-size: 14px;
   overflow-wrap: anywhere;
 }
 
 .file-preview-head small {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 12px;
 }
 
 .file-preview-clear {
   flex-shrink: 0;
   padding: 4px 10px;
-  border: 1px solid #c7cbe0;
+  border: 1px solid var(--border);
   border-radius: 999px;
-  background: #fff;
-  color: #1a1a2e;
+  background: var(--surface);
+  color: var(--text-strong);
   font-size: 12px;
   cursor: pointer;
 }
 
 .file-preview-clear:hover {
-  border-color: #4361ee;
-  color: #4361ee;
+  border-color: var(--accent);
+  color: var(--accent-text);
 }
 
 .file-preview-text {
@@ -259,8 +259,8 @@
   padding: 10px;
   overflow: auto;
   border-radius: 8px;
-  background: #fff;
-  color: #2d2d3a;
+  background: var(--surface);
+  color: var(--text);
   font-family: Consolas, 'DejaVu Sans Mono', monospace;
   font-size: 12.5px;
   line-height: 1.5;
@@ -269,16 +269,16 @@
 }
 
 .file-preview-note {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 12px;
 }
 
 .file-preview-error {
-  border-left-color: #e63946;
-  background: #fdecee;
+  border-left-color: var(--danger);
+  background: var(--danger-bg);
 }
 
 .file-preview-error .file-preview-note {
-  color: #b42332;
+  color: var(--danger);
   font-weight: 600;
 }
