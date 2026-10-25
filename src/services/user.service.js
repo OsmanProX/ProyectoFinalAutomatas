@@ -248,11 +248,8 @@ class UserService {
       return { success: false, error: photoValidation.error };
     }
 
-    const existing = await userRepository.findByNickname(registerDTO.nickname);
-    if (existing) {
-      return { success: false, error: 'nickname_exists' };
-    }
-
+    // El apodo NO es unico: pueden existir usuarios con apodos repetidos.
+    // La unicidad la unica que importa es el correo electronico.
     const emailTaken = await userRepository.findByEmail(
       registerDTO.email,
       normalizeEmailForComparison(registerDTO.email)
@@ -318,6 +315,26 @@ class UserService {
     const newState = user.state === 1 ? 0 : 1;
     await userRepository.updateState(id, newState);
     return { success: true, newState };
+  }
+
+  /**
+   * Fija el estado del usuario en un valor concreto (1 = activo, 0 = inactivo).
+   * Lo usa la pagina Gestion de usuarios desde el select de Estado.
+   */
+  async setUserState(id, state) {
+    if (!id || isNaN(id)) {
+      return { success: false, error: 'invalid_id' };
+    }
+    const newState = Number(state);
+    if (newState !== 0 && newState !== 1) {
+      return { success: false, error: 'invalid_state' };
+    }
+    const user = await userRepository.findById(id);
+    if (!user) {
+      return { success: false, error: 'user_not_found' };
+    }
+    await userRepository.updateState(id, newState);
+    return { success: true, state: newState };
   }
 
   async deleteUser(id) {

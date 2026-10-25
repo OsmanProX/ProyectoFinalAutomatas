@@ -262,17 +262,20 @@ const translations = {
 
     // Usuarios
     users_title: "Gestión de usuarios",
-    users_subtitle: "Lista de usuarios registrados; solo se puede modificar el rol",
+    users_subtitle: "Lista de usuarios registrados; puedes modificar el rol y el estado (activo/inactivo)",
     users_col_id: "ID",
     users_col_photo: "Foto",
     users_col_name: "Nombre completo",
     users_col_nickname: "Nickname",
     users_col_role: "Rol",
+    users_col_state: "Estado",
+    users_state_active: "Activo (1)",
+    users_state_inactive: "Inactivo (0)",
     users_col_actions: "Acciones",
     users_save: "Guardar",
     users_saving: "Guardando…",
-    users_saved: "Rol actualizado correctamente",
-    users_error: "No se pudo actualizar el rol",
+    users_saved: "Rol y estado actualizados correctamente",
+    users_error: "No se pudo actualizar el usuario",
   },
   en: {
     // Login
@@ -537,17 +540,20 @@ const translations = {
 
     // Users
     users_title: "User Management",
-    users_subtitle: "List of registered users; only the role can be modified",
+    users_subtitle: "List of registered users; you can modify the role and state (active/inactive)",
     users_col_id: "ID",
     users_col_photo: "Photo",
     users_col_name: "Full name",
     users_col_nickname: "Nickname",
     users_col_role: "Role",
+    users_col_state: "State",
+    users_state_active: "Active (1)",
+    users_state_inactive: "Inactive (0)",
     users_col_actions: "Actions",
     users_save: "Save",
     users_saving: "Saving…",
-    users_saved: "Role updated successfully",
-    users_error: "Could not update the role",
+    users_saved: "Role and state updated successfully",
+    users_error: "Could not update the user",
   }
 };
 

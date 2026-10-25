@@ -78,7 +78,8 @@ class UserController {
   }
 
   /**
-   * Actualiza el rol de un usuario (ADMIN, SUPERVISOR o ANALISTA).
+   * Guarda los cambios de la fila en Gestion de usuarios:
+   * rol (ADMIN, SUPERVISOR o ANALISTA) y, si viene en el cuerpo, estado (1/0).
    */
   async updateRole(req, res) {
     try {
@@ -87,7 +88,17 @@ class UserController {
       if (!result.success) {
         return res.status(400).json({ success: false, error: result.error });
       }
-      return res.json({ success: true, roleName: result.roleName });
+
+      let state = null;
+      if (req.body.state !== undefined) {
+        const stateResult = await userService.setUserState(req.params.id, req.body.state);
+        if (!stateResult.success) {
+          return res.status(400).json({ success: false, error: stateResult.error });
+        }
+        state = stateResult.state;
+      }
+
+      return res.json({ success: true, roleName: result.roleName, state });
     } catch (err) {
       console.error('Error al actualizar rol del usuario:', err);
       return res.status(500).json({ success: false, error: 'server' });

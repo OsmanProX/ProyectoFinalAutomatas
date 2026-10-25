@@ -14,7 +14,8 @@ const ACTIVE_STATE = 1;
 
 const INACTIVE_STATE = 0;
 
-const INITIAL_USER_STATE = INACTIVE_STATE;
+// Los usuarios nuevos nacen ACTIVOS (pueden iniciar sesion de inmediato)
+const INITIAL_USER_STATE = ACTIVE_STATE;
 
 const MENU_ITEMS = [
   { key: 'inicio',   route: '/users/dashboard', icon: '&#127968;', labelKey: 'nav_home' },

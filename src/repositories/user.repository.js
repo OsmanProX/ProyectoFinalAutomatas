@@ -55,7 +55,7 @@ class UserRepository {
    */
   async findAllWithPhoto() {
     const [rows] = await pool.query(
-      `SELECT u.id, u.full_name, u.nickname, u.photo, u.id_Roles,
+      `SELECT u.id, u.full_name, u.nickname, u.photo, u.state, u.id_Roles,
               r.name AS role_name
        FROM users u
        LEFT JOIN roles r ON r.id = u.id_Roles
@@ -66,6 +66,7 @@ class UserRepository {
       fullName: row.full_name,
       nickname: row.nickname,
       photo: row.photo || null,
+      state: row.state === null || row.state === undefined ? 1 : Number(row.state),
       idRole: row.id_Roles,
       roleName: row.role_name || null
     }));

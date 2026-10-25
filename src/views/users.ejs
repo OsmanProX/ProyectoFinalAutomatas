@@ -43,6 +43,7 @@
                 <th><%= t.users_col_name %></th>
                 <th><%= t.users_col_nickname %></th>
                 <th><%= t.users_col_role %></th>
+                <th><%= t.users_col_state %></th>
                 <th><%= t.users_col_actions %></th>
               </tr>
             </thead>
@@ -67,6 +68,12 @@
                           <%= r.name %>
                         </option>
                       <% }); %>
+                    </select>
+                  </td>
+                  <td>
+                    <select class="role-select" data-state-select>
+                      <option value="1" <%= Number(u.state) === 1 ? 'selected' : '' %>><%= t.users_state_active %></option>
+                      <option value="0" <%= Number(u.state) === 0 ? 'selected' : '' %>><%= t.users_state_inactive %></option>
                     </select>
                   </td>
                   <td>
