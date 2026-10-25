@@ -52,6 +52,7 @@ app.use(session({
 // Clave pública del reCAPTCHA para las vistas de login y registro (null = desactivado)
 app.use((req, res, next) => {
   res.locals.recaptchaSiteKey = recaptchaService.siteKey();
+  res.locals.recaptchaVersion = recaptchaService.version();
   next();
 });
 

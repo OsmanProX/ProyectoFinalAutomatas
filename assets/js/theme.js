@@ -26,7 +26,8 @@
   }
 
   function aplicar(tema, grupo) {
-    document.documentElement.setAttribute('data-theme', tema);
+    if (typeof window.aplicarTema === 'function') window.aplicarTema(tema); // theme-init.js
+    else document.documentElement.setAttribute('data-theme', tema);
     try { window.localStorage.setItem('tema', tema); } catch (e) { /* sin almacenamiento */ }
     grupo.querySelectorAll('button').forEach(function (b) {
       b.setAttribute('aria-pressed', String(b.getAttribute('data-tema') === tema));

@@ -10,9 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
   <link rel="stylesheet" href="/css/photo-studio.css">
   <link rel="stylesheet" href="/css/register-extras.css">
-  <% if (typeof recaptchaSiteKey !== 'undefined' && recaptchaSiteKey) { %>
-    <script src="https://www.google.com/recaptcha/api.js?hl=<%= lang %>" async defer></script>
-  <% } %>
+  <%# reCAPTCHA: el script se carga en assets/js/recaptcha-widget.js según la versión (2 o 3) %>
   <link rel="stylesheet" href="/css/theme.css">
 </head>
 <body>
@@ -161,11 +159,16 @@
           </div>
         </div>
 
-        <%# reCAPTCHA v2: solo aparece si están las claves en .env %>
+        <%# reCAPTCHA: solo aparece si están las claves en .env. v2 = casilla con el tema claro/oscuro; v3 = invisible %>
         <% if (typeof recaptchaSiteKey !== 'undefined' && recaptchaSiteKey) { %>
-          <div class="form-group" style="display:flex;justify-content:center;overflow:hidden">
-            <div class="g-recaptcha" data-sitekey="<%= recaptchaSiteKey %>"></div>
-          </div>
+          <div class="recaptcha-box" data-recaptcha
+               data-sitekey="<%= recaptchaSiteKey %>"
+               data-version="<%= typeof recaptchaVersion !== 'undefined' ? recaptchaVersion : 2 %>"
+               data-action="registro"
+               data-lang="<%= lang %>"></div>
+          <% if (typeof recaptchaVersion !== 'undefined' && recaptchaVersion === 3) { %>
+            <p class="recaptcha-aviso"><%- t.recaptcha_notice %></p>
+          <% } %>
         <% } %>
 
         <button type="submit" class="btn btn-primary"><%= t.register_submit %></button>
@@ -198,5 +201,6 @@
   <script src="/js/register-face.js"></script>
   <script src="/js/register-extras.js"></script>
   <script src="/js/theme.js"></script>
+  <script src="/js/recaptcha-widget.js"></script>
 </body>
 </html>

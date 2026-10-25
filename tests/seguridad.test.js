@@ -8,11 +8,18 @@ const { clientIp, describeAgent } = require('../src/services/login-audit.service
 const { leerFiltros } = require('../src/controllers/audit.controller');
 
 const fetchReal = global.fetch;
-const claves = { site: process.env.RECAPTCHA_SITE_KEY, secret: process.env.RECAPTCHA_SECRET_KEY };
+const claves = {
+  site: process.env.RECAPTCHA_SITE_KEY,
+  secret: process.env.RECAPTCHA_SECRET_KEY,
+  version: process.env.RECAPTCHA_VERSION,
+  minScore: process.env.RECAPTCHA_MIN_SCORE
+};
 afterEach(() => {
   global.fetch = fetchReal;
   process.env.RECAPTCHA_SITE_KEY = claves.site || '';
   process.env.RECAPTCHA_SECRET_KEY = claves.secret || '';
+  process.env.RECAPTCHA_VERSION = claves.version || '';
+  process.env.RECAPTCHA_MIN_SCORE = claves.minScore || '';
 });
 
 describe('reCAPTCHA', () => {
@@ -42,6 +49,35 @@ describe('reCAPTCHA', () => {
     expect(await recaptcha.verify('')).toBe(false);
     global.fetch = async () => { throw new Error('sin red'); };
     expect(await recaptcha.verify('token')).toBe(false);
+  });
+
+  test('versión: 2 por defecto, 3 solo si RECAPTCHA_VERSION=3', () => {
+    process.env.RECAPTCHA_VERSION = '';
+    expect(recaptcha.version()).toBe(2);
+    process.env.RECAPTCHA_VERSION = '3';
+    expect(recaptcha.version()).toBe(3);
+    process.env.RECAPTCHA_MIN_SCORE = 'abc';
+    expect(recaptcha.minScore()).toBe(0.5);
+  });
+
+  test('v3: acepta solo con puntaje suficiente y la acción esperada', async () => {
+    process.env.RECAPTCHA_SITE_KEY = 'sitio';
+    process.env.RECAPTCHA_SECRET_KEY = 'secreta';
+    process.env.RECAPTCHA_VERSION = '3';
+    process.env.RECAPTCHA_MIN_SCORE = '0.5';
+    const google = (datos) => { global.fetch = async () => ({ json: async () => datos }); };
+
+    google({ success: true, score: 0.9, action: 'login' });
+    expect(await recaptcha.verify('token', null, 'login')).toBe(true);
+
+    google({ success: true, score: 0.2, action: 'login' });   // parece bot
+    expect(await recaptcha.verify('token', null, 'login')).toBe(false);
+
+    google({ success: true, score: 0.9, action: 'registro' }); // token de otra acción
+    expect(await recaptcha.verify('token', null, 'login')).toBe(false);
+
+    google({ success: true, action: 'login' });                // sin puntaje
+    expect(await recaptcha.verify('token', null, 'login')).toBe(false);
   });
 });
 

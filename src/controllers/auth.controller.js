@@ -26,10 +26,10 @@ class AuthController {
       const loginDTO = new LoginDTO(req.body);
 
       // reCAPTCHA ("No soy un robot") antes de revisar la contraseña
-      const captchaOk = await recaptchaService.verify(req.body['g-recaptcha-response'], loginAuditService.clientIp(req));
+      const captchaOk = await recaptchaService.verify(req.body['g-recaptcha-response'], loginAuditService.clientIp(req), 'login');
       if (!captchaOk) {
         loginAuditService.record(req, { method: 'password', success: false, nickname: loginDTO.nickname, detail: 'recaptcha' });
-        return res.render('login', { t, lang, error: t.recaptcha_error, success: null });
+        return res.render('login', { t, lang, error: recaptchaService.version() === 3 ? t.recaptcha_error_v3 : t.recaptcha_error, success: null });
       }
 
       const result = await userService.authenticate(loginDTO);
@@ -82,12 +82,12 @@ class AuthController {
       const registerDTO = new RegisterDTO(req.body);
 
       // reCAPTCHA ("No soy un robot") antes de procesar la foto y guardar
-      const captchaOk = await recaptchaService.verify(req.body['g-recaptcha-response'], loginAuditService.clientIp(req));
+      const captchaOk = await recaptchaService.verify(req.body['g-recaptcha-response'], loginAuditService.clientIp(req), 'registro');
       if (!captchaOk) {
         return res.render('register', {
           t,
           lang,
-          error: t.recaptcha_error,
+          error: recaptchaService.version() === 3 ? t.recaptcha_error_v3 : t.recaptcha_error,
           values: registerDTO.toFormValues()
         });
       }
