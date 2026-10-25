@@ -2,6 +2,7 @@ const userService = require('../services/user.service');
 const roleRepository = require('../repositories/role.repository');
 const { getTranslation } = require('../utils/i18n');
 const { DashboardDTO } = require('../dto');
+const supervisionService = require('../services/supervision.service');
 
 // Roles que se pueden asignar desde la pagina Usuarios
 const ASSIGNABLE_ROLES = ['ADMIN', 'SUPERVISOR', 'ANALISTA'];
@@ -15,7 +16,11 @@ class UserController {
       const users = await userService.getAllUsers();
       const dashboardDTO = new DashboardDTO(users);
       const data = dashboardDTO.toJSON();
-      res.render('dashboard', { t, lang, ...data });
+      // SUPERVISOR: resumen de entregas (WhatsApp) y accesos de los últimos 7 días
+      let supervision = null;
+      const rol = String((res.locals.user && res.locals.user.role) || '').toUpperCase();
+      if (rol === 'SUPERVISOR') supervision = await supervisionService.resumen(lang);
+      res.render('dashboard', { t, lang, ...data, supervision });
     } catch (err) {
       console.error('Error al obtener usuarios:', err);
       res.render('dashboard', { t, lang, users: [], count: 0, activeCount: 0, inactiveCount: 0 });

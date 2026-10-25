@@ -30,6 +30,9 @@
       var EN = lang === 'en';
       var _roleName = (user && user.role) ? String(user.role).toUpperCase() : '';
       var _esAdmin = _roleName === 'ADMIN';
+      var _esSuper = _roleName === 'SUPERVISOR';
+      // Resumen del supervisor (user.controller -> supervision.service); null para los demás roles
+      var _sup = (typeof supervision !== 'undefined' && supervision) ? supervision : null;
 
       // Mismas reglas que el menú lateral (partials/sidebar.ejs) para los accesos rápidos
       var _mpD = (typeof menuPermissions !== 'undefined') ? menuPermissions : null;
@@ -164,8 +167,89 @@
         </figure>
       </section>
 
-      <% if (!_esAdmin) { %>
-      <%# Analista / Supervisor: laboratorio de textos (en lugar de las métricas del administrador) %>
+      <% if (_esSuper && _sup) { var E = _sup.entregas, A = _sup.accesos; %>
+      <%# Supervisor: "Dashboard de entregas" (reportes, credenciales y códigos enviados) y accesos %>
+      <div class="ui-seccion-titulo">
+        <h2><%= EN ? 'Supervision panel' : 'Panel de supervisión' %></h2>
+        <p><%= EN ? 'Last ' + _sup.dias + ' days · Guatemala time' : 'Últimos ' + _sup.dias + ' días · hora de Guatemala' %></p>
+      </div>
+      <section class="ui-metricas" aria-label="<%= EN ? 'Deliveries' : 'Entregas' %>">
+        <div class="ui-metrica">
+          <span class="ui-metrica-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg></span>
+          <span class="ui-metrica-num" data-contar><%= E.total %></span>
+          <span class="ui-metrica-txt"><%= EN ? 'WhatsApp deliveries' : 'Entregas por WhatsApp' %></span>
+          <div class="ui-barra" aria-hidden="true"><span class="b-acc" style="width:<%= E.total ? 100 : 0 %>%"></span></div>
+        </div>
+        <div class="ui-metrica ui-metrica--ok">
+          <span class="ui-metrica-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></span>
+          <span class="ui-metrica-num" data-contar><%= E.entregados %></span>
+          <span class="ui-metrica-txt"><%= EN ? 'Delivered' : 'Entregadas' %> · <%= E.pctEntregados %>%</span>
+          <div class="ui-barra" aria-hidden="true"><span class="b-ok" style="width:<%= E.pctEntregados %>%"></span></div>
+        </div>
+        <div class="ui-metrica">
+          <span class="ui-metrica-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+          <span class="ui-metrica-num" data-contar><%= E.enCamino %></span>
+          <span class="ui-metrica-txt"><%= EN ? 'On the way' : 'En camino' %></span>
+          <div class="ui-barra" aria-hidden="true"><span class="b-acc" style="width:<%= E.total ? Math.round(E.enCamino * 100 / E.total) : 0 %>%"></span></div>
+        </div>
+        <div class="ui-metrica ui-metrica--off">
+          <span class="ui-metrica-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg></span>
+          <span class="ui-metrica-num" data-contar><%= E.fallidos %></span>
+          <span class="ui-metrica-txt"><%= EN ? 'Not delivered' : 'No entregadas' %></span>
+          <div class="ui-barra" aria-hidden="true"><span class="b-hl" style="width:<%= E.total ? Math.round(E.fallidos * 100 / E.total) : 0 %>%"></span></div>
+        </div>
+      </section>
+
+      <section class="ui-super">
+        <div class="ui-super-caja">
+          <h3><%= EN ? 'Latest deliveries' : 'Últimas entregas' %></h3>
+          <% if (E.ultimos.length) { %>
+          <ul class="ui-super-lista">
+            <% E.ultimos.forEach(function (w, i) { %>
+            <li style="--i:<%= i %>">
+              <span class="ui-super-tipo">
+                <strong><%= w.tipo %></strong>
+                <small><%= w.destino %> · <%= w.fecha %></small>
+              </span>
+              <span class="ui-estado ui-estado--<%= w.grupo %>"><%= w.estado %></span>
+            </li>
+            <% }); %>
+          </ul>
+          <% } else { %>
+          <p class="ui-super-vacio"><%= EN ? 'No deliveries yet. Reports and ID cards sent by WhatsApp will appear here.' : 'Todavía no hay entregas. Aquí aparecerán los reportes y credenciales enviados por WhatsApp.' %></p>
+          <% } %>
+          <% if (E.porTipo.length) { %>
+          <div class="ui-leyenda">
+            <% E.porTipo.forEach(function (p) { %><span><i class="b-acc"></i><%= p.texto %> <%= p.cantidad %></span><% }); %>
+          </div>
+          <% } %>
+        </div>
+
+        <div class="ui-super-caja">
+          <h3><%= EN ? 'Access to the system' : 'Accesos al sistema' %></h3>
+          <div class="ui-super-accesos">
+            <div class="ui-anillo<%= A.total ? '' : ' ui-anillo--vacio' %>" style="--p:<%= A.pctExitosos %>" role="img"
+                 aria-label="<%= A.pctExitosos %>% <%= EN ? 'successful' : 'exitosos' %>">
+              <span><b><%= A.pctExitosos %>%</b><small><%= EN ? 'successful' : 'exitosos' %></small></span>
+            </div>
+            <ul class="ui-super-cifras">
+              <li><b data-contar><%= A.total %></b><%= EN ? 'attempts' : 'intentos' %></li>
+              <li class="ok"><b data-contar><%= A.exitosos %></b><%= EN ? 'successful' : 'exitosos' %></li>
+              <li class="mal"><b data-contar><%= A.fallidos %></b><%= EN ? 'failed' : 'fallidos' %></li>
+            </ul>
+          </div>
+          <% A.porMetodo.forEach(function (m) { %>
+          <div class="ui-super-metodo">
+            <span><%= m.texto %> <b><%= m.cantidad %></b></span>
+            <div class="ui-barra" aria-hidden="true"><span class="b-acc" style="width:<%= m.pct %>%"></span></div>
+          </div>
+          <% }); %>
+        </div>
+      </section>
+      <% } %>
+
+      <% if (!_esAdmin && !_esSuper) { %>
+      <%# Analista: laboratorio de textos (en lugar de las métricas del administrador) %>
       <section class="ui-lab">
         <div class="ui-lab-texto">
           <span class="ui-lab-etiqueta">✦ <%= EN ? 'Your analysis workspace' : 'Tu espacio de análisis' %></span>

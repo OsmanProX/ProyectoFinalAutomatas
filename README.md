@@ -10,7 +10,7 @@ de archivos `.txt` en 5 idiomas, con reporte PDF por correo o WhatsApp.
 | Backend | Bun 1.3 (compatible con Node.js 22), Express 5 |
 | Base de datos | MySQL (centralizada) |
 | Servicios | Brevo (correo SMTP), Wawp / Green-API (WhatsApp), Google reCAPTCHA v2, API de reconocimiento facial |
-| Seguridad | bcrypt, JWT HS256, reCAPTCHA, bitácora de accesos, consultas parametrizadas, `.env` |
+| Seguridad | bcrypt, JWT HS256, reCAPTCHA, bitácora de accesos, consultas parametrizadas, `.env`, límite de intentos (fuerza bruta), protección CSRF por origen + cookie SameSite, cabeceras seguras, páginas de error sin detalles internos |
 
 ---
 

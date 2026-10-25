@@ -2475,6 +2475,277 @@ video {
 }
 
 /* ============================================================================
+   10. INICIO DEL SUPERVISOR (entregas y accesos)
+   ============================================================================ */
+.ui-super {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.ui-super-caja {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 2px 10px rgba(var(--shadow-rgb), 0.06);
+}
+
+.ui-super-caja h3 {
+  margin: 0 0 12px;
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.ui-super-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-super-lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-2);
+  animation: ui-entrar 0.45s var(--ease-out) backwards;
+  animation-delay: calc(0.2s + var(--i, 0) * 0.06s);
+}
+
+.ui-super-tipo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ui-super-tipo strong {
+  color: var(--text-strong);
+  font-size: 14px;
+}
+
+.ui-super-tipo small {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-estado {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ui-estado--entregados { background: var(--success-bg); color: var(--success); }
+.ui-estado--enCamino { background: var(--info-bg); color: var(--info); }
+.ui-estado--fallidos { background: var(--danger-bg); color: var(--danger); }
+
+.ui-super-vacio {
+  margin: 0 0 10px;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.ui-super-accesos {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 14px;
+}
+
+/* Anillo de porcentaje de accesos exitosos */
+.ui-anillo {
+  --p: 0;
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 116px;
+  height: 116px;
+  border-radius: 50%;
+  background: conic-gradient(var(--success-solid) calc(var(--p) * 1%), rgba(var(--danger-rgb), 0.55) 0);
+}
+
+.ui-anillo--vacio {
+  background: var(--surface-3);
+}
+
+.ui-anillo::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.ui-anillo span {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+
+.ui-anillo b {
+  color: var(--text-strong);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.ui-anillo small {
+  color: var(--text-muted);
+  font-size: 11.5px;
+}
+
+.ui-super-cifras {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.ui-super-cifras b {
+  display: inline-block;
+  min-width: 34px;
+  margin-right: 6px;
+  color: var(--text-strong);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-super-cifras .ok b { color: var(--success); }
+.ui-super-cifras .mal b { color: var(--danger); }
+
+.ui-super-metodo {
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.ui-super-metodo b {
+  color: var(--text-strong);
+}
+
+.ui-super-metodo .ui-barra {
+  margin-top: 6px;
+}
+
+@media (max-width: 900px) {
+  .ui-super {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .ui-super-accesos {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ============================================================================
+   9. PÁGINA DE ERROR (404 / 403 / 413 / 500)
+   ============================================================================ */
+.ui-error {
+  text-align: center;
+}
+
+.ui-error-automata {
+  display: block;
+  width: 220px;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto 6px;
+}
+
+.ui-error-estado {
+  fill: rgba(var(--accent-rgb), 0.1);
+  stroke: var(--accent-text);
+  stroke-width: 2;
+}
+
+.ui-error-muerto {
+  fill: rgba(var(--danger-rgb), 0.12);
+  stroke: var(--danger);
+  stroke-dasharray: 5 4;
+  animation: ui-girar 9s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.ui-error-arista {
+  fill: none;
+  stroke: var(--text-faint);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.ui-error-nombre {
+  fill: var(--text-strong);
+  font: italic 600 14px Georgia, "Times New Roman", serif;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.ui-error-etiqueta {
+  fill: var(--danger);
+  font: 700 14px Inter, system-ui, sans-serif;
+  text-anchor: middle;
+}
+
+.ui-error-codigo {
+  display: inline-block;
+  margin: 4px 0 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ui-error h1 {
+  margin-bottom: 8px;
+}
+
+.ui-error-texto {
+  margin: 0 auto 22px;
+  max-width: 36ch;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.ui-error-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.ui-error-acciones .btn {
+  flex: 1 1 140px;
+  text-decoration: none;
+}
+
+/* ============================================================================
    7. REDUCIR MOVIMIENTO (accesibilidad): sin animaciones en bucle ni saltos
    ============================================================================ */
 @media (prefers-reduced-motion: reduce) {

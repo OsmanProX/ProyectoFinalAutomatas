@@ -18,16 +18,28 @@ const roleRepository = require('./repositories/role.repository');
 const menuPermissionRepository = require('./repositories/menu-permission.repository');
 const { authMiddleware, activeRoleMiddleware, menuPermissionMiddleware } = require('./middlewares/auth.middleware');
 const recaptchaService = require('./services/recaptcha.service');
+// Seguridad web (OWASP): límite de intentos, protección CSRF y cabeceras seguras
+const { limiteIntentos, verificarOrigen, cabecerasSeguras } = require('./middlewares/security.middleware');
+const { jwtAuth } = require('./middlewares/jwt.middleware');
+const { getTranslation } = require('./utils/i18n');
+const { noEncontrado, manejarError } = require('./middlewares/error.middleware');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// No anunciar la tecnología del servidor y agregar cabeceras de seguridad a todo
+app.disable('x-powered-by');
+app.use(cabecerasSeguras);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Segmentacion y verificacion facial locales (reemplazan la API externa).
 // Va ANTES de /api: ese router tiene un 404 catch-all para todo /api/*.
-app.use('/api/rostro', faceRoutes);
+// Ahora requieren token JWT (antes eran públicos) y tienen límite de peticiones:
+// la web no los usa (el login y el registro llaman al servicio directo en el servidor).
+const limiteRostroApi = limiteIntentos({ nombre: 'api-rostro', max: 30, ventanaMs: 10 * 60 * 1000, contarTodo: true });
+app.use('/api/rostro', limiteRostroApi, jwtAuth, faceRoutes);
 // API REST con JWT (Authorization: Bearer <token>). Va antes de la sesión y del
 // lector de JSON de la web: tiene su propio lector, límites y errores en JSON.
 app.use('/api', apiRoutes);
@@ -54,7 +66,9 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'fallback_secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 2 }
+  // httpOnly: JavaScript no puede leer la cookie (XSS); sameSite lax: otro sitio no puede enviar
+  // formularios con la sesión del usuario (CSRF)
+  cookie: { maxAge: 1000 * 60 * 60 * 2, httpOnly: true, sameSite: 'lax' }
 }));
 
 // Clave pública del reCAPTCHA para las vistas de login y registro (null = desactivado)
@@ -88,6 +102,34 @@ app.use(async (req, res, next) => {
   next();
 });
 
+// CSRF: todo POST/PUT/DELETE de las páginas debe venir de este mismo sitio
+app.use(verificarOrigen);
+
+// Límite de intentos (fuerza bruta). Los fallidos se cuentan por apodo (max) y por IP
+// (3 veces más, porque en un salón varias personas comparten IP); al entrar bien, el
+// contador se limpia. El aviso sale en la misma pantalla.
+const QUINCE_MIN = 15 * 60 * 1000;
+const mensajeEspera = (req, segundos) => {
+  const t = getTranslation(req.session.lang || 'es');
+  return t.security_too_many.replace('{min}', Math.max(1, Math.ceil(segundos / 60)));
+};
+app.post('/login', limiteIntentos({
+  nombre: 'login', max: 8, ventanaMs: QUINCE_MIN,
+  alBloquear: (req, res, seg) => res.status(429).render('login', {
+    t: getTranslation(req.session.lang || 'es'), lang: req.session.lang || 'es', error: mensajeEspera(req, seg), success: null
+  })
+}));
+app.post('/login/face', limiteIntentos({ nombre: 'login-rostro', max: 10, ventanaMs: QUINCE_MIN }));
+app.post('/login/qr', limiteIntentos({ nombre: 'login-qr', max: 10, ventanaMs: QUINCE_MIN }));
+app.post('/register', limiteIntentos({
+  nombre: 'registro', max: 10, maxIp: 40, ventanaMs: 60 * 60 * 1000, contarTodo: true,
+  alBloquear: (req, res, seg) => res.status(429).render('register', {
+    t: getTranslation(req.session.lang || 'es'), lang: req.session.lang || 'es', error: mensajeEspera(req, seg), values: {}
+  })
+}));
+app.post('/recuperar/codigo', limiteIntentos({ nombre: 'recuperar-codigo', max: 8, maxIp: 30, ventanaMs: QUINCE_MIN, contarTodo: true }));
+app.post('/recuperar/confirmar', limiteIntentos({ nombre: 'recuperar-confirmar', max: 10, maxIp: 30, ventanaMs: QUINCE_MIN, contarTodo: true }));
+
 app.use('/', authRoutes);
 app.use('/users', authMiddleware, userRoutes);
 app.use('/perfil', authMiddleware, menuPermissionMiddleware('perfil'), profileRoutes);
@@ -102,6 +144,11 @@ app.get('/', (req, res) => {
   }
   res.redirect('/login');
 });
+
+// ------------------------------------------------------------------ errores
+// 404 y errores con el diseño del sitio, sin detalles internos (ver error.middleware.js)
+app.use(noEncontrado);
+app.use(manejarError);
 
 // Migracion automatica: crea role_menu_permissions si no existe y puebla permisos por defecto
 async function migrateMenuPermissions() {

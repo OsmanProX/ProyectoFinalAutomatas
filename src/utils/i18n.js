@@ -233,6 +233,20 @@ const translations = {
     nav_language: "Idioma",
     nav_roles: "Roles y Permisos",
     nav_analysis: "Análisis léxico",
+    // Seguridad y páginas de error (sin detalles internos)
+    security_too_many: "Demasiados intentos. Espera {min} minuto(s) e inténtalo de nuevo.",
+    security_csrf: "La solicitud no viene de este sitio. Recarga la página e inténtalo de nuevo.",
+    error_404_title: "Página no encontrada",
+    error_404_text: "La dirección que buscas no existe o fue movida.",
+    error_403_title: "Acceso no permitido",
+    error_403_text: "No tienes permiso para ver esta página.",
+    error_413_title: "Archivo demasiado grande",
+    error_413_text: "La foto o el archivo supera el tamaño permitido. Intenta con uno más pequeño.",
+    error_500_title: "Algo salió mal",
+    error_500_text: "Ocurrió un error inesperado. Ya quedó registrado; inténtalo de nuevo en unos minutos.",
+    error_home: "Ir al inicio",
+    error_back: "Volver atrás",
+    error_code: "Código",
     switch_lang: "English",
 
     // Roles y permisos
@@ -514,6 +528,20 @@ const translations = {
     nav_language: "Language",
     nav_roles: "Roles & Permissions",
     nav_analysis: "Lexical Analysis",
+    // Security and error pages (no internal details)
+    security_too_many: "Too many attempts. Wait {min} minute(s) and try again.",
+    security_csrf: "This request does not come from this site. Reload the page and try again.",
+    error_404_title: "Page not found",
+    error_404_text: "The address you are looking for does not exist or was moved.",
+    error_403_title: "Access not allowed",
+    error_403_text: "You do not have permission to view this page.",
+    error_413_title: "File too large",
+    error_413_text: "The photo or file is larger than allowed. Try a smaller one.",
+    error_500_title: "Something went wrong",
+    error_500_text: "An unexpected error occurred. It has been logged; please try again in a few minutes.",
+    error_home: "Go to home",
+    error_back: "Go back",
+    error_code: "Code",
     switch_lang: "Español",
 
     // Roles & permissions

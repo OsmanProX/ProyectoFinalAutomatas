@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function () {
           window.location.href = data.redirect || '/users/dashboard';
         }, 900);
       } else {
-        const message = mapError(data.error, data.similarity);
+        const message = mapError(data.error, data.similarity, data.message);
         showStatus('error', message);
         verifying = false;
         enableControls(true);
@@ -267,9 +267,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  function mapError(code, similarity) {
+  function mapError(code, similarity, serverMessage) {
     let msg;
     switch (code) {
+      // Límite de intentos o solicitud de otro sitio: el servidor ya manda el texto
+      case 'too_many_attempts':
+      case 'invalid_origin': return serverMessage || i18n.connectionError;
       case 'user_not_found': msg = i18n.userNotFound; break;
       case 'no_photo_registered': msg = i18n.noPhoto; break;
       case 'account_disabled': msg = i18n.accountDisabled; break;

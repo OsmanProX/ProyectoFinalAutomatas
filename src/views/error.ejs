@@ -1,0 +1,59 @@
+<%
+  // Página de error (404, 403, 413, 500). Nunca muestra detalles internos:
+  // el detalle técnico solo se escribe en la terminal del servidor.
+  const T = (typeof t !== 'undefined' && t) ? t : {};
+  const L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+  const C = (typeof codigo !== 'undefined' && codigo) ? codigo : 500;
+  const titulo = T['error_' + C + '_title'] || T.error_500_title || 'Algo salió mal';
+  const mensaje = T['error_' + C + '_text'] || T.error_500_text || '';
+  const conSesion = typeof user !== 'undefined' && user;
+%>
+<!DOCTYPE html>
+<html lang="<%= L %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex">
+  <script src="/js/theme-init.js"></script>
+  <title><%= C %> · <%= titulo %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/ui-pro.css">
+</head>
+<body>
+  <div class="lang-switcher">
+    <a href="/lang/<%= L === 'es' ? 'en' : 'es' %>" class="btn-lang"><%= T.switch_lang || 'English' %></a>
+  </div>
+
+  <div class="auth-container">
+    <div class="card ui-error">
+      <%- include('partials/umg-marca') %>
+
+      <%# Autómata que "no acepta": el estado de error (qx) %>
+      <svg class="ui-error-automata" viewBox="0 0 220 70" aria-hidden="true">
+        <path class="ui-error-arista" d="M8 35h18"/>
+        <circle class="ui-error-estado" cx="48" cy="35" r="20"/>
+        <text class="ui-error-nombre" x="48" y="35">q0</text>
+        <path class="ui-error-arista" d="M70 35h58"/>
+        <text class="ui-error-etiqueta" x="99" y="26">?</text>
+        <circle class="ui-error-estado ui-error-muerto" cx="152" cy="35" r="20"/>
+        <text class="ui-error-nombre" x="152" y="35">qx</text>
+        <path class="ui-error-arista" d="M172 35c24-22 24 22 0 0" />
+      </svg>
+
+      <p class="ui-error-codigo"><%= T.error_code || 'Código' %> <%= C %></p>
+      <h1><%= titulo %></h1>
+      <p class="ui-error-texto"><%= mensaje %></p>
+
+      <div class="ui-error-acciones">
+        <a class="btn" href="<%= conSesion ? '/users/dashboard' : '/login' %>"><%= T.error_home || 'Ir al inicio' %></a>
+        <button type="button" class="btn btn-outline" onclick="history.length > 1 ? history.back() : location.assign('/')"><%= T.error_back || 'Volver atrás' %></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/ui-pro.js"></script>
+  <script src="/js/theme.js"></script>
+</body>
+</html>
