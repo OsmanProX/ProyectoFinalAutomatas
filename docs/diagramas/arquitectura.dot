@@ -34,6 +34,9 @@ digraph Arquitectura {
             • API REST /api con JWT (HS256)<br align="left"/>
             • Roles y permisos · bitácora de accesos<br align="left"/>
             • Webhook POST /webhooks/wawp/&lt;clave&gt;<br align="left"/></font></td></tr>
+          <tr><td bgcolor="#dbe4ff" align="left"><font point-size="10"><b>Reconocimiento facial local</b> · face-api.js (WASM)<br align="left"/>
+            SSD MobileNet v1 + 68 puntos + descriptor 128-d<br align="left"/>
+            recorte del rostro y comparación (distancia &lt; 0.6)<br align="left"/></font></td></tr>
         </table>>];
     }
   }
@@ -47,7 +50,6 @@ digraph Arquitectura {
     brevo     [label=<<b>Brevo SMTP</b> (correo)<br/><font point-size="10">smtp-relay.brevo.com : 587</font><br/><font point-size="10">STARTTLS · credenciales y códigos</font>>];
     wawp      [label=<<b>Wawp</b> (WhatsApp, principal)<br/><font point-size="10">api.wawp.net : 443</font><br/><font point-size="10">/v2/send/text · /v2/send/pdf</font>>];
     green     [label=<<b>Green-API</b> (WhatsApp, respaldo)<br/><font point-size="10">7107.api.greenapi.com : 443</font><br/><font point-size="10">sendMessage · sendFileByUpload</font>>];
-    face      [label=<<b>API de reconocimiento facial</b><br/><font point-size="10">.NET + Neurotec SDK</font><br/><font point-size="10">reversal-sedate-catnip.ngrok-free.dev : 443</font>>];
     github    [label=<<b>GitHub</b> (código fuente)<br/><font point-size="10">github.com : 443</font><br/><font point-size="10">rama_Kevin → rama_Combinada → main</font>>];
   }
 
@@ -64,7 +66,6 @@ digraph Arquitectura {
   app         -> wawp      [];
   wawp        -> proxy     [headlabel="webhook\nmessage.ack\n:443", labeldistance=6, labelangle=-25, style=dashed, color="#4361ee", fontcolor="#4361ee", constraint=false];
   app         -> green     [];
-  app         -> face      [];
   github      -> ssh       [label="git pull (despliegue)", style=dashed, constraint=false, color="#6b7280", fontcolor="#6b7280"];
 
   leyenda [shape=plain, style="", label=<
