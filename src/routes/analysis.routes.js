@@ -3,7 +3,7 @@ const multer = require('multer');
 const { getTranslation } = require('../utils/i18n');
 
 // Importamos el analizador léxico y el generador de PDF que creaste
-const { analyzeText, SUPPORTED_LANGUAGES } = require('../services/lexer.service');
+const { analyzeText, SUPPORTED_LANGUAGES, agruparPorLetra } = require('../services/lexer.service');
 const { createAnalysisPDF } = require('../services/pdf.service');
 const { decodeTextFile, safeFileName, MAX_TEXT_BYTES } = require('../utils/text-file');
 // Envío del reporte por el medio de notificación del registro (correo / WhatsApp)
@@ -40,7 +40,31 @@ function guardarEnHistorial(req, result, archivo) {
     topWords: (result.mostRepeated || []).slice(0, 3).map((i) => `${i.word} (${i.count})`).join(', '),
     date: new Date().toISOString()
   };
-  req.session.analysisHistory = [resumen, ...anteriores].slice(0, MAX_HISTORIAL);
+  // Si el más reciente es el mismo análisis (mismo archivo, idioma y conteos), solo se actualiza:
+  // así reenviar el formulario (F5 / volver atrás) no repite la entrada
+  const ultimo = anteriores[0];
+  const mismo = ultimo && ultimo.fileName === resumen.fileName && ultimo.language === resumen.language &&
+    ultimo.totalWords === resumen.totalWords && ultimo.characters === resumen.characters;
+  const resto = mismo ? anteriores.slice(1) : anteriores;
+  req.session.analysisHistory = [resumen, ...resto].slice(0, MAX_HISTORIAL);
+}
+
+// El navegador envía el nombre del archivo en UTF-8, pero multer lo entrega leído como latin1
+// ("español" llega como "espaÃ±ol"); se corrige solo si el resultado es UTF-8 válido
+function nombreOriginal(nombre) {
+  const texto = String(nombre || '');
+  if (!/[\u0080-\u00ff]/.test(texto) || /[^\u0000-\u00ff]/.test(texto)) return texto;
+  const utf8 = Buffer.from(texto, 'latin1').toString('utf8');
+  return utf8.includes('\uFFFD') ? texto : utf8;
+}
+
+// El resultado guardado en la sesión no trae la lista agrupada por letra (para no duplicarla);
+// se vuelve a agrupar al mostrarlo
+function conGruposPorLetra(resultado) {
+  if (!resultado || (resultado.leastRepeatedByLetter && resultado.leastRepeatedByLetter.length)) return resultado;
+  const palabras = (resultado.leastRepeated || []).map((i) => i.word);
+  const code = resultado.language ? resultado.language.code : 'es';
+  return { ...resultado, leastRepeatedByLetter: agruparPorLetra(palabras, code) };
 }
 
 // Renderiza el formulario con las traducciones y los resultados del análisis
@@ -48,7 +72,7 @@ function renderForm(req, res, error = null, result = null, success = null) {
   const lang = req.session ? (req.session.lang || 'es') : 'es';
   const t = getTranslation(lang);
   const history = req.session && Array.isArray(req.session.analysisHistory) ? req.session.analysisHistory : [];
-  res.render('analyze', { t, lang, error, result, success, history });
+  res.render('analyze', { t, lang, error, result: conGruposPorLetra(result), success, history });
 }
 
 // Canales permitidos según el método de notificación elegido en el registro
@@ -60,8 +84,11 @@ const CANALES_POR_METODO = {
 const METODO_POR_CANAL = { email: 'correo_electronico', phone: 'whatsapp', both: 'ambos' };
 
 // GET /analyze -> Muestra la vista principal
+// GET /analyze?resultado=1 -> Muestra el último análisis guardado en la sesión
+// (después de procesar se redirige aquí: así al refrescar la página NO se vuelve a enviar el archivo)
 router.get('/', (req, res) => {
-  renderForm(req, res);
+  const ultimo = req.query.resultado && req.session ? req.session.lastAnalysis : null;
+  renderForm(req, res, null, ultimo || null);
 });
 
 // POST /analyze -> Recibe el archivo .txt y ejecuta el Análisis Léxico (Inciso e)
@@ -99,8 +126,16 @@ router.post('/', (req, res) => {
     if (req.session) {
       const { leastRepeatedByLetter, ...paraSesion } = result;
       req.session.lastAnalysis = paraSesion;
-      req.session.lastAnalysisFile = safeFileName(req.file.originalname);
+      req.session.lastAnalysisFile = safeFileName(nombreOriginal(req.file.originalname));
       guardarEnHistorial(req, result, req.session.lastAnalysisFile);
+      // Patrón Post/Redirect/Get: se guarda la sesión y se muestra el resultado con un GET
+      return req.session.save((errorSesion) => {
+        if (errorSesion) {
+          console.error('No se pudo guardar la sesión del análisis:', errorSesion);
+          return renderForm(req, res, null, result);
+        }
+        return res.redirect(303, `${req.baseUrl || '/analyze'}?resultado=1`);
+      });
     }
 
     // Renderizar la vista pasando los resultados
