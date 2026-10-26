@@ -183,17 +183,35 @@
                 <% } %>
               </section>
 
-              <!-- c. Palabras que menos se repiten -->
-              <section class="lex-box">
+              <!-- c. Palabras que menos se repiten: TODAS, en orden alfabético de la A a la Z -->
+              <section class="lex-box lex-box-ancho">
                 <h3>Palabras que menos se repiten</h3>
                 <% if (R.leastRepeated && R.leastRepeated.length > 0) { %>
                   <% const totalMenos = R.leastRepeatedTotal || R.leastRepeated.length; %>
-                  <p class="lex-note"><%= totalMenos %> palabra(s) aparecen <%= R.leastRepeated[0].count %> vez/veces<%= totalMenos > R.leastRepeated.length ? ` (se muestran ${R.leastRepeated.length})` : '' %>.</p>
-                  <ul class="lex-chips lex-chips-light">
-                    <% R.leastRepeated.forEach(item => { %>
-                      <li dir="auto"><%= item.word %></li>
+                  <% const grupos = (R.leastRepeatedByLetter && R.leastRepeatedByLetter.length) ? R.leastRepeatedByLetter : [{ letter: 'A-Z', words: R.leastRepeated.map(i => i.word) }]; %>
+                  <p class="lex-note"><%= totalMenos %> palabra(s) aparecen <%= R.leastRepeated[0].count %> vez/veces. Se muestran todas, en orden alfabético<%= totalMenos > R.leastRepeated.length ? ` (las primeras ${R.leastRepeated.length})` : '' %>.</p>
+
+                  <div class="lex-alfa-barra">
+                    <%# Índice: salta a la letra (solo las letras que tienen palabras) %>
+                    <nav class="lex-indice" aria-label="Índice alfabético">
+                      <% grupos.forEach(g => { %>
+                        <a href="#menos-<%= encodeURIComponent(g.letter) %>" title="<%= g.words.length %> palabra(s)"><%= g.letter %></a>
+                      <% }); %>
+                    </nav>
+                    <input type="search" class="lex-buscar" placeholder="Buscar palabra…" aria-label="Buscar en las palabras que menos se repiten" data-filtro-palabras="#listaMenos">
+                  </div>
+
+                  <div class="lex-alfabeto" id="listaMenos" tabindex="0">
+                    <% grupos.forEach(g => { %>
+                      <div class="lex-grupo" data-grupo>
+                        <h4 class="lex-letra" id="menos-<%= encodeURIComponent(g.letter) %>"><%= g.letter %> <small><%= g.words.length %></small></h4>
+                        <ul class="lex-chips lex-chips-light">
+                          <% g.words.forEach(w => { %><li dir="auto"><%= w %></li><% }); %>
+                        </ul>
+                      </div>
                     <% }); %>
-                  </ul>
+                    <p class="lex-empty lex-sin-resultados" hidden>No hay palabras que coincidan.</p>
+                  </div>
                 <% } else { %>
                   <p class="lex-empty">No hay datos.</p>
                 <% } %>
@@ -213,8 +231,8 @@
                 <% } %>
               </section>
 
-              <!-- e. Nombres de personas y otros nombres propios -->
-              <section class="lex-box">
+              <!-- e. Nombres de personas y otros nombres propios (caja más ancha: un libro tiene cientos) -->
+              <section class="lex-box lex-box-nombres">
                 <h3>Nombres de personas</h3>
                 <% if (R.persons && R.persons.length > 0) { %>
                   <ul class="lex-chips">

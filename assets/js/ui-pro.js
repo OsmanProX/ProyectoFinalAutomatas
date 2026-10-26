@@ -156,6 +156,50 @@
     tabla.classList.add('ui-apilable');
   });
 
+  /* ---------------------------------------------------------------- 7 */
+  // Buscar dentro de las palabras que menos se repiten (análisis léxico)
+  document.querySelectorAll('[data-filtro-palabras]').forEach(function (campo) {
+    var lista = document.querySelector(campo.getAttribute('data-filtro-palabras'));
+    if (!lista) return;
+    var sinTildes = function (t) { return t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); };
+    var palabras = Array.prototype.map.call(lista.querySelectorAll('li'), function (li) {
+      return { li: li, texto: sinTildes(li.textContent) };
+    });
+    var grupos = lista.querySelectorAll('[data-grupo]');
+
+    // Índice A-Z: salta a la letra DENTRO de la lista (sin mover toda la página)
+    var barra = campo.closest('.lex-alfa-barra');
+    var indice = barra && barra.querySelector('.lex-indice');
+    if (indice) {
+      indice.addEventListener('click', function (e) {
+        var enlace = e.target.closest('a[href^="#"]');
+        if (!enlace) return;
+        var destino = document.getElementById(decodeURIComponent(enlace.getAttribute('href').slice(1)));
+        if (!destino || !lista.contains(destino)) return;
+        e.preventDefault();
+        var grupo = destino.closest('[data-grupo]') || destino;
+        var arriba = lista.scrollTop + grupo.getBoundingClientRect().top - lista.getBoundingClientRect().top;
+        lista.scrollTo({ top: arriba, behavior: reducir ? 'auto' : 'smooth' });
+      });
+    }
+    var vacio = lista.querySelector('.lex-sin-resultados');
+    var espera = null;
+    campo.addEventListener('input', function () {
+      clearTimeout(espera);
+      espera = setTimeout(function () {
+        var buscado = sinTildes(campo.value.trim());
+        palabras.forEach(function (p) { p.li.hidden = buscado !== '' && p.texto.indexOf(buscado) === -1; });
+        var alguno = false;
+        grupos.forEach(function (g) {
+          var visible = !!g.querySelector('li:not([hidden])');
+          g.hidden = !visible;
+          if (visible) alguno = true;
+        });
+        if (vacio) vacio.hidden = alguno;
+      }, 120);
+    });
+  });
+
   /* ---------------------------------------------------------------- 4 */
   var form = document.getElementById('analyzeForm');
   if (!form) return;

@@ -73,8 +73,11 @@ router.post('/', (req, res) => {
     }
 
     // Guardar el resultado en la sesión para generar el PDF posteriormente
+    // (sin la lista agrupada por letra: es la misma información y con un libro de varios MB
+    // haría la sesión el doble de pesada; el PDF la vuelve a agrupar)
     if (req.session) {
-      req.session.lastAnalysis = result;
+      const { leastRepeatedByLetter, ...paraSesion } = result;
+      req.session.lastAnalysis = paraSesion;
       req.session.lastAnalysisFile = safeFileName(req.file.originalname);
     }
 

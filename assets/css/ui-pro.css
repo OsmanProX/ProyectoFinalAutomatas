@@ -2660,6 +2660,136 @@ video {
 }
 
 /* ============================================================================
+   11. ANÁLISIS: palabras que menos se repiten, completas de la A a la Z
+   ============================================================================ */
+.lex-box-ancho {
+  grid-column: 1 / -1;
+}
+
+.lex-alfa-barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 10px;
+}
+
+.lex-indice {
+  display: flex;
+  flex: 1 1 320px;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.lex-indice a {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--accent-text);
+  font-size: 12.5px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur-fast) ease;
+}
+
+.lex-indice a:hover,
+.lex-indice a:focus-visible {
+  background: var(--accent);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.lex-buscar {
+  flex: 0 1 220px;
+  min-width: 160px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.lex-buscar:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.16);
+}
+
+/* Lista con desplazamiento propio: un libro puede tener miles de palabras */
+.lex-alfabeto {
+  max-height: 440px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 6px;
+  border-top: 1px solid var(--border);
+  scroll-behavior: smooth;
+}
+
+.lex-grupo + .lex-grupo {
+  margin-top: 4px;
+}
+
+.lex-letra {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 8px 2px 6px;
+  background: var(--surface);
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 800;
+  scroll-margin-top: 0;
+}
+
+.lex-letra small {
+  margin-left: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Miles de chips: sin animación de entrada (rendimiento) */
+.lex-alfabeto .lex-chips li {
+  animation: none;
+}
+
+.lex-box.lex-box-ancho {
+  content-visibility: visible;
+}
+
+/* Nombres: en computadora ocupa 2 columnas y cada lista tiene su propio desplazamiento */
+@media (min-width: 901px) {
+  .lex-box-nombres {
+    grid-column: span 2;
+  }
+}
+
+.lex-box-nombres .lex-chips {
+  max-height: 300px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.lex-box-nombres .lex-chips li {
+  animation: none;
+}
+
+/* Tablas de raíces: la raíz no se parte letra por letra ("cor / one / l") */
+.lex-table th:first-child,
+.lex-table td:first-child {
+  min-width: 64px;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+/* ============================================================================
    9. PÁGINA DE ERROR (404 / 403 / 413 / 500)
    ============================================================================ */
 .ui-error {

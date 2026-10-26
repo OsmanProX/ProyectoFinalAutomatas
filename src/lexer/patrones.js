@@ -19,8 +19,11 @@ const CATEGORIAS = Object.freeze({
   NUMERO: 'NUMERO',
   HASHTAG: 'HASHTAG',
   MENCION: 'MENCION',
+  ROMANO: 'ROMANO',
   SIGLA: 'SIGLA',
+  DOMINIO: 'DOMINIO',
   PALABRA: 'PALABRA',
+  PALABRA_SIGNOS: 'PALABRA_SIGNOS',
   CODIGO: 'CODIGO',
   OTRO: 'OTRO'
 });
@@ -37,8 +40,14 @@ const PATRONES = [
   { categoria: CATEGORIAS.NUMERO, regex: /^[+-]?\d+([.,]\d+)*$/, descripcion: 'Números enteros y decimales' },
   { categoria: CATEGORIAS.HASHTAG, regex: /^#[\p{L}\d_]+$/u, descripcion: 'Hashtags #ejemplo' },
   { categoria: CATEGORIAS.MENCION, regex: /^@[\p{L}\d_.]+$/u, descripcion: 'Menciones @usuario' },
-  { categoria: CATEGORIAS.SIGLA, regex: /^(\p{Lu}{2,6}|(\p{Lu}\.){2,6})$/u, descripcion: 'Siglas y acrónimos (ONU, UMG, O.N.U.)' },
+  // Capítulos y siglos: II, IV, XVI, XIX, XL (solo I, V, X, L para no confundir con siglas como CD o MD)
+  { categoria: CATEGORIAS.ROMANO, regex: /^(?=[IVXL]{2,}$)(XL|L?X{0,3})(IX|IV|V?I{0,3})$/, descripcion: 'Números romanos (II, XVI, XIX)' },
+  { categoria: CATEGORIAS.SIGLA, regex: /^(\p{Lu}{2,6}|(\p{Lu}{1,3}\.){2,6}|(\p{L}\.){2,6})$/u, descripcion: 'Siglas y abreviaturas, también con puntos (ONU, UMG, O.N.U., L.A., EE.UU., a.m.)' },
+  { categoria: CATEGORIAS.DOMINIO, regex: /^\.\p{L}[\p{L}\d]{0,9}$/u, descripcion: 'Dominios y extensiones (.com, .LA, .gt, .txt)' },
   { categoria: CATEGORIAS.PALABRA, regex: /^\p{L}+(['’-]\p{L}+)*\.?$/u, descripcion: 'Palabras (letras de cualquier alfabeto)' },
+  // Letras unidas por un punto o dos puntos que no son sigla ni dominio ("ho.a", "ab.cd"):
+  // se cuentan como palabra (aparecen en las listas) y además se reportan aparte
+  { categoria: CATEGORIAS.PALABRA_SIGNOS, regex: /^\p{L}+([.:]\p{L}+)+\.?$/u, descripcion: 'Palabras con un punto o dos puntos en medio (ho.a, ab.cd)' },
   { categoria: CATEGORIAS.CODIGO, regex: /^[\p{L}\d]+([-_/][\p{L}\d]+)*$/u, descripcion: 'Códigos alfanuméricos (COVID-19, A1)' }
 ];
 
