@@ -2961,6 +2961,182 @@ video {
 }
 
 /* ============================================================================
+   12. BOTÓN FLOTANTE "VOLVER ARRIBA" (todas las páginas · assets/js/ui-pro.js)
+   Color de acento (el 10 % de la regla 60-30-10); el anillo marca el avance
+   ============================================================================ */
+.ui-arriba {
+  --ui-arriba-tam: 52px;
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 150; /* debajo del menú móvil (190-200) y de las ventanas modales (1000) */
+  width: var(--ui-arriba-tam);
+  height: var(--ui-arriba-tam);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--on-primary);
+  background: radial-gradient(circle at 30% 25%, var(--accent-hover), var(--accent) 70%);
+  box-shadow:
+    0 10px 24px rgba(var(--accent-rgb), 0.35),
+    0 2px 6px rgba(var(--shadow-rgb), 0.18);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(24px) scale(0.6) rotate(-90deg);
+  transition:
+    opacity 0.35s ease,
+    transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease,
+    visibility 0s linear 0.45s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ui-arriba.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1) rotate(0);
+  transition:
+    opacity 0.35s ease,
+    transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease,
+    visibility 0s;
+}
+
+/* Halo que "respira" mientras está visible */
+.ui-arriba::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.45);
+  pointer-events: none;
+}
+
+.ui-arriba.visible::before {
+  animation: ui-arriba-halo 2.8s ease-out 0.6s 2;
+}
+
+.ui-arriba-anillo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg); /* el avance empieza arriba */
+  pointer-events: none;
+}
+
+.ui-arriba-pista,
+.ui-arriba-avance {
+  fill: none;
+  stroke-width: 3;
+}
+
+.ui-arriba-pista {
+  stroke: rgba(255, 255, 255, 0.22);
+}
+
+.ui-arriba-avance {
+  stroke: var(--highlight);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.15s linear;
+}
+
+.ui-arriba-flecha {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (hover: hover) {
+  .ui-arriba.visible:hover {
+    transform: translateY(-4px) scale(1.06);
+    box-shadow:
+      0 16px 32px rgba(var(--accent-rgb), 0.45),
+      0 4px 10px rgba(var(--shadow-rgb), 0.2);
+  }
+
+  .ui-arriba.visible:hover .ui-arriba-flecha {
+    transform: translateY(-3px);
+  }
+}
+
+.ui-arriba.visible:active {
+  transform: translateY(0) scale(0.92);
+  transition-duration: 0.12s;
+}
+
+.ui-arriba:focus-visible {
+  outline: 3px solid var(--highlight);
+  outline-offset: 3px;
+}
+
+/* Al hacer clic la flecha "despega" y vuelve a entrar desde abajo */
+.ui-arriba.subiendo .ui-arriba-flecha {
+  animation: ui-arriba-despegue 0.7s cubic-bezier(0.5, 0, 0.3, 1);
+}
+
+@keyframes ui-arriba-despegue {
+  0% { transform: translateY(0); opacity: 1; }
+  40% { transform: translateY(-22px); opacity: 0; }
+  41% { transform: translateY(18px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes ui-arriba-halo {
+  0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.45); }
+  70% { box-shadow: 0 0 0 14px rgba(var(--accent-rgb), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+}
+
+/* Al subir, el foco pasa al contenido principal sin dibujarle un borde con el mouse */
+main[tabindex="-1"]:focus:not(:focus-visible),
+.main-content[tabindex="-1"]:focus:not(:focus-visible),
+h1[tabindex="-1"]:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Login, registro, recuperar y error: el selector de tema ocupa la esquina */
+.ui-arriba.ui-arriba--sobre-tema {
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 64px);
+  right: max(16px, env(safe-area-inset-right));
+}
+
+/* Con el menú móvil abierto no compite con el menú */
+.ui-menu-abierto .ui-arriba {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .ui-arriba {
+    --ui-arriba-tam: 46px;
+    right: max(14px, env(safe-area-inset-right));
+    bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  .ui-arriba-flecha {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media print {
+  .ui-arriba {
+    display: none !important;
+  }
+}
+
+/* ============================================================================
    7. REDUCIR MOVIMIENTO (accesibilidad): sin animaciones en bucle ni saltos
    ============================================================================ */
 @media (prefers-reduced-motion: reduce) {
@@ -2986,5 +3162,11 @@ video {
 
   .ui-progreso {
     display: none;
+  }
+
+  .ui-arriba,
+  .ui-arriba.visible {
+    transform: none;
+    transition: opacity 0.01ms, visibility 0s;
   }
 }

@@ -5,6 +5,7 @@
  *  3. Números que "cuentan" hasta su valor (Inicio y resultados del análisis).
  *  4. Análisis léxico: zona de arrastrar y soltar, pasos 1-2-3 y botón
  *     "Procesando...". El archivo sigue en el mismo <input name="file">.
+ *  8. Botón flotante "Volver arriba" en todas las páginas (con anillo de avance).
  * Todo es opcional: si este archivo no carga, las páginas funcionan igual.
  */
 (function () {
@@ -199,6 +200,127 @@
       }, 120);
     });
   });
+
+  /* ---------------------------------------------------------------- 8 */
+  // Botón flotante "Volver arriba": aparece al bajar, el anillo muestra cuánto
+  // se ha leído de la página y al hacer clic sube suavemente al principio
+  (function () {
+    var esIngles = (document.documentElement.lang || '').indexOf('en') === 0;
+    var texto = esIngles ? 'Back to top' : 'Volver arriba';
+    var RADIO = 21;
+    var PERIMETRO = 2 * Math.PI * RADIO;
+
+    var boton = document.createElement('button');
+    boton.type = 'button';
+    boton.className = 'ui-arriba';
+    boton.setAttribute('aria-label', texto);
+    boton.title = texto;
+    boton.tabIndex = -1; // oculto: no recibe el foco hasta que aparece
+    boton.innerHTML =
+      '<svg class="ui-arriba-anillo" viewBox="0 0 48 48" aria-hidden="true">' +
+        '<circle class="ui-arriba-pista" cx="24" cy="24" r="' + RADIO + '"></circle>' +
+        '<circle class="ui-arriba-avance" cx="24" cy="24" r="' + RADIO + '"></circle>' +
+      '</svg>' +
+      '<svg class="ui-arriba-flecha" viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"></path>' +
+      '</svg>';
+    document.body.appendChild(boton);
+
+    var avance = boton.querySelector('.ui-arriba-avance');
+    avance.style.strokeDasharray = PERIMETRO.toFixed(2);
+    avance.style.strokeDashoffset = PERIMETRO.toFixed(2);
+
+    var visible = false;
+    var pendiente = false;
+
+    // Aparece al bajar media pantalla (o la mitad de lo que se puede bajar en páginas cortas)
+    function alturaMinima(total) {
+      return Math.min(320, window.innerHeight * 0.5, total * 0.5);
+    }
+
+    function actualizar() {
+      pendiente = false;
+      var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+      var total = document.documentElement.scrollHeight - window.innerHeight;
+      var mostrar = total > 120 && y > alturaMinima(total);
+      if (mostrar !== visible) {
+        visible = mostrar;
+        boton.classList.toggle('visible', mostrar);
+        boton.tabIndex = mostrar ? 0 : -1;
+        if (!mostrar) boton.classList.remove('subiendo');
+      }
+      var parte = total > 0 ? Math.min(1, y / total) : 0;
+      avance.style.strokeDashoffset = (PERIMETRO * (1 - parte)).toFixed(2);
+    }
+
+    function programar() {
+      if (pendiente) return;
+      pendiente = true;
+      window.requestAnimationFrame(actualizar);
+    }
+
+    window.addEventListener('scroll', programar, { passive: true });
+    window.addEventListener('resize', programar);
+    window.addEventListener('pageshow', programar);
+
+    // Páginas sin menú (login, registro...): el selector de tema flota en la misma
+    // esquina; theme.js se carga después, por eso se revisa al terminar de cargar
+    function revisarEsquina() {
+      boton.classList.toggle('ui-arriba--sobre-tema', !!document.querySelector('.theme-switch-floating'));
+      actualizar();
+    }
+    var revisarLuego = function () { setTimeout(revisarEsquina, 0); };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', revisarLuego);
+    else revisarLuego();
+    window.addEventListener('load', revisarEsquina);
+
+    // Subida suave con aceleración natural; se detiene si el usuario vuelve a desplazarse
+    var animando = 0;
+    function cancelar() {
+      if (animando) { window.cancelAnimationFrame(animando); animando = 0; }
+    }
+    ['wheel', 'touchstart', 'keydown'].forEach(function (ev) {
+      window.addEventListener(ev, cancelar, { passive: true });
+    });
+
+    function irA(y) {
+      try { window.scrollTo({ top: y, left: 0, behavior: 'instant' }); }
+      catch (e) { window.scrollTo(0, y); }
+    }
+
+    function subir() {
+      cancelar();
+      var inicio = window.pageYOffset || document.documentElement.scrollTop || 0;
+      if (reducir || inicio <= 0) { irA(0); return; }
+      var duracion = Math.min(900, Math.max(380, inicio / 4));
+      var t0 = null;
+      var curva = function (t) { return 1 - Math.pow(1 - t, 4); }; // easeOutQuart
+      function paso(ahora) {
+        if (t0 === null) t0 = ahora;
+        var t = Math.min(1, (ahora - t0) / duracion);
+        irA(Math.round(inicio * (1 - curva(t))));
+        if (t < 1) animando = window.requestAnimationFrame(paso);
+        else animando = 0;
+      }
+      animando = window.requestAnimationFrame(paso);
+    }
+
+    boton.addEventListener('click', function () {
+      boton.classList.remove('subiendo');
+      void boton.offsetWidth; // reinicia la animación de la flecha
+      boton.classList.add('subiendo');
+      subir();
+      // Accesibilidad: el teclado continúa desde el inicio de la página
+      var destino = document.querySelector('main, .main-content, h1');
+      if (destino) {
+        if (!destino.hasAttribute('tabindex')) destino.setAttribute('tabindex', '-1');
+        try { destino.focus({ preventScroll: true }); } catch (e) { /* navegadores antiguos */ }
+      }
+    });
+    boton.addEventListener('animationend', function () { boton.classList.remove('subiendo'); });
+
+    actualizar();
+  })();
 
   /* ---------------------------------------------------------------- 4 */
   var form = document.getElementById('analyzeForm');
