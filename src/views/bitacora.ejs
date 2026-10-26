@@ -1,0 +1,155 @@
+<%
+  const T = (typeof t !== 'undefined' && t) ? t : {};
+  const L = (typeof lang !== 'undefined' && lang) ? lang : 'es';
+  const F = (typeof filtros !== 'undefined' && filtros) ? filtros : {};
+  const lista = (typeof registros !== 'undefined' && registros) ? registros : [];
+  const fallidos = lista.filter((r) => !r.success).length;
+%>
+<!DOCTYPE html>
+<html lang="<%= L %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script src="/js/theme-init.js"></script>
+  <title><%= T.nav_audit || 'Bitácora de accesos' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/menu.css">
+  <link rel="stylesheet" href="/css/bitacora.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/ui-pro.css">
+</head>
+<body>
+
+  <%- include('partials/sidebar', { activePage: 'bitacora' }) %>
+
+  <div class="main-wrapper">
+    <header class="topbar">
+      <%- include('partials/user-chip') %>
+    </header>
+
+    <div class="dashboard-content">
+      <div class="card card-wide">
+        <h1><%= T.nav_audit || 'Bitácora de accesos' %></h1>
+        <p class="audit-help">Registro auditable de cada intento de acceso: quién, cómo, cuándo y desde dónde (IP y navegador). Se muestran los últimos 200.</p>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+          <div class="alert alert-error"><%= error %></div>
+        <% } %>
+
+        <form class="audit-filters" method="GET" action="/users/bitacora">
+          <div class="form-group">
+            <label for="usuario">Usuario</label>
+            <input type="text" id="usuario" name="usuario" value="<%= F.nickname || '' %>" maxlength="100" placeholder="nickname">
+          </div>
+          <div class="form-group">
+            <label for="metodo">Método</label>
+            <select id="metodo" name="metodo">
+              <option value="">Todos</option>
+              <% Object.entries(metodos || {}).forEach(([clave, nombre]) => { %>
+                <option value="<%= clave %>" <%= F.method === clave ? 'selected' : '' %>><%= nombre %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="resultado">Resultado</label>
+            <select id="resultado" name="resultado">
+              <option value="">Todos</option>
+              <option value="ok" <%= F.resultado === 'ok' ? 'selected' : '' %>>Correcto</option>
+              <option value="fallido" <%= F.resultado === 'fallido' ? 'selected' : '' %>>Fallido</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="desde">Desde</label>
+            <input type="date" id="desde" name="desde" value="<%= F.desde || '' %>">
+          </div>
+          <div class="form-group">
+            <label for="hasta">Hasta</label>
+            <input type="date" id="hasta" name="hasta" value="<%= F.hasta || '' %>">
+          </div>
+          <div class="audit-actions">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+            <a href="/users/bitacora" class="btn btn-outline">Limpiar</a>
+          </div>
+        </form>
+
+        <p class="audit-summary"><strong><%= lista.length %></strong> registro(s) · <span class="audit-bad"><%= fallidos %> fallido(s)</span> · Hora de Guatemala</p>
+
+        <div class="audit-table-wrap">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>Fecha y hora</th>
+                <th>Usuario</th>
+                <th>Método</th>
+                <th>Resultado</th>
+                <th>IP</th>
+                <th>Navegador</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!lista.length) { %>
+                <tr><td colspan="6" class="audit-empty">No hay registros con esos filtros.</td></tr>
+              <% } %>
+              <% lista.forEach((r) => { %>
+                <tr>
+                  <td data-label="Fecha"><%= r.fecha %></td>
+                  <td data-label="Usuario"><%= r.nickname || '—' %></td>
+                  <td data-label="Método"><%= r.metodoTexto %></td>
+                  <td data-label="Resultado">
+                    <span class="audit-badge <%= r.success ? 'audit-badge-ok' : 'audit-badge-bad' %>"><%= r.success ? 'Correcto' : 'Fallido' %></span>
+                    <% if (!r.success && r.detalleTexto) { %><small class="audit-detail"><%= r.detalleTexto %></small><% } %>
+                  </td>
+                  <td data-label="IP" title="<%= r.forwardedFor || '' %>"><%= r.ip || '—' %></td>
+                  <td data-label="Navegador" title="<%= r.userAgent || '' %>"><%= r.navegador %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+
+        <%# Envíos de WhatsApp: el estado lo actualiza el webhook de Wawp (sin polling) %>
+        <% const listaEnvios = (typeof envios !== 'undefined' && envios) ? envios : []; %>
+        <h2 class="audit-subtitle">Envíos de WhatsApp</h2>
+        <p class="audit-help">Estado de entrega de cada mensaje (credenciales, reportes y códigos). Wawp avisa por webhook cuando el mensaje se envía, se entrega o se lee: no se consulta periódicamente. Se muestran los últimos 50.</p>
+        <div class="audit-table-wrap">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>Fecha y hora</th>
+                <th>Tipo</th>
+                <th>Destino</th>
+                <th>Proveedor</th>
+                <th>Estado</th>
+                <th>Último aviso</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (!listaEnvios.length) { %>
+                <tr><td colspan="6" class="audit-empty">Todavía no hay envíos registrados.</td></tr>
+              <% } %>
+              <% listaEnvios.forEach((w) => { %>
+                <tr>
+                  <td data-label="Fecha"><%= w.fecha %></td>
+                  <td data-label="Tipo"><%= w.tipo %></td>
+                  <td data-label="Destino"><%= w.destino || '—' %></td>
+                  <td data-label="Proveedor"><%= w.proveedor %></td>
+                  <td data-label="Estado">
+                    <span class="audit-badge <%= ['entregado', 'leido', 'reproducido'].includes(w.estado) ? 'audit-badge-ok' : (['fallido', 'error'].includes(w.estado) ? 'audit-badge-bad' : 'audit-badge-wait') %>"><%= w.estadoTexto %></span>
+                    <% if (w.error) { %><small class="audit-detail"><%= w.error %></small><% } %>
+                  </td>
+                  <td data-label="Último aviso"><%= w.actualizado %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/menu.js"></script>
+  <script src="/js/ui-pro.js"></script>
+  <script src="/js/theme.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+ services:
+    api-automatas:
+      restart: unless-stopped
+      image: img-api-automatas
+      container_name: cont-api-automatas
+      build:
+        context: ./app/sitio_web
+        dockerfile: Dockerfile
+      env_file:
+        - ./app/sitio_web/.env
+      environment:
+        PORT: "3000"
+        DB_HOST: host.docker.internal
+      ports:
+        - "5028:3000"
+      extra_hosts:
+        - "host.docker.internal:host-gateway"

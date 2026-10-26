@@ -203,6 +203,33 @@
       }
     },
     {
+      "name": "Bitácora de accesos (ADMIN)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/audit/logins?resultado=fallido&limite=50",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "audit",
+            "logins"
+          ],
+          "query": [
+            {
+              "key": "resultado",
+              "value": "fallido"
+            },
+            {
+              "key": "limite",
+              "value": "50"
+            }
+          ]
+        }
+      }
+    },
+    {
       "name": "Logout",
       "request": {
         "method": "POST",

@@ -27,6 +27,8 @@ Generar una clave: `bun -e "console.log(require('crypto').randomBytes(48).toStri
 | GET | `/api/analysis/languages` | JWT + permiso *analisis* | Idiomas disponibles |
 | POST | `/api/analysis` | JWT + permiso *analisis* | Análisis léxico → JSON |
 | POST | `/api/analysis/report` | JWT + permiso *analisis* | Análisis léxico → PDF |
+| GET | `/api/audit/logins` | JWT + rol **ADMIN** | Bitácora de accesos (filtros: `usuario`, `metodo`, `resultado=ok\|fallido`, `limite`) |
+| GET | `/api/audit/whatsapp` | JWT + rol **ADMIN** | Envíos de WhatsApp y su estado de entrega (webhook de Wawp, sin polling) |
 
 El análisis acepta:
 - **JSON:** `{ "language": "es", "text": "Juan Pérez llegó..." }`
@@ -83,6 +85,8 @@ Respuesta (resumida): `totalWords`, `mostRepeated`, `leastRepeated`, `pronouns`,
 - Comparación de firma en tiempo constante; validación de `exp`, `iss` y `aud`.
 - En cada petición se consulta el usuario: si el admin lo desactiva o desactiva su rol/permiso, el token deja de servir.
 - Logout revoca el token (`jti`); límite de intentos de login por IP.
+- Cada login (web con contraseña, rostro o QR, y API) queda en la **bitácora** `login_audit`: usuario, método, resultado, IP, navegador y fecha (UTC). La web la muestra en *Bitácora de accesos* (solo ADMIN).
+- La web usa **reCAPTCHA v2** en login con contraseña y registro (`RECAPTCHA_SITE_KEY`, `RECAPTCHA_SECRET_KEY`). La API no lo usa: se protege con el límite de intentos.
 - Validación de idioma (lista blanca), tamaño y tipo de archivo; respuestas con `Cache-Control: no-store` y `nosniff`.
 
 ## Postman

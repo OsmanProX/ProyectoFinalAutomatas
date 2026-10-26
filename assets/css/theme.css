@@ -1,0 +1,584 @@
+/* ============================================================================
+   TEMA DEL SITIO: colores de "autómata" y modo claro / oscuro / sistema
+   ============================================================================
+   Regla 60-30-10:
+     60 %  fondos neutros (blanco / gris azulado, o azul noche en modo oscuro)
+     30 %  azul marino "estado" (barra lateral, encabezados, títulos)
+     10 %  acento cian "transición" (botones, enlaces, foco)
+   Todos los demás CSS usan estas variables (var(--...)), así el cambio de
+   tema no toca la lógica de ninguna página.
+
+   El tema se elige con el selector Claro / Oscuro / Sistema (assets/js/theme.js)
+   y se guarda en el navegador. "Sistema" sigue el modo de Windows, macOS,
+   Linux, Android o iOS (prefers-color-scheme).
+   ============================================================================ */
+/* La letra Inter se carga sin bloquear la página desde assets/js/theme-init.js */
+
+/* ---------- Modo claro (por defecto) ---------- */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --primary: #13213f;
+  --primary-2: #1c2d52;
+  --on-primary: #ffffff;
+  --on-primary-muted: #b9c4dc;
+  --accent: #0e7490;
+  --accent-hover: #155e75;
+  --accent-text: #0e7490;
+  --accent-rgb: 14, 116, 144;
+  --accent-2: #6d28d9;
+  --accent-2-hover: #5b21b6;
+  --accent-2-text: #6d28d9;
+  --highlight: #f59e0b;
+  --surface: #ffffff;
+  --surface-2: #f3f6fb;
+  --surface-3: #e7edf6;
+  --border: #dbe2ee;
+  --border-strong: #c3cddd;
+  --text-strong: #0f1b33;
+  --text: #253250;
+  --text-muted: #5b6886;
+  --text-faint: #8c97ad;
+  --danger: #c0262d;
+  --danger-solid: #d63a3f;
+  --danger-solid-hover: #b02a30;
+  --danger-bg: #fdecee;
+  --danger-border: #f5c2c7;
+  --danger-rgb: 214, 58, 63;
+  --success: #17803d;
+  --success-solid: #1f9d55;
+  --success-solid-hover: #198a49;
+  --success-bg: #e7f6ec;
+  --success-border: #b9e3c6;
+  --info: #1d4ed8;
+  --info-solid: #2563eb;
+  --info-bg: #e8f0fe;
+  --info-border: #bfd3fb;
+  --warning: #946200;
+  --warning-solid: #e8a317;
+  --warning-solid-hover: #c98a0c;
+  --warning-bg: #fff7e0;
+  --warning-border: #f3dc9b;
+  --shadow-rgb: 15, 27, 51;
+  --ink-rgb: 19, 33, 63;
+  --app-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='150' viewBox='0 0 260 150'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.07' stroke-width='2'%3E%3Cpath d='M8 75h26'/%3E%3Cpath d='M30 70l6 5-6 5'/%3E%3Ccircle cx='60' cy='75' r='22'/%3E%3Cpath d='M82 75h78'/%3E%3Cpath d='M154 70l6 5-6 5'/%3E%3Ccircle cx='190' cy='75' r='22'/%3E%3Ccircle cx='190' cy='75' r='16'/%3E%3Cpath d='M48 55c4-26 20-26 24 0'/%3E%3Cpath d='M68 51l4 5 3-6'/%3E%3C/g%3E%3Cg fill='%23ffffff' fill-opacity='0.08' font-family='Georgia,serif' font-size='15' font-style='italic'%3E%3Ctext x='52' y='80'%3Eq0%3C/text%3E%3Ctext x='182' y='80'%3Eq1%3C/text%3E%3Ctext x='112' y='68'%3Ea%3C/text%3E%3Ctext x='55' y='28'%3Eb%3C/text%3E%3C/g%3E%3C/svg%3E"), linear-gradient(135deg, #13213f 0%, #16365c 55%, #0e7490 100%);
+  --accent-gradient: linear-gradient(135deg, #0e7490 0%, #0891b2 100%);
+}
+
+/* ---------- Modo oscuro elegido a mano ---------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --primary: #0a1222;
+  --primary-2: #13203a;
+  --on-primary: #e8edf7;
+  --on-primary-muted: #93a0bd;
+  --accent: #0891b2;
+  --accent-hover: #06a3c7;
+  --accent-text: #22d3ee;
+  --accent-rgb: 34, 211, 238;
+  --accent-2: #7c3aed;
+  --accent-2-hover: #8b5cf6;
+  --accent-2-text: #a78bfa;
+  --highlight: #fbbf24;
+  --surface: #111a2e;
+  --surface-2: #0b1222;
+  --surface-3: #1a2642;
+  --border: #24324f;
+  --border-strong: #33456b;
+  --text-strong: #f1f5fb;
+  --text: #d5dcea;
+  --text-muted: #9aa7c2;
+  --text-faint: #6f7c98;
+  --danger: #f87171;
+  --danger-solid: #dc3c42;
+  --danger-solid-hover: #ef5056;
+  --danger-bg: #2b1418;
+  --danger-border: #5c242b;
+  --danger-rgb: 248, 113, 113;
+  --success: #4ade80;
+  --success-solid: #1f9d55;
+  --success-solid-hover: #25b566;
+  --success-bg: #0f2a1b;
+  --success-border: #1f4d33;
+  --info: #93b4ff;
+  --info-solid: #3b6ff0;
+  --info-bg: #12203f;
+  --info-border: #27407a;
+  --warning: #fbbf24;
+  --warning-solid: #d99a12;
+  --warning-solid-hover: #e8a317;
+  --warning-bg: #2a210c;
+  --warning-border: #574419;
+  --shadow-rgb: 0, 0, 0;
+  --ink-rgb: 226, 232, 245;
+  --app-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='150' viewBox='0 0 260 150'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.07' stroke-width='2'%3E%3Cpath d='M8 75h26'/%3E%3Cpath d='M30 70l6 5-6 5'/%3E%3Ccircle cx='60' cy='75' r='22'/%3E%3Cpath d='M82 75h78'/%3E%3Cpath d='M154 70l6 5-6 5'/%3E%3Ccircle cx='190' cy='75' r='22'/%3E%3Ccircle cx='190' cy='75' r='16'/%3E%3Cpath d='M48 55c4-26 20-26 24 0'/%3E%3Cpath d='M68 51l4 5 3-6'/%3E%3C/g%3E%3Cg fill='%23ffffff' fill-opacity='0.08' font-family='Georgia,serif' font-size='15' font-style='italic'%3E%3Ctext x='52' y='80'%3Eq0%3C/text%3E%3Ctext x='182' y='80'%3Eq1%3C/text%3E%3Ctext x='112' y='68'%3Ea%3C/text%3E%3Ctext x='55' y='28'%3Eb%3C/text%3E%3C/g%3E%3C/svg%3E"), linear-gradient(135deg, #070d1a 0%, #0c1a33 55%, #073b4c 100%);
+  --accent-gradient: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+}
+
+/* ---------- Modo "Sistema": sigue al sistema operativo ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    color-scheme: dark;
+    --primary: #0a1222;
+    --primary-2: #13203a;
+    --on-primary: #e8edf7;
+    --on-primary-muted: #93a0bd;
+    --accent: #0891b2;
+    --accent-hover: #06a3c7;
+    --accent-text: #22d3ee;
+    --accent-rgb: 34, 211, 238;
+    --accent-2: #7c3aed;
+    --accent-2-hover: #8b5cf6;
+    --accent-2-text: #a78bfa;
+    --highlight: #fbbf24;
+    --surface: #111a2e;
+    --surface-2: #0b1222;
+    --surface-3: #1a2642;
+    --border: #24324f;
+    --border-strong: #33456b;
+    --text-strong: #f1f5fb;
+    --text: #d5dcea;
+    --text-muted: #9aa7c2;
+    --text-faint: #6f7c98;
+    --danger: #f87171;
+    --danger-solid: #dc3c42;
+    --danger-solid-hover: #ef5056;
+    --danger-bg: #2b1418;
+    --danger-border: #5c242b;
+    --danger-rgb: 248, 113, 113;
+    --success: #4ade80;
+    --success-solid: #1f9d55;
+    --success-solid-hover: #25b566;
+    --success-bg: #0f2a1b;
+    --success-border: #1f4d33;
+    --info: #93b4ff;
+    --info-solid: #3b6ff0;
+    --info-bg: #12203f;
+    --info-border: #27407a;
+    --warning: #fbbf24;
+    --warning-solid: #d99a12;
+    --warning-solid-hover: #e8a317;
+    --warning-bg: #2a210c;
+    --warning-border: #574419;
+    --shadow-rgb: 0, 0, 0;
+    --ink-rgb: 226, 232, 245;
+    --app-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='150' viewBox='0 0 260 150'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.07' stroke-width='2'%3E%3Cpath d='M8 75h26'/%3E%3Cpath d='M30 70l6 5-6 5'/%3E%3Ccircle cx='60' cy='75' r='22'/%3E%3Cpath d='M82 75h78'/%3E%3Cpath d='M154 70l6 5-6 5'/%3E%3Ccircle cx='190' cy='75' r='22'/%3E%3Ccircle cx='190' cy='75' r='16'/%3E%3Cpath d='M48 55c4-26 20-26 24 0'/%3E%3Cpath d='M68 51l4 5 3-6'/%3E%3C/g%3E%3Cg fill='%23ffffff' fill-opacity='0.08' font-family='Georgia,serif' font-size='15' font-style='italic'%3E%3Ctext x='52' y='80'%3Eq0%3C/text%3E%3Ctext x='182' y='80'%3Eq1%3C/text%3E%3Ctext x='112' y='68'%3Ea%3C/text%3E%3Ctext x='55' y='28'%3Eb%3C/text%3E%3C/g%3E%3C/svg%3E"), linear-gradient(135deg, #070d1a 0%, #0c1a33 55%, #073b4c 100%);
+    --accent-gradient: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+  }
+}
+
+/* ============================================================================
+   ESTILO GENERAL (aspecto profesional)
+   ============================================================================ */
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  background: var(--app-bg);
+  background-attachment: fixed;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(var(--accent-rgb), 0.28);
+}
+
+a {
+  color: var(--accent-text);
+}
+
+/* Área de trabajo de las páginas con menú: fondo neutro (60 %) */
+.main-wrapper {
+  min-height: 100vh;
+  background: var(--surface-2);
+}
+
+/* Tarjetas */
+.card,
+.users-card,
+.roles-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(var(--shadow-rgb), 0.12);
+}
+
+.auth-container .card {
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+/* Campos de texto: mismo color que la tarjeta en ambos modos */
+.form-group input,
+.form-group select,
+.form-group textarea,
+.face-nickname-input,
+textarea,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="date"],
+input[type="number"],
+select {
+  background-color: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-faint);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Transición suave al cambiar de tema */
+.card,
+.sidebar,
+.topbar,
+.main-wrapper,
+.users-card,
+.roles-card,
+input,
+select,
+textarea {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+/* Tablas: líneas suaves en ambos modos */
+table th {
+  color: var(--text-strong);
+}
+
+table td {
+  color: var(--text);
+}
+
+/* ============================================================================
+   MARCA DE LA BARRA LATERAL: pequeño autómata (q0 → q1)
+   ============================================================================ */
+.sidebar-brand h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 0.2px;
+}
+
+.brand-logo {
+  flex-shrink: 0;
+  width: 34px;
+  height: 22px;
+}
+
+.brand-logo .estado {
+  fill: none;
+  stroke: var(--accent-text);
+  stroke-width: 2;
+}
+
+.brand-logo .flecha {
+  fill: none;
+  stroke: var(--on-primary-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sidebar.collapsed .brand-logo {
+  display: none;
+}
+
+.sidebar-nav-item.active {
+  border-left-color: var(--accent-text);
+}
+
+/* ============================================================================
+   SELECTOR DE TEMA: Claro / Oscuro / Sistema
+   ============================================================================ */
+.theme-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(var(--ink-rgb), 0.08);
+  border: 1px solid var(--border);
+}
+
+.theme-switch button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 34px;
+  height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.theme-switch button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.theme-switch button:hover {
+  color: var(--text-strong);
+}
+
+.theme-switch button[aria-pressed="true"] {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+/* En las páginas de inicio de sesión y registro (fondo oscuro) */
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lang-switcher .theme-switch {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.lang-switcher .theme-switch button {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.lang-switcher .theme-switch button:hover {
+  color: #ffffff;
+}
+
+/* En la barra lateral */
+.sidebar-footer .theme-switch {
+  width: 100%;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.sidebar-footer .theme-switch button {
+  flex: 1;
+  color: var(--on-primary-muted);
+}
+
+.sidebar-footer .theme-switch button:hover {
+  color: var(--on-primary);
+}
+
+.sidebar.collapsed .sidebar-footer .theme-switch {
+  flex-direction: column;
+  border-radius: 12px;
+}
+
+.sidebar.collapsed .theme-switch .theme-label {
+  display: none;
+}
+
+/* Si una página no tiene dónde ponerlo, flota abajo a la derecha */
+.theme-switch-floating {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 500;
+  background: var(--surface);
+  box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.2);
+}
+
+@media (max-width: 600px) {
+  .theme-switch .theme-label {
+    display: none;
+  }
+}
+
+/* ============================================================================
+   BOTONES
+   ============================================================================ */
+.btn,
+.btn-face,
+.btn-qr {
+  font-weight: 600;
+  letter-spacing: 0.1px;
+}
+
+/* Botón sin variante (p. ej. "Procesar"): usa el color de acento */
+.btn:not([class*="btn-"]) {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.btn:not([class*="btn-"]):hover {
+  background: var(--accent-hover);
+}
+
+/* Botón oscuro (Entrar con QR): borde sutil para que se distinga en modo oscuro */
+.btn-qr {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+/* Resultados del análisis léxico: la tarjeta se ensancha para las tablas */
+.card:has(.analysis-results) {
+  max-width: 980px;
+}
+
+/* Tarjeta principal del resumen (total de palabras): se distingue en ambos modos */
+.lex-stat-main {
+  box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.45);
+}
+
+/* ============================================================================
+   CELULAR Y TABLET: la barra lateral queda como riel de iconos para no tapar
+   el contenido (misma vista que el menú colapsado)
+   ============================================================================ */
+@media (max-width: 768px) {
+  .sidebar,
+  .sidebar.collapsed {
+    width: 64px;
+  }
+
+  .sidebar .sidebar-text,
+  .sidebar .sidebar-footer-text,
+  .sidebar .theme-label,
+  .sidebar .sidebar-toggle {
+    display: none;
+  }
+
+  .sidebar .sidebar-brand {
+    justify-content: center;
+    padding: 18px 0;
+  }
+
+  .sidebar .sidebar-nav-item {
+    justify-content: center;
+    padding: 14px 0;
+  }
+
+  .sidebar .sidebar-footer {
+    padding: 12px 6px;
+  }
+
+  .sidebar-footer .theme-switch {
+    flex-direction: column;
+    border-radius: 12px;
+  }
+
+  .main-wrapper,
+  .sidebar.collapsed ~ .main-wrapper {
+    margin-left: 64px;
+  }
+
+  .topbar {
+    padding: 10px 14px;
+  }
+}
+
+/* ============================================================================
+   BOTONES SECUNDARIOS AMIGABLES (regla 60-30-10: todos en la familia del acento)
+   "Login con Rostro", "Tomar foto" y "Subir imagen": cian suave con ícono;
+   al pasar el mouse se llenan de cian.
+   ============================================================================ */
+.btn-face,
+.btn-photo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent-text);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  border-radius: 10px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.1s;
+}
+
+.btn-face:hover,
+.btn-photo:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+/* Ícono de carita sonriente antes del texto de "Login con Rostro" */
+.btn-face::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M8.5 14.5c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2'/%3E%3Cpath d='M9 9.5h.01M15 9.5h.01'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M8.5 14.5c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2'/%3E%3Cpath d='M9 9.5h.01M15 9.5h.01'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ============================================================================
+   reCAPTCHA (login y registro)
+   v2: la casilla se dibuja en claro u oscuro según el tema (recaptcha-widget.js)
+   v3: no hay casilla; se muestra el aviso de Google y se oculta la insignia
+   ============================================================================ */
+.recaptcha-box {
+  display: flex;
+  justify-content: center;
+  min-height: 78px;
+  margin: 6px 0 14px;
+  overflow: hidden;
+}
+
+/* Sin esto, en modo oscuro el navegador pinta un fondo blanco detrás del
+   iframe de Google (borde blanco a la derecha y abajo de la casilla), porque
+   la página y el iframe tienen distinto color-scheme */
+.recaptcha-box iframe {
+  color-scheme: light;
+  border-radius: 4px;
+}
+
+.recaptcha-box[data-version="3"] {
+  min-height: 0;
+  margin: 0;
+}
+
+.recaptcha-aviso {
+  margin: 12px 0 0;
+  color: var(--text-faint);
+  font-size: 11.5px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.recaptcha-aviso a {
+  color: var(--accent-text);
+}
+
+/* Google permite ocultar la insignia si se muestra el aviso de arriba */
+body:has(.recaptcha-aviso) .grecaptcha-badge {
+  visibility: hidden;
+}
+
+/* Pantallas muy angostas: la casilla (304 px) se achica un poco */
+@media (max-width: 360px) {
+  .recaptcha-box[data-version="2"] > div {
+    transform: scale(0.88);
+    transform-origin: center top;
+  }
+}

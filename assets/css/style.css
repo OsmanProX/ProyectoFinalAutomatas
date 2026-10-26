@@ -14,8 +14,8 @@
    ============================================ */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #333;
+  background: var(--app-bg);
+  color: var(--text);
   min-height: 100vh;
 }
 
@@ -46,7 +46,7 @@ body {
    Contenedor blanco con sombra suave
    ============================================ */
 .card {
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 40px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
@@ -78,7 +78,7 @@ body {
 .card h1, .card h2 {
   text-align: center;
   margin-bottom: 24px;
-  color: #1a1a2e;
+  color: var(--text-strong);
 }
 
 /* ============================================
@@ -93,13 +93,13 @@ body {
   display: block;
   margin-bottom: 6px;
   font-weight: 500;
-  color: #555;
+  color: var(--text-muted);
 }
 
 .form-group input {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 15px;
   transition: border-color 0.2s;
@@ -107,25 +107,25 @@ body {
 
 .form-group input:focus {
   outline: none;
-  border-color: #4361ee;
-  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
 }
 
 .form-group select {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 15px;
-  background-color: #fff;
-  color: #333;
+  background-color: var(--surface);
+  color: var(--text);
   transition: border-color 0.2s;
 }
 
 .form-group select:focus {
   outline: none;
-  border-color: #4361ee;
-  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15);
 }
 
 /* Campo de contraseña con ojo */
@@ -179,15 +179,15 @@ body {
 /* Boton primario (login, registro) */
 .btn-primary {
   width: 100%;
-  background: #4361ee;
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-primary);
   font-size: 16px;
   padding: 12px;
   margin-top: 8px;
 }
 
 .btn-primary:hover {
-  background: #3a56d4;
+  background: var(--accent-hover);
 }
 
 /* Boton pequeno (acciones en tabla) */
@@ -198,41 +198,41 @@ body {
 
 /* Boton peligro (eliminar, logout) */
 .btn-danger {
-  background: #e74c3c;
-  color: #fff;
+  background: var(--danger-solid);
+  color: var(--on-primary);
 }
 
 .btn-danger:hover {
-  background: #c0392b;
+  background: var(--danger-solid-hover);
 }
 
 /* Boton advertencia (cambiar estado) */
 .btn-warning {
-  background: #f39c12;
-  color: #fff;
+  background: var(--warning-solid);
+  color: var(--on-primary);
 }
 
 .btn-warning:hover {
-  background: #d68910;
+  background: var(--warning-solid-hover);
 }
 
 /* Boton contorno (acciones secundarias) */
 .btn-outline {
   background: transparent;
-  color: #4361ee;
-  border: 1px solid #4361ee;
+  color: var(--accent-text);
+  border: 1px solid var(--accent);
 }
 
 .btn-outline:hover {
-  background: #4361ee;
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-primary);
 }
 
 /* Boton de reconocimiento facial */
 .btn-face {
   width: 100%;
-  background: #6c5ce7;
-  color: #fff;
+  background: var(--accent-2);
+  color: var(--on-primary);
   font-size: 16px;
   padding: 12px;
   border: none;
@@ -242,7 +242,7 @@ body {
 }
 
 .btn-face:hover {
-  background: #5a4bd1;
+  background: var(--accent-2-hover);
 }
 
 /* Separador entre metodos de login */
@@ -257,12 +257,12 @@ body {
 .face-divider::after {
   content: '';
   flex: 1;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border);
 }
 
 .face-divider span {
   padding: 0 12px;
-  color: #999;
+  color: var(--text-faint);
   font-size: 14px;
 }
 
@@ -276,7 +276,7 @@ body {
   width: 100%;
   max-width: 320px;
   border-radius: 12px;
-  border: 2px solid #ddd;
+  border: 2px solid var(--border);
   display: block;
   margin: 0 auto;
 }
@@ -294,25 +294,25 @@ body {
 }
 
 .face-loading {
-  background: #e3f2fd;
-  color: #1976d2;
+  background: var(--info-bg);
+  color: var(--info);
 }
 
 .face-success {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--success-bg);
+  color: var(--success);
 }
 
 .face-error {
-  background: #ffebee;
-  color: #c62828;
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 /* Modal flotante de reconocimiento facial */
 .face-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 17, 36, 0.65);
+  background: rgba(var(--shadow-rgb), 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -329,7 +329,7 @@ body {
 }
 
 .face-modal {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 18px;
   width: 100%;
   max-width: 440px;
@@ -348,7 +348,7 @@ body {
   left: 0;
   right: 0;
   height: 90px;
-  background: linear-gradient(135deg, #4f63d2 0%, #6b85f0 100%);
+  background: var(--accent-gradient);
   z-index: 0;
 }
 
@@ -370,7 +370,7 @@ body {
   border: none;
   font-size: 24px;
   line-height: 1;
-  color: #ffffff;
+  color: var(--on-primary);
   cursor: pointer;
   padding: 4px 10px;
   border-radius: 50%;
@@ -383,7 +383,7 @@ body {
 }
 
 .face-modal-header {
-  color: #ffffff;
+  color: var(--on-primary);
   margin-bottom: 16px;
   padding-top: 6px;
 }
@@ -397,13 +397,13 @@ body {
   background: rgba(255, 255, 255, 0.22);
   border-radius: 50%;
   margin-bottom: 10px;
-  color: #ffffff;
+  color: var(--on-primary);
 }
 
 .face-modal-title {
   font-size: 20px;
   margin: 0 0 4px;
-  color: #ffffff;
+  color: var(--on-primary);
   font-weight: 600;
 }
 
@@ -427,31 +427,31 @@ body {
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: #3c4360;
+  color: var(--text);
   margin-bottom: 6px;
 }
 
 .face-nickname-input {
   width: 100%;
   padding: 10px 14px;
-  border: 1.5px solid #d7dbe8;
+  border: 1.5px solid var(--border);
   border-radius: 10px;
   font-size: 14px;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
   box-sizing: border-box;
-  background: #f8f9fc;
+  background: var(--surface-2);
 }
 
 .face-nickname-input:focus {
-  border-color: #4f63d2;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(79, 99, 210, 0.12);
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
 }
 
 .face-stage {
   position: relative;
-  background: #1c1f2e;
+  background: var(--primary);
   border-radius: 14px;
   padding: 12px;
   min-height: 260px;
@@ -484,7 +484,7 @@ body {
   position: absolute;
   width: 28px;
   height: 28px;
-  border-color: #ffffff;
+  border-color: var(--surface);
   border-style: solid;
   border-width: 0;
   opacity: 0.85;
@@ -512,7 +512,7 @@ body {
 
 .face-preview-label {
   font-size: 12px;
-  color: #cfd3e6;
+  color: var(--on-primary-muted);
   background: rgba(255, 255, 255, 0.08);
   padding: 3px 10px;
   border-radius: 999px;
@@ -529,7 +529,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  color: #ffffff;
+  color: var(--on-primary);
   font-size: 14px;
 }
 
@@ -537,7 +537,7 @@ body {
   width: 44px;
   height: 44px;
   border: 4px solid rgba(255, 255, 255, 0.18);
-  border-top-color: #6b85f0;
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: faceSpin 0.8s linear infinite;
 }
@@ -565,7 +565,7 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: transform 0.1s, opacity 0.15s, background 0.15s;
-  color: #ffffff;
+  color: var(--on-primary);
 }
 
 .btn-face-action:active {
@@ -578,24 +578,24 @@ body {
 }
 
 .btn-face-capture {
-  background: #4f63d2;
+  background: var(--accent);
 }
 .btn-face-capture:hover:not(:disabled) {
-  background: #5a6fdf;
+  background: var(--accent-hover);
 }
 
 .btn-face-verify {
-  background: #1f9d55;
+  background: var(--success-solid);
 }
 .btn-face-verify:hover:not(:disabled) {
-  background: #25b566;
+  background: var(--success-solid-hover);
 }
 
 .btn-face-cancel {
-  background: #d64545;
+  background: var(--danger-solid);
 }
 .btn-face-cancel:hover:not(:disabled) {
-  background: #e25555;
+  background: var(--danger-solid-hover);
 }
 
 .face-status {
@@ -611,21 +611,21 @@ body {
 }
 
 .face-status-success {
-  background: #e8f5e9;
-  color: #1f6f3c;
-  border: 1px solid #b6e0c0;
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
 }
 
 .face-status-error {
-  background: #ffebee;
-  color: #b1303a;
-  border: 1px solid #f4c0c5;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
 }
 
 .face-status-info {
-  background: #e3f2fd;
-  color: #14538a;
-  border: 1px solid #b6daf7;
+  background: var(--info-bg);
+  color: var(--info);
+  border: 1px solid var(--info-border);
 }
 
 .face-status-icon {
@@ -640,15 +640,15 @@ body {
 }
 
 .roles-subtitle {
-  color: #6a7086;
+  color: var(--text-muted);
   margin-top: -6px;
   margin-bottom: 20px;
 }
 
 .roles-card {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 14px;
-  box-shadow: 0 4px 18px rgba(15, 17, 36, 0.08);
+  box-shadow: 0 4px 18px rgba(var(--shadow-rgb), 0.08);
   overflow: hidden;
 }
 
@@ -665,14 +665,14 @@ body {
 }
 
 .roles-table thead th {
-  background: #f4f6fc;
-  color: #3c4360;
+  background: var(--surface-2);
+  color: var(--text);
   font-weight: 600;
-  border-bottom: 2px solid #e4e8f4;
+  border-bottom: 2px solid var(--border);
 }
 
 .roles-table tbody tr {
-  border-bottom: 1px solid #eef0f7;
+  border-bottom: 1px solid var(--border);
 }
 
 .roles-table tbody tr:last-child {
@@ -680,12 +680,12 @@ body {
 }
 
 .roles-table tbody tr:hover {
-  background: #fafbfe;
+  background: var(--surface-2);
 }
 
 .roles-name {
   font-weight: 600;
-  color: #2c3050;
+  color: var(--text);
 }
 
 .role-badge {
@@ -697,21 +697,21 @@ body {
 }
 
 .role-badge-active {
-  background: #e8f5e9;
-  color: #1f6f3c;
-  border: 1px solid #b6e0c0;
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
 }
 
 .role-badge-inactive {
-  background: #ffebee;
-  color: #b1303a;
-  border: 1px solid #f4c0c5;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
 }
 
 .role-badge-protected {
-  background: #fff8e1;
-  color: #8d6e00;
-  border: 1px solid #f0dfa0;
+  background: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid var(--warning-border);
 }
 
 /* Badge del rol en el dashboard (solo ADMIN y SUPERVISOR) */
@@ -730,8 +730,8 @@ body {
 }
 
 .user-avatar-placeholder {
-  background: #eef0f7;
-  color: #7a80a0;
+  background: var(--surface-3);
+  color: var(--text-muted);
   text-align: center;
   line-height: 44px;
   font-size: 20px;
@@ -739,11 +739,11 @@ body {
 
 .role-select {
   padding: 7px 10px;
-  border: 1px solid #d7dcef;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 13px;
-  background: #fff;
-  color: #2c3050;
+  background: var(--surface);
+  color: var(--text);
   cursor: pointer;
 }
 
@@ -754,9 +754,9 @@ body {
   font-weight: 600;
 }
 
-.row-status-info { color: #3c4360; }
-.row-status-success { color: #1f6f3c; }
-.row-status-error { color: #b1303a; }
+.row-status-info { color: var(--text); }
+.row-status-success { color: var(--success); }
+.row-status-error { color: var(--danger); }
 
 /* ============================================
    MODAL DE PERMISOS DE MENU
@@ -764,7 +764,7 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 17, 36, 0.55);
+  background: rgba(var(--shadow-rgb), 0.55);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -776,9 +776,9 @@ body {
 }
 
 .modal-box {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 14px;
-  box-shadow: 0 12px 40px rgba(15, 17, 36, 0.25);
+  box-shadow: 0 12px 40px rgba(var(--shadow-rgb), 0.25);
   width: 90%;
   max-width: 460px;
   max-height: 85vh;
@@ -791,27 +791,27 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 18px 22px;
-  border-bottom: 1px solid #eef0f7;
+  border-bottom: 1px solid var(--border);
 }
 
 .modal-header h2 {
   margin: 0;
   font-size: 18px;
-  color: #2c3050;
+  color: var(--text);
 }
 
 .modal-close {
   background: none;
   border: none;
   font-size: 26px;
-  color: #6a7086;
+  color: var(--text-muted);
   cursor: pointer;
   line-height: 1;
   padding: 0 4px;
 }
 
 .modal-close:hover {
-  color: #b1303a;
+  color: var(--danger);
 }
 
 .modal-body {
@@ -822,7 +822,7 @@ body {
 
 .modal-hint {
   font-size: 13px;
-  color: #6a7086;
+  color: var(--text-muted);
   margin-bottom: 14px;
 }
 
@@ -831,7 +831,7 @@ body {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid #eef0f7;
+  border: 1px solid var(--border);
   border-radius: 10px;
   margin-bottom: 8px;
   cursor: pointer;
@@ -839,14 +839,14 @@ body {
 }
 
 .permission-row:hover {
-  background: #fafbfe;
-  border-color: #d4d9ee;
+  background: var(--surface-2);
+  border-color: var(--border);
 }
 
 .permission-checkbox {
   width: 18px;
   height: 18px;
-  accent-color: #4361ee;
+  accent-color: var(--accent);
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -858,7 +858,7 @@ body {
 
 .permission-label {
   font-size: 14px;
-  color: #2c3050;
+  color: var(--text);
   font-weight: 500;
 }
 
@@ -867,7 +867,7 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 14px 22px;
-  border-top: 1px solid #eef0f7;
+  border-top: 1px solid var(--border);
 }
 
 .modal-actions {
@@ -882,15 +882,15 @@ body {
 }
 
 .modal-status-info {
-  color: #14538a;
+  color: var(--info);
 }
 
 .modal-status-success {
-  color: #1f6f3c;
+  color: var(--success);
 }
 
 .modal-status-error {
-  color: #b1303a;
+  color: var(--danger);
 }
 
 /* Seccion de foto en registro */
@@ -902,18 +902,18 @@ body {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #555;
+  color: var(--text-muted);
 }
 
 /* Cuadro placeholder de foto */
 .photo-placeholder {
-  border: 2px dashed #ccc;
+  border: 2px dashed var(--border-strong);
   border-radius: 8px;
   padding: 30px;
   text-align: center;
-  color: #999;
+  color: var(--text-faint);
   margin-bottom: 12px;
-  background: #fafafa;
+  background: var(--surface-2);
 }
 
 .photo-placeholder .camera-icon {
@@ -931,8 +931,8 @@ body {
 
 .btn-photo {
   flex: 1;
-  background: #6c5ce7;
-  color: #fff;
+  background: var(--accent-2);
+  color: var(--on-primary);
   font-size: 13px;
   padding: 10px;
   border: none;
@@ -942,7 +942,7 @@ body {
 }
 
 .btn-photo:hover {
-  background: #5a4bd1;
+  background: var(--accent-2-hover);
 }
 
 .camera-section {
@@ -966,7 +966,7 @@ body {
   max-width: 200px;
   max-height: 200px;
   border-radius: 8px;
-  border: 2px solid #ddd;
+  border: 2px solid var(--border);
   margin-bottom: 8px;
   display: block;
   margin-left: auto;
@@ -1003,8 +1003,8 @@ body {
 .btn-lang {
   display: inline-block;
   padding: 8px 16px;
-  background: #4361ee;
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-primary);
   border-radius: 20px;
   text-decoration: none;
   font-size: 13px;
@@ -1013,7 +1013,7 @@ body {
 }
 
 .btn-lang:hover {
-  background: #3a56d4;
+  background: var(--accent-hover);
 }
 
 /* ============================================
@@ -1027,15 +1027,15 @@ body {
 }
 
 .alert-error {
-  background: #fdecea;
-  color: #c0392b;
-  border: 1px solid #f5c6cb;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
 }
 
 .alert-success {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
 }
 
 /* ============================================
@@ -1045,13 +1045,13 @@ body {
   display: block;
   margin-top: 4px;
   font-size: 12px;
-  color: #777;
+  color: var(--text-muted);
   line-height: 1.4;
 }
 
 input:disabled {
-  background: #f5f5f5;
-  color: #555;
+  background: var(--surface-2);
+  color: var(--text-muted);
   cursor: not-allowed;
 }
 
@@ -1063,11 +1063,11 @@ input:disabled {
   text-align: center;
   margin-top: 20px;
   font-size: 14px;
-  color: #777;
+  color: var(--text-muted);
 }
 
 .link-text a {
-  color: #4361ee;
+  color: var(--accent-text);
   text-decoration: none;
   font-weight: 500;
 }
@@ -1081,8 +1081,8 @@ input:disabled {
    Menu superior oscuro centrado
    ============================================ */
 .navbar {
-  background: #1a1a2e;
-  color: #fff;
+  background: var(--primary);
+  color: var(--on-primary);
   padding: 16px 32px;
   display: flex;
   justify-content: space-between;
@@ -1107,13 +1107,13 @@ input:disabled {
 /* Texto de bienvenida en nav */
 .nav-welcome {
   font-size: 14px;
-  color: #ccc;
+  color: var(--text-faint);
 }
 
 /* Botones dentro del nav */
 .navbar .btn-sm {
   background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: var(--on-primary);
 }
 
 .navbar .btn-sm:hover {
@@ -1131,13 +1131,13 @@ input:disabled {
 
 .welcome-section h1 {
   font-size: 24px;
-  color: #1a1a2e;
+  color: var(--text-strong);
   margin-bottom: 8px;
 }
 
 .welcome-section p {
   font-size: 16px;
-  color: #666;
+  color: var(--text-muted);
 }
 
 /* ============================================
@@ -1153,18 +1153,18 @@ input:disabled {
 .table th, .table td {
   padding: 12px;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
   font-size: 14px;
 }
 
 .table th {
-  background: #f8f9fa;
+  background: var(--surface-2);
   font-weight: 600;
-  color: #555;
+  color: var(--text-muted);
 }
 
 .table tbody tr:hover {
-  background: #f8f9fa;
+  background: var(--surface-2);
 }
 
 /* ============================================
@@ -1180,13 +1180,13 @@ input:disabled {
 }
 
 .badge-active {
-  background: #d4edda;
-  color: #155724;
+  background: var(--success-bg);
+  color: var(--success);
 }
 
 .badge-inactive {
-  background: #f8d7da;
-  color: #721c24;
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 /* ============================================
@@ -1195,17 +1195,17 @@ input:disabled {
    ============================================ */
 .no-data {
   text-align: center;
-  color: #999;
+  color: var(--text-faint);
   padding: 40px;
   font-size: 16px;
 }
 
 /* Boton para volver a abrir el estudio de foto */
 .btn-edit-photo {
-  background: #4361ee;
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-primary);
 }
 
 .btn-edit-photo:hover {
-  background: #3a56d4;
+  background: var(--accent-hover);
 }

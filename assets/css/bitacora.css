@@ -1,0 +1,153 @@
+/* ============================================
+   BITÁCORA DE ACCESOS
+   60% fondo claro/blanco · 30% azul marino · 10% acento azul
+   ============================================ */
+.audit-help,
+.audit-summary {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.audit-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: end;
+  margin: 16px 0 8px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.audit-filters .form-group {
+  margin: 0;
+}
+
+.audit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.audit-actions .btn {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  text-decoration: none;
+}
+
+.audit-bad {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.audit-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.audit-table th,
+.audit-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.audit-table th {
+  position: sticky;
+  top: 0;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 600;
+}
+
+.audit-table tbody tr:hover {
+  background: var(--surface-2);
+}
+
+.audit-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center !important;
+}
+
+.audit-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.audit-badge-ok {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.audit-badge-bad {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.audit-badge-wait {
+  background: var(--surface-3);
+  color: var(--text-strong);
+}
+
+.audit-subtitle {
+  margin: 28px 0 4px;
+  color: var(--text-strong);
+  font-size: 18px;
+}
+
+.audit-detail {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-muted);
+  white-space: normal;
+}
+
+/* Celular: cada registro como tarjeta */
+@media (max-width: 700px) {
+  .audit-table thead {
+    display: none;
+  }
+
+  .audit-table,
+  .audit-table tbody,
+  .audit-table tr,
+  .audit-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .audit-table tr {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .audit-table td {
+    border: none;
+    padding: 3px 12px;
+    white-space: normal;
+  }
+
+  .audit-table td::before {
+    content: attr(data-label) ": ";
+    color: var(--text-strong);
+    font-weight: 600;
+  }
+
+  .audit-empty::before {
+    content: none !important;
+  }
+}

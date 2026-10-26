@@ -3,9 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script src="/js/theme-init.js"></script>
   <title><%= t.dashboard_title %></title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/menu.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/ui-pro.css">
 </head>
 <body>
 
@@ -22,22 +26,392 @@
     </header>
 
     <!-- CONTENIDO -->
-    <div class="dashboard-content">
+    <%
+      var EN = lang === 'en';
+      var _roleName = (user && user.role) ? String(user.role).toUpperCase() : '';
+      var _esAdmin = _roleName === 'ADMIN';
+      var _esSuper = _roleName === 'SUPERVISOR';
+      // Resumen del supervisor (user.controller -> supervision.service); null para los demás roles
+      var _sup = (typeof supervision !== 'undefined' && supervision) ? supervision : null;
 
-      <% var _roleName = (user && user.role) ? String(user.role).toUpperCase() : ''; %>
-      <% if (_roleName === 'ADMIN' || _roleName === 'SUPERVISOR') { %>
-      <div class="dashboard-role">
-        <span class="role-badge role-badge-active"><%= user.role %></span>
+      // Mismas reglas que el menú lateral (partials/sidebar.ejs) para los accesos rápidos
+      var _mpD = (typeof menuPermissions !== 'undefined') ? menuPermissions : null;
+      function _puede(key) {
+        if (key === 'roles' || key === 'bitacora') return _esAdmin;
+        if (_mpD && Object.prototype.hasOwnProperty.call(_mpD, key)) return _mpD[key] === true;
+        if (key === 'perfil') return true;
+        return user && user.role_active !== false;
+      }
+
+      var _fecha = '';
+      try {
+        _fecha = new Date().toLocaleDateString(EN ? 'en-US' : 'es-GT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Guatemala' });
+      } catch (e) { _fecha = new Date().toLocaleDateString(); }
+
+      // Métricas (solo administrador): vienen de DashboardDTO
+      var _lista = (typeof users !== 'undefined' && Array.isArray(users)) ? users : [];
+      var _total = (typeof count !== 'undefined') ? count : _lista.length;
+      var _activos = (typeof activeCount !== 'undefined') ? activeCount : 0;
+      var _inactivos = (typeof inactiveCount !== 'undefined') ? inactiveCount : 0;
+      var _pctActivos = _total ? Math.round(_activos * 100 / _total) : 0;
+      var _porRol = { ADMIN: 0, SUPERVISOR: 0, ANALISTA: 0, OTRO: 0 };
+      _lista.forEach(function (u) {
+        var r = String(u.role || '').toUpperCase();
+        if (Object.prototype.hasOwnProperty.call(_porRol, r)) _porRol[r]++; else _porRol.OTRO++;
+      });
+      function _pct(n) { return _total ? (n * 100 / _total).toFixed(1) : 0; }
+
+      var _acciones = [
+        { key: 'analisis', href: '/analyze', titulo: t.nav_analysis || 'Análisis léxico',
+          texto: EN ? 'Upload a .txt file and get words, frequencies, lemmas and a PDF report.' : 'Sube un .txt y obtén palabras, frecuencias, raíces y el reporte en PDF.',
+          ir: EN ? 'Analyze a text' : 'Analizar un texto',
+          ico: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>' },
+        { key: 'perfil', href: '/perfil', titulo: t.nav_profile || 'Mi perfil',
+          texto: EN ? 'Your photo, password and ID card with QR code.' : 'Tu foto, tu contraseña y tu credencial con código QR.',
+          ir: EN ? 'Open my profile' : 'Ver mi perfil',
+          ico: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>' },
+        { key: 'usuarios', href: '/users', titulo: t.dashboard_users || 'Usuarios',
+          texto: EN ? 'Activate, deactivate and assign roles to accounts.' : 'Activa, desactiva y asigna roles a las cuentas.',
+          ir: EN ? 'Manage users' : 'Gestionar usuarios',
+          ico: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>' },
+        { key: 'roles', href: '/roles', titulo: t.nav_roles || 'Roles y Permisos',
+          texto: EN ? 'Decide which menu options each role can see.' : 'Define qué opciones del menú puede ver cada rol.',
+          ir: EN ? 'Edit permissions' : 'Editar permisos',
+          ico: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>' },
+        { key: 'bitacora', href: '/users/bitacora', titulo: t.nav_audit || 'Bitácora de accesos',
+          texto: EN ? 'Every login and logout: who, when and how.' : 'Cada entrada y salida: quién, cuándo y cómo.',
+          ir: EN ? 'View access log' : 'Ver bitácora',
+          ico: '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>' }
+      ].filter(function (a) { return _puede(a.key); });
+    %>
+    <div class="dashboard-content ui-inicio">
+
+      <%# Portada: saludo + autómata animado (el analizador leyendo una palabra) %>
+      <section class="ui-hero">
+        <div class="ui-hero-texto">
+          <p class="ui-eyebrow"><span data-saludo
+             data-manana="<%= EN ? 'Good morning' : 'Buenos días' %>"
+             data-tarde="<%= EN ? 'Good afternoon' : 'Buenas tardes' %>"
+             data-noche="<%= EN ? 'Good evening' : 'Buenas noches' %>">UMG · <%= EN ? 'Formal Languages and Automata' : 'Lenguajes Formales y Autómatas' %></span></p>
+
+          <div class="welcome-hero">
+            <h1><%= t.dashboard_welcome %>, <span class="ui-nombre"><%= user.full_name %></span></h1>
+          </div>
+
+          <p class="ui-hero-sub"><%= EN
+            ? 'Your lexical analyzer works like a finite automaton: it reads the text character by character, recognizes every word and builds the report for you.'
+            : 'Tu analizador léxico funciona como un autómata finito: lee el texto carácter por carácter, reconoce cada palabra y arma el reporte por ti.' %></p>
+
+          <ul class="ui-chips">
+            <% if (_roleName === 'ADMIN' || _roleName === 'SUPERVISOR') { %>
+            <li class="dashboard-role"><span class="role-badge role-badge-active"><%= user.role %></span></li>
+            <% } %>
+            <li class="ui-chip">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              <span><%= _fecha %></span>
+            </li>
+            <li class="ui-chip">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>@<%= user.nickname %></span>
+            </li>
+          </ul>
+        </div>
+
+        <figure class="ui-automata" aria-label="<%= EN ? 'Animated automaton reading the word hola' : 'Autómata animado leyendo la palabra hola' %>">
+          <figcaption class="ui-automata-titulo">
+            <span><%= EN ? 'Automaton (DFA)' : 'Autómata (AFD)' %></span>
+            <span>q0 → q1 → q2</span>
+          </figcaption>
+          <svg viewBox="0 0 340 160" role="img" aria-hidden="true">
+            <defs>
+              <marker id="afPunta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path class="af-punta" d="M0 0 10 5 0 10z"/>
+              </marker>
+            </defs>
+            <!-- inicio -->
+            <path class="af-arista" d="M6 110h21" marker-end="url(#afPunta)"/>
+            <!-- q0 → q1 (letra) -->
+            <path class="af-arista" d="M81 110h61" marker-end="url(#afPunta)"/>
+            <text class="af-etiqueta" x="112" y="101"><%= EN ? 'letter' : 'letra' %></text>
+            <!-- bucle en q1 (letra) -->
+            <path class="af-arista" d="M158 86C140 30 200 30 182 86" marker-end="url(#afPunta)"/>
+            <text class="af-etiqueta" x="170" y="40"><%= EN ? 'letter' : 'letra' %></text>
+            <!-- q1 → q2 (espacio) -->
+            <path class="af-arista" d="M196 110h61" marker-end="url(#afPunta)"/>
+            <text class="af-etiqueta" x="227" y="101"><%= EN ? 'space' : 'espacio' %></text>
+            <!-- estados -->
+            <circle class="af-estado af-q0" cx="55" cy="110" r="26"/>
+            <circle class="af-estado af-q1" cx="170" cy="110" r="26"/>
+            <circle class="af-estado af-q2" cx="285" cy="110" r="26"/>
+            <circle class="af-interior" cx="285" cy="110" r="20"/>
+            <text class="af-nombre" x="55" y="110">q0</text>
+            <text class="af-nombre" x="170" y="110">q1</text>
+            <text class="af-nombre" x="285" y="110">q2</text>
+            <text class="af-acepta" x="285" y="152">✓ <%= EN ? 'WORD' : 'PALABRA' %></text>
+            <!-- ficha que recorre el autómata (sincronizada con la cinta) -->
+            <circle class="af-ficha" r="6">
+              <animateMotion dur="4.2s" repeatCount="indefinite" calcMode="linear"
+                keyTimes="0;0.142857;0.571429;0.714286;1" keyPoints="0;0.1662;0.8338;1;1"
+                path="M55 110L170 110L158 86C140 30 200 30 182 86L170 110L158 86C140 30 200 30 182 86L170 110L158 86C140 30 200 30 182 86L170 110L285 110"/>
+            </circle>
+          </svg>
+          <div class="ui-cinta" aria-hidden="true">
+            <span class="ui-celda">h</span>
+            <span class="ui-celda">o</span>
+            <span class="ui-celda">l</span>
+            <span class="ui-celda">a</span>
+            <span class="ui-celda">␣</span>
+            <span class="ui-cabezal"></span>
+          </div>
+          <p class="ui-automata-pie"><%= EN ? 'Each character moves the automaton to a new state; on a space, the word is accepted.' : 'Cada carácter mueve el autómata a otro estado; al llegar un espacio, la palabra se acepta.' %></p>
+        </figure>
+      </section>
+
+      <% if (_esSuper && _sup) { var E = _sup.entregas, A = _sup.accesos; %>
+      <%# Supervisor: "Dashboard de entregas" (reportes, credenciales y códigos enviados) y accesos %>
+      <div class="ui-seccion-titulo">
+        <h2><%= EN ? 'Supervision panel' : 'Panel de supervisión' %></h2>
+        <p><%= EN ? 'Last ' + _sup.dias + ' days · Guatemala time' : 'Últimos ' + _sup.dias + ' días · hora de Guatemala' %></p>
       </div>
+      <section class="ui-metricas" aria-label="<%= EN ? 'Deliveries' : 'Entregas' %>">
+        <div class="ui-metrica">
+          <span class="ui-metrica-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg></span>
+          <span class="ui-metrica-num" data-contar><%= E.total %></span>
+          <span class="ui-metrica-txt"><%= EN ? 'WhatsApp deliveries' : 'Entregas por WhatsApp' %></span>
+          <div class="ui-barra" aria-hidden="true"><span class="b-acc" style="width:<%= E.total ? 100 : 0 %>%"></span></div>
+        </div>
+        <div class="ui-metrica ui-metrica--ok">
+          <span class="ui-metrica-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></span>
+          <span class="ui-metrica-num" data-contar><%= E.entregados %></span>
+          <span class="ui-metrica-txt"><%= EN ? 'Delivered' : 'Entregadas' %> · <%= E.pctEntregados %>%</span>
+          <div class="ui-barra" aria-hidden="true"><span class="b-ok" style="width:<%= E.pctEntregados %>%"></span></div>
+        </div>
+        <div class="ui-metrica">
+          <span class="ui-metrica-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+          <span class="ui-metrica-num" data-contar><%= E.enCamino %></span>
+          <span class="ui-metrica-txt"><%= EN ? 'On the way' : 'En camino' %></span>
+          <div class="ui-barra" aria-hidden="true"><span class="b-acc" style="width:<%= E.total ? Math.round(E.enCamino * 100 / E.total) : 0 %>%"></span></div>
+        </div>
+        <div class="ui-metrica ui-metrica--off">
+          <span class="ui-metrica-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg></span>
+          <span class="ui-metrica-num" data-contar><%= E.fallidos %></span>
+          <span class="ui-metrica-txt"><%= EN ? 'Not delivered' : 'No entregadas' %></span>
+          <div class="ui-barra" aria-hidden="true"><span class="b-hl" style="width:<%= E.total ? Math.round(E.fallidos * 100 / E.total) : 0 %>%"></span></div>
+        </div>
+      </section>
+
+      <section class="ui-super">
+        <div class="ui-super-caja">
+          <h3><%= EN ? 'Latest deliveries' : 'Últimas entregas' %></h3>
+          <% if (E.ultimos.length) { %>
+          <ul class="ui-super-lista">
+            <% E.ultimos.forEach(function (w, i) { %>
+            <li style="--i:<%= i %>">
+              <span class="ui-super-tipo">
+                <strong><%= w.tipo %></strong>
+                <small><%= w.destino %> · <%= w.fecha %></small>
+              </span>
+              <span class="ui-estado ui-estado--<%= w.grupo %>"><%= w.estado %></span>
+            </li>
+            <% }); %>
+          </ul>
+          <% } else { %>
+          <p class="ui-super-vacio"><%= EN ? 'No deliveries yet. Reports and ID cards sent by WhatsApp will appear here.' : 'Todavía no hay entregas. Aquí aparecerán los reportes y credenciales enviados por WhatsApp.' %></p>
+          <% } %>
+          <% if (E.porTipo.length) { %>
+          <div class="ui-leyenda">
+            <% E.porTipo.forEach(function (p) { %><span><i class="b-acc"></i><%= p.texto %> <%= p.cantidad %></span><% }); %>
+          </div>
+          <% } %>
+        </div>
+
+        <div class="ui-super-caja">
+          <h3><%= EN ? 'Access to the system' : 'Accesos al sistema' %></h3>
+          <div class="ui-super-accesos">
+            <div class="ui-anillo<%= A.total ? '' : ' ui-anillo--vacio' %>" style="--p:<%= A.pctExitosos %>" role="img"
+                 aria-label="<%= A.pctExitosos %>% <%= EN ? 'successful' : 'exitosos' %>">
+              <span><b><%= A.pctExitosos %>%</b><small><%= EN ? 'successful' : 'exitosos' %></small></span>
+            </div>
+            <ul class="ui-super-cifras">
+              <li><b data-contar><%= A.total %></b><%= EN ? 'attempts' : 'intentos' %></li>
+              <li class="ok"><b data-contar><%= A.exitosos %></b><%= EN ? 'successful' : 'exitosos' %></li>
+              <li class="mal"><b data-contar><%= A.fallidos %></b><%= EN ? 'failed' : 'fallidos' %></li>
+            </ul>
+          </div>
+          <% A.porMetodo.forEach(function (m) { %>
+          <div class="ui-super-metodo">
+            <span><%= m.texto %> <b><%= m.cantidad %></b></span>
+            <div class="ui-barra" aria-hidden="true"><span class="b-acc" style="width:<%= m.pct %>%"></span></div>
+          </div>
+          <% }); %>
+        </div>
+      </section>
       <% } %>
 
-      <div class="welcome-center">
-        <h1><%= t.dashboard_welcome %>, <%= user.full_name %></h1>
+      <% if (!_esAdmin && !_esSuper) { %>
+      <%# Analista: laboratorio de textos (en lugar de las métricas del administrador) %>
+      <section class="ui-lab">
+        <div class="ui-lab-texto">
+          <span class="ui-lab-etiqueta">✦ <%= EN ? 'Your analysis workspace' : 'Tu espacio de análisis' %></span>
+          <h2><%= EN ? 'Turn any text into data' : 'Convierte cualquier texto en datos' %></h2>
+          <p><%= EN
+            ? 'Upload a .txt file and in seconds you will see how many words it has, which ones repeat the most, people\'s names and the roots of nouns and verbs.'
+            : 'Sube un .txt y en segundos verás cuántas palabras tiene, cuáles se repiten más, los nombres de personas y las raíces de sustantivos y verbos.' %></p>
+          <% if (_puede('analisis')) { %>
+          <a class="ui-lab-boton" href="/analyze">
+            <span><%= EN ? 'Analyze a text now' : 'Analizar un texto ahora' %></span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <% } %>
+          <ul class="ui-lab-idiomas" aria-label="<%= EN ? 'Supported languages' : 'Idiomas disponibles' %>">
+            <li style="--i:0">Hola</li>
+            <li style="--i:1">Hello</li>
+            <li style="--i:2">Привет</li>
+            <li style="--i:3">你好</li>
+            <li style="--i:4" dir="rtl">مرحبا</li>
+          </ul>
+        </div>
+
+        <%# Animación: un documento se escanea y salen las palabras contadas %>
+        <div class="ui-lab-visual" aria-hidden="true">
+          <div class="ui-doc">
+            <span class="ui-doc-titulo">texto.txt</span>
+            <span class="ui-doc-linea" style="width:92%"></span>
+            <span class="ui-doc-linea" style="width:78%"></span>
+            <span class="ui-doc-linea" style="width:86%"></span>
+            <span class="ui-doc-linea" style="width:64%"></span>
+            <span class="ui-doc-linea" style="width:88%"></span>
+            <span class="ui-doc-linea" style="width:52%"></span>
+            <span class="ui-doc-rayo"></span>
+          </div>
+          <span class="ui-lab-flecha"></span>
+          <ul class="ui-lab-salida">
+            <li style="--i:0"><b>autómata</b><small>×14 · <%= EN ? 'noun' : 'sustantivo' %></small></li>
+            <li style="--i:1"><b>reconoce</b><small>×6 · <%= EN ? 'verb' : 'verbo' %></small></li>
+            <li style="--i:2"><b>Turing</b><small>×2 · <%= EN ? 'person' : 'persona' %></small></li>
+            <li style="--i:3"><b>412</b><small><%= EN ? 'words in total' : 'palabras en total' %></small></li>
+          </ul>
+        </div>
+      </section>
+
+      <%# Consejos rápidos para analistas %>
+      <section class="ui-tips" aria-label="<%= EN ? 'Tips' : 'Consejos' %>">
+        <div class="ui-tip" style="--i:0">
+          <span class="ui-tip-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg></span>
+          <div><strong><%= EN ? 'Save as UTF-8' : 'Guarda en UTF-8' %></strong>
+          <p><%= EN ? 'Accents and other alphabets are read correctly (ANSI also works).' : 'Así las tildes y otros alfabetos se leen bien (ANSI también funciona).' %></p></div>
+        </div>
+        <div class="ui-tip" style="--i:1">
+          <span class="ui-tip-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+          <div><strong><%= EN ? 'Pick the right language' : 'Elige el idioma correcto' %></strong>
+          <p><%= EN ? 'Roots (Snowball) and pronouns depend on the language you choose.' : 'Las raíces (Snowball) y los pronombres dependen del idioma que elijas.' %></p></div>
+        </div>
+        <div class="ui-tip" style="--i:2">
+          <span class="ui-tip-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg></span>
+          <div><strong><%= EN ? 'Get the PDF report' : 'Recibe el reporte en PDF' %></strong>
+          <p><%= EN ? 'After analyzing, send it to your email or WhatsApp.' : 'Después de analizar, envíalo a tu correo o WhatsApp.' %></p></div>
+        </div>
+      </section>
+      <% } %>
+
+      <% if (_esAdmin) { %>
+      <%# Métricas del sistema (solo administrador) %>
+      <section class="ui-metricas" aria-label="<%= EN ? 'System summary' : 'Resumen del sistema' %>">
+        <div class="ui-metrica">
+          <span class="ui-metrica-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          <span class="ui-metrica-num" data-contar><%= _total %></span>
+          <span class="ui-metrica-txt"><%= EN ? 'Registered users' : 'Usuarios registrados' %></span>
+          <div class="ui-barra" aria-hidden="true"><span class="b-acc" style="width:100%"></span></div>
+        </div>
+        <div class="ui-metrica ui-metrica--ok">
+          <span class="ui-metrica-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></span>
+          <span class="ui-metrica-num" data-contar><%= _activos %></span>
+          <span class="ui-metrica-txt"><%= t.dashboard_active || 'Activos' %> · <%= _pctActivos %>%</span>
+          <div class="ui-barra" aria-hidden="true"><span class="b-ok" style="width:<%= _pctActivos %>%"></span></div>
+        </div>
+        <div class="ui-metrica ui-metrica--off">
+          <span class="ui-metrica-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg></span>
+          <span class="ui-metrica-num" data-contar><%= _inactivos %></span>
+          <span class="ui-metrica-txt"><%= t.dashboard_inactive || 'Inactivos' %></span>
+          <div class="ui-barra" aria-hidden="true"><span class="b-hl" style="width:<%= _total ? 100 - _pctActivos : 0 %>%"></span></div>
+        </div>
+        <div class="ui-metrica">
+          <span class="ui-metrica-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+          <span class="ui-metrica-num" data-contar><%= Object.keys(_porRol).filter(function (k) { return _porRol[k] > 0; }).length %></span>
+          <span class="ui-metrica-txt"><%= EN ? 'Roles in use' : 'Roles en uso' %></span>
+          <div class="ui-barra" aria-hidden="true">
+            <span class="b-alt" style="width:<%= _pct(_porRol.ADMIN) %>%"></span>
+            <span class="b-acc" style="width:<%= _pct(_porRol.SUPERVISOR) %>%"></span>
+            <span class="b-ok" style="width:<%= _pct(_porRol.ANALISTA) %>%"></span>
+            <span class="b-hl" style="width:<%= _pct(_porRol.OTRO) %>%"></span>
+          </div>
+          <div class="ui-leyenda">
+            <span><i class="b-alt"></i>Admin <%= _porRol.ADMIN %></span>
+            <span><i class="b-acc"></i>Superv. <%= _porRol.SUPERVISOR %></span>
+            <span><i class="b-ok"></i>Analista <%= _porRol.ANALISTA %></span>
+          </div>
+        </div>
+      </section>
+      <% } %>
+
+      <% if (_acciones.length) { %>
+      <div class="ui-seccion-titulo">
+        <h2><%= EN ? 'Quick access' : 'Accesos rápidos' %></h2>
+        <p><%= EN ? 'Based on your role permissions' : 'Según los permisos de tu rol' %></p>
       </div>
+      <nav class="ui-acciones" aria-label="<%= EN ? 'Quick access' : 'Accesos rápidos' %>">
+        <% _acciones.forEach(function (a, i) { %>
+        <a class="ui-accion" href="<%= a.href %>" style="--i:<%= i %>">
+          <span class="ui-accion-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><%- a.ico %></svg></span>
+          <h3><%= a.titulo %></h3>
+          <p><%= a.texto %></p>
+          <span class="ui-accion-ir"><%= a.ir %></span>
+        </a>
+        <% }); %>
+      </nav>
+      <% } %>
+
+      <%# Cómo funciona el analizador (para explicar el proyecto en la exposición) %>
+      <div class="ui-seccion-titulo">
+        <h2><%= EN ? 'How the analyzer works' : '¿Cómo funciona el analizador?' %></h2>
+        <p><%= EN ? 'From your file to the report in 4 steps' : 'De tu archivo al reporte en 4 pasos' %></p>
+      </div>
+      <ol class="ui-flujo">
+        <li class="ui-paso">
+          <span class="ui-paso-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg></span>
+          <strong><%= EN ? 'Upload .txt' : 'Sube un .txt' %></strong>
+          <span><%= EN ? 'UTF-8 or ANSI, up to 5 MB, in 5 languages' : 'UTF-8 o ANSI, hasta 5 MB, en 5 idiomas' %></span>
+        </li>
+        <li class="ui-paso">
+          <span class="ui-paso-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="3.5"/><circle cx="18.5" cy="12" r="3.5"/><circle cx="18.5" cy="12" r="1.5"/><path d="M9 12h5.5"/></svg></span>
+          <strong><%= EN ? 'Automaton (DFA)' : 'Autómata (AFD)' %></strong>
+          <span><%= EN ? 'States q0, q1, q2 split the text into words' : 'Los estados q0, q1, q2 separan el texto en palabras' %></span>
+        </li>
+        <li class="ui-paso">
+          <span class="ui-paso-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg></span>
+          <strong><%= EN ? 'Lemmas (Snowball)' : 'Raíces (Snowball)' %></strong>
+          <span><%= EN ? 'Counts, most and least repeated words' : 'Conteo, palabras más y menos repetidas' %></span>
+        </li>
+        <li class="ui-paso">
+          <span class="ui-paso-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg></span>
+          <strong><%= EN ? 'PDF report' : 'Reporte PDF' %></strong>
+          <span><%= EN ? 'Results on screen and sent by email or WhatsApp' : 'Resultados en pantalla y envío por correo o WhatsApp' %></span>
+        </li>
+      </ol>
+
+      <footer class="ui-sello">
+        <img src="/img/logo-umg-128.webp" width="34" height="34" alt="" loading="lazy" decoding="async">
+        <span>
+          <strong>Universidad Mariano Gálvez de Guatemala</strong>
+          <%= EN ? 'Formal Languages and Automata · Final project 2026' : 'Lenguajes Formales y Autómatas · Proyecto final 2026' %>
+        </span>
+      </footer>
 
     </div>
   </div>
 
   <script src="/js/menu.js"></script>
+  <script src="/js/ui-pro.js"></script>
+  <script src="/js/theme.js"></script>
 </body>
 </html>

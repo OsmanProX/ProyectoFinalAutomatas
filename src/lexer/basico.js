@@ -40,7 +40,7 @@ const CAT = Object.freeze({
 const PATRONES_REPORTADOS = [
   CATEGORIAS.CORREO, CATEGORIAS.URL, CATEGORIAS.FECHA, CATEGORIAS.HORA, CATEGORIAS.TELEFONO,
   CATEGORIAS.MONEDA, CATEGORIAS.PORCENTAJE, CATEGORIAS.NUMERO, CATEGORIAS.HASHTAG,
-  CATEGORIAS.MENCION, CATEGORIAS.SIGLA, CATEGORIAS.CODIGO
+  CATEGORIAS.MENCION, CATEGORIAS.ROMANO, CATEGORIAS.SIGLA, CATEGORIAS.DOMINIO, CATEGORIAS.PALABRA_SIGNOS, CATEGORIAS.CODIGO
 ];
 
 // ============================================================================
@@ -292,7 +292,8 @@ function analizarTextoBasico(texto, codigoIdioma) {
     },
     masRepetidas: aLista(frecuenciasContenido, 'palabra', TOP_FRECUENCIAS),
     masRepetidasIncluyendoFuncionales: aLista(frecuencias, 'palabra', TOP_FRECUENCIAS),
-    menosRepetidas: { frecuencia: frecuenciaMinima, total: menos.length, palabras: menos.slice(0, 40) },
+    // Todas, en orden alfabético (antes solo las primeras 40)
+    menosRepetidas: { frecuencia: frecuenciaMinima, total: menos.length, palabras: menos.slice(0, 100000) },
     pronombresPersonales: aLista(pronombres),
     nombresPersonas: aLista(personas, 'nombre'),
     otrosNombresPropios: aLista(propios, 'nombre'),

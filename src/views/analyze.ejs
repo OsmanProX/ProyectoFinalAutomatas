@@ -17,10 +17,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script src="/js/theme-init.js"></script>
   <title><%= T.analyze_title || 'Análisis léxico' %></title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/menu.css">
   <link rel="stylesheet" href="/css/analyze.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/ui-pro.css">
 </head>
 <body>
 
@@ -36,11 +40,39 @@
     </header>
 
     <!-- CONTENIDO -->
-    <div class="dashboard-content">
-      <div class="card">
-        <h1><%= T.analyze_title || 'Análisis léxico' %></h1>
-        <p><%= T.analyze_help || 'Carga un archivo de texto (.txt), elige el idioma en que está escrito y presiona Procesar.' %></p>
+    <%
+      const EN = L === 'en';
+      // Saludo de ejemplo en cada idioma (solo decoración de las tarjetas)
+      const SALUDOS = { es: 'Hola', en: 'Hello', ru: 'Привет', zh: '你好', ar: 'مرحبا' };
+      const FRASE = EN
+        ? ['The', 'automaton', 'reads', 'each', 'word', '.']
+        : ['El', 'autómata', 'lee', 'cada', 'palabra', '.'];
+    %>
+    <div class="dashboard-content ana-pagina ui-inicio">
 
+      <%# Portada: frase que se va separando en tokens %>
+      <section class="ui-hero">
+        <div class="ui-hero-texto">
+          <p class="ui-eyebrow"><%= EN ? 'Lexical analyzer · DFA' : 'Analizador léxico · AFD' %></p>
+          <h1><%= T.analyze_title || 'Análisis léxico' %></h1>
+          <p class="ui-hero-sub"><%= T.analyze_help || 'Carga un archivo de texto (.txt), elige el idioma en que está escrito y presiona Procesar.' %></p>
+          <ul class="ui-chips">
+            <li class="ui-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg><span><%= EN ? '5 languages' : '5 idiomas' %></span></li>
+            <li class="ui-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span><%= EN ? '.txt up to 5 MB' : '.txt hasta 5 MB' %></span></li>
+            <li class="ui-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg><span><%= EN ? 'PDF report' : 'Reporte PDF' %></span></li>
+          </ul>
+        </div>
+        <div aria-hidden="true">
+          <ul class="ana-tokens">
+            <% FRASE.forEach(function (w, i) { %>
+              <li class="ana-token" style="--i:<%= i %>" data-tipo="<%= w === '.' ? (EN ? 'SYMBOL' : 'SÍMBOLO') : (EN ? 'WORD' : 'PALABRA') %>"><%= w %></li>
+            <% }); %>
+          </ul>
+          <p class="ana-tokens-pie"><%= EN ? 'Each word becomes a token: q0 → q1 → q2 ✓' : 'Cada palabra se convierte en un token: q0 → q1 → q2 ✓' %></p>
+        </div>
+      </section>
+
+      <div class="card">
         <% if (typeof success !== 'undefined' && success) { %>
           <div class="alert alert-success"><%= success %></div>
         <% } %>
@@ -48,23 +80,89 @@
           <div class="alert alert-error"><%= error %></div>
         <% } %>
 
+        <ol class="ana-pasos" aria-hidden="true">
+          <li data-paso="1" class="actual"><b>1</b><%= EN ? 'Choose your file' : 'Elige tu archivo' %></li>
+          <li data-paso="2"><b>2</b><%= EN ? 'Pick the language' : 'Elige el idioma' %></li>
+          <li data-paso="3"><b>3</b><%= EN ? 'Process' : 'Procesa' %></li>
+        </ol>
+
         <form action="/analyze" method="POST" enctype="multipart/form-data" id="analyzeForm" novalidate>
           <div class="form-group">
             <label for="file"><%= T.analyze_file || 'Archivo de texto (.txt)' %></label>
-            <input type="file" id="file" name="file" accept=".txt,text/plain" required>
+            <%# Zona de arrastrar y soltar: el input real queda encima (invisible) %>
+            <div class="ana-drop" data-dropzone>
+              <span class="ana-drop-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg></span>
+              <strong data-dropzone-nombre data-vacio="<%= EN ? 'Drag your .txt here' : 'Arrastra tu .txt aquí' %>"><%= EN ? 'Drag your .txt here' : 'Arrastra tu .txt aquí' %></strong>
+              <small><%= EN ? 'or click to choose it · max. 5 MB · UTF-8 or ANSI' : 'o haz clic para elegirlo · máx. 5 MB · UTF-8 o ANSI' %></small>
+              <input type="file" id="file" name="file" accept=".txt,text/plain" required>
+            </div>
+            <%# Vista previa del archivo (assets/js/analyze-preview.js) %>
+            <div class="file-preview" id="filePreview" hidden aria-live="polite"
+                 data-lines="<%= EN ? 'lines' : 'líneas' %>"
+                 data-words="<%= EN ? 'words' : 'palabras' %>"
+                 data-chars="<%= EN ? 'characters' : 'caracteres' %>"
+                 data-partial="<%= EN ? 'Showing only the beginning of the file. The whole file will be analyzed.' : 'Se muestra solo el inicio del archivo. Se analizará el archivo completo.' %>"
+                 data-not-txt="<%= EN ? 'Only .txt files are allowed.' : 'Solo se permiten archivos .txt.' %>"
+                 data-too-big="<%= EN ? 'The file is larger than 5 MB' : 'El archivo supera el límite de 5 MB' %>"
+                 data-empty="<%= EN ? 'The file is empty.' : 'El archivo está vacío.' %>"
+                 data-read-error="<%= EN ? 'The file could not be read.' : 'No se pudo leer el archivo.' %>">
+              <div class="file-preview-head">
+                <div>
+                  <strong id="fpName"></strong>
+                  <small id="fpInfo"></small>
+                </div>
+                <button type="button" class="file-preview-clear" id="fpClear"><%= EN ? 'Remove' : 'Quitar' %></button>
+              </div>
+              <pre class="file-preview-text" id="fpText" dir="auto"></pre>
+              <small class="file-preview-note" id="fpNote"></small>
+            </div>
           </div>
 
           <div class="form-group">
-            <label for="language"><%= T.analyze_language || 'Idioma del texto' %></label>
-            <select id="language" name="language" required>
+            <%# Idiomas como tarjetas: envían el mismo campo "language" que antes enviaba el select %>
+            <span class="ana-grupo-titulo" id="languageLabel"><%= T.analyze_language || 'Idioma del texto' %></span>
+            <div class="ana-idiomas" role="radiogroup" aria-labelledby="languageLabel">
               <% IDIOMAS.forEach((idioma) => { %>
-                <option value="<%= idioma.code %>" <%= idioma.code === idiomaElegido ? 'selected' : '' %>><%= idioma.name %></option>
+                <% const basico = idioma.name.indexOf('(') !== -1; %>
+                <label class="ana-idioma">
+                  <input type="radio" name="language" value="<%= idioma.code %>" <%= idioma.code === idiomaElegido ? 'checked' : '' %> required>
+                  <span class="ana-idioma-codigo"><%= idioma.code.toUpperCase() %></span>
+                  <span class="ana-idioma-saludo" dir="auto"><%= SALUDOS[idioma.code] %></span>
+                  <span class="ana-idioma-nombre"><%= idioma.name.replace(/\s*\(.*\)\s*/, '') %></span>
+                  <% if (basico) { %><span class="ana-idioma-basico"><%= EN ? 'basic' : 'básico' %></span><% } %>
+                </label>
               <% }); %>
-            </select>
+            </div>
           </div>
 
-          <button type="submit" class="btn"><%= T.analyze_process || 'Procesar' %></button>
+          <button type="submit" class="btn ana-enviar" data-procesando="<%= EN ? 'Processing…' : 'Procesando…' %>">
+            <span class="ana-girando" aria-hidden="true"></span>
+            <span data-texto data-original="<%= T.analyze_process || 'Procesar' %>"><%= T.analyze_process || 'Procesar' %></span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
         </form>
+
+        <%# Historial en memoria RAM: últimos 5 análisis de esta sesión (no se guarda en MySQL) %>
+        <% const H = (typeof history !== 'undefined' && Array.isArray(history)) ? history : []; %>
+        <% if (H.length) { %>
+          <section class="lex-historial" aria-label="<%= EN ? 'Your latest analyses' : 'Tus últimos análisis' %>">
+            <h3><%= EN ? 'Your latest analyses' : 'Tus últimos análisis' %> <small><%= EN ? '(this session · up to 5)' : '(esta sesión · hasta 5)' %></small></h3>
+            <ol class="lex-historial-lista">
+              <% H.forEach((h, i) => { %>
+                <li class="<%= i === 0 && R ? 'actual' : '' %>">
+                  <span class="lex-historial-archivo" title="<%= h.fileName %>"><%= h.fileName %></span>
+                  <span class="lex-historial-datos">
+                    <%= h.language %> · <%= Number(h.totalWords).toLocaleString(EN ? 'en-US' : 'es-GT') %> <%= EN ? 'words' : 'palabras' %>
+                    · <%= Number(h.characters).toLocaleString(EN ? 'en-US' : 'es-GT') %> <%= EN ? 'characters' : 'caracteres' %>
+                    · <%= h.timeMs %> ms
+                    · <%= new Date(h.date).toLocaleString(EN ? 'en-US' : 'es-GT', { timeZone: 'America/Guatemala', hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short', hour12: false }) %>
+                  </span>
+                  <% if (h.topWords) { %><span class="lex-historial-top"><%= EN ? 'Most repeated:' : 'Más repetidas:' %> <%= h.topWords %></span><% } %>
+                </li>
+              <% }); %>
+            </ol>
+          </section>
+        <% } %>
 
         <!-- RESULTADOS DEL ANÁLISIS LÉXICO (Inciso e & f) -->
         <% if (R) { %>
@@ -107,17 +205,35 @@
                 <% } %>
               </section>
 
-              <!-- c. Palabras que menos se repiten -->
-              <section class="lex-box">
+              <!-- c. Palabras que menos se repiten: TODAS, en orden alfabético de la A a la Z -->
+              <section class="lex-box lex-box-ancho">
                 <h3>Palabras que menos se repiten</h3>
                 <% if (R.leastRepeated && R.leastRepeated.length > 0) { %>
                   <% const totalMenos = R.leastRepeatedTotal || R.leastRepeated.length; %>
-                  <p class="lex-note"><%= totalMenos %> palabra(s) aparecen <%= R.leastRepeated[0].count %> vez/veces<%= totalMenos > R.leastRepeated.length ? ` (se muestran ${R.leastRepeated.length})` : '' %>.</p>
-                  <ul class="lex-chips lex-chips-light">
-                    <% R.leastRepeated.forEach(item => { %>
-                      <li dir="auto"><%= item.word %></li>
+                  <% const grupos = (R.leastRepeatedByLetter && R.leastRepeatedByLetter.length) ? R.leastRepeatedByLetter : [{ letter: 'A-Z', words: R.leastRepeated.map(i => i.word) }]; %>
+                  <p class="lex-note"><%= totalMenos %> palabra(s) aparecen <%= R.leastRepeated[0].count %> vez/veces. Se muestran todas, en orden alfabético<%= totalMenos > R.leastRepeated.length ? ` (las primeras ${R.leastRepeated.length})` : '' %>.</p>
+
+                  <div class="lex-alfa-barra">
+                    <%# Índice: salta a la letra (solo las letras que tienen palabras) %>
+                    <nav class="lex-indice" aria-label="Índice alfabético">
+                      <% grupos.forEach(g => { %>
+                        <a href="#menos-<%= encodeURIComponent(g.letter) %>" title="<%= g.words.length %> palabra(s)"><%= g.letter %></a>
+                      <% }); %>
+                    </nav>
+                    <input type="search" class="lex-buscar" placeholder="Buscar palabra…" aria-label="Buscar en las palabras que menos se repiten" data-filtro-palabras="#listaMenos">
+                  </div>
+
+                  <div class="lex-alfabeto" id="listaMenos" tabindex="0">
+                    <% grupos.forEach(g => { %>
+                      <div class="lex-grupo" data-grupo>
+                        <h4 class="lex-letra" id="menos-<%= encodeURIComponent(g.letter) %>"><%= g.letter %> <small><%= g.words.length %></small></h4>
+                        <ul class="lex-chips lex-chips-light">
+                          <% g.words.forEach(w => { %><li dir="auto"><%= w %></li><% }); %>
+                        </ul>
+                      </div>
                     <% }); %>
-                  </ul>
+                    <p class="lex-empty lex-sin-resultados" hidden>No hay palabras que coincidan.</p>
+                  </div>
                 <% } else { %>
                   <p class="lex-empty">No hay datos.</p>
                 <% } %>
@@ -137,8 +253,8 @@
                 <% } %>
               </section>
 
-              <!-- e. Nombres de personas y otros nombres propios -->
-              <section class="lex-box">
+              <!-- e. Nombres de personas y otros nombres propios (caja más ancha: un libro tiene cientos) -->
+              <section class="lex-box lex-box-nombres">
                 <h3>Nombres de personas</h3>
                 <% if (R.persons && R.persons.length > 0) { %>
                   <ul class="lex-chips">
@@ -237,5 +353,8 @@
   </div>
 
   <script src="/js/menu.js"></script>
+  <script src="/js/analyze-preview.js"></script>
+  <script src="/js/ui-pro.js"></script>
+  <script src="/js/theme.js"></script>
 </body>
 </html>

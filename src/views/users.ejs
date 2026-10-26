@@ -3,9 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script src="/js/theme-init.js"></script>
   <title><%= t.users_title %></title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/menu.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/ui-pro.css">
 </head>
 <body>
 
@@ -43,6 +47,7 @@
                 <th><%= t.users_col_name %></th>
                 <th><%= t.users_col_nickname %></th>
                 <th><%= t.users_col_role %></th>
+                <th><%= t.users_col_state %></th>
                 <th><%= t.users_col_actions %></th>
               </tr>
             </thead>
@@ -70,6 +75,12 @@
                     </select>
                   </td>
                   <td>
+                    <select class="role-select" data-state-select>
+                      <option value="1" <%= Number(u.state) === 1 ? 'selected' : '' %>><%= t.users_state_active %></option>
+                      <option value="0" <%= Number(u.state) === 0 ? 'selected' : '' %>><%= t.users_state_inactive %></option>
+                    </select>
+                  </td>
+                  <td>
                     <button type="button" class="btn btn-sm btn-primary btn-save-role"
                             data-user-id="<%= u.id %>">
                       <%= t.users_save %>
@@ -88,9 +99,12 @@
   <script id="users-i18n" type="application/json"><%- JSON.stringify({
     saving: t.users_saving,
     saved: t.users_saved,
-    error: t.users_error
+    error: t.users_error,
+    errorSelf: t.users_error_self
   }).replace(/</g, '\\u003c') %></script>
   <script src="/js/users-role.js"></script>
   <script src="/js/menu.js"></script>
+  <script src="/js/ui-pro.js"></script>
+  <script src="/js/theme.js"></script>
 </body>
 </html>

@@ -3,10 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <script src="/js/theme-init.js"></script>
   <title><%= t.login_title %></title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/qr-login.css">
   <link rel="stylesheet" href="/css/forgot-password.css">
+  <%# reCAPTCHA: el script se carga en assets/js/recaptcha-widget.js según la versión (2 o 3) %>
+  <link rel="stylesheet" href="/css/face-guide.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/ui-pro.css">
 </head>
 <body>
   <div class="lang-switcher">
@@ -15,6 +21,7 @@
 
   <div class="auth-container">
     <div class="card">
+      <%- include('partials/umg-marca') %>
       <h1><%= t.login_title %></h1>
 
       <% if (success) { %>
@@ -28,14 +35,26 @@
       <form action="/login" method="POST">
         <div class="form-group">
           <label for="nickname"><%= t.login_nickname %></label>
-          <input type="text" id="nickname" name="nickname" required>
+          <input type="text" id="nickname" name="nickname" required maxlength="100" autocomplete="username">
         </div>
 
         <div class="form-group">
           <label for="password"><%= t.login_password %></label>
-          <input type="password" id="password" name="password" required>
+          <input type="password" id="password" name="password" required maxlength="100" autocomplete="current-password">
         </div>
         <a href="/recuperar" class="forgot-link"><%= t.reset_forgot_link %></a>
+
+        <%# reCAPTCHA: solo aparece si están las claves en .env. v2 = casilla con el tema claro/oscuro; v3 = invisible %>
+        <% if (typeof recaptchaSiteKey !== 'undefined' && recaptchaSiteKey) { %>
+          <div class="recaptcha-box" data-recaptcha
+               data-sitekey="<%= recaptchaSiteKey %>"
+               data-version="<%= typeof recaptchaVersion !== 'undefined' ? recaptchaVersion : 2 %>"
+               data-action="login"
+               data-lang="<%= lang %>"></div>
+          <% if (typeof recaptchaVersion !== 'undefined' && recaptchaVersion === 3) { %>
+            <p class="recaptcha-aviso"><%- t.recaptcha_notice %></p>
+          <% } %>
+        <% } %>
 
         <button type="submit" class="btn btn-primary"><%= t.login_submit %></button>
       </form>
@@ -61,7 +80,7 @@
           <div id="faceSection" class="face-section">
             <div class="face-nickname-group">
               <label for="faceNickname" class="face-nickname-label"><%= t.login_nickname %></label>
-              <input type="text" id="faceNickname" class="face-nickname-input" placeholder="<%= t.face_nickname_placeholder %>" autocomplete="username">
+              <input type="text" id="faceNickname" class="face-nickname-input" placeholder="<%= t.face_nickname_placeholder %>" autocomplete="username" maxlength="100">
             </div>
 
             <div class="qr-camera" id="faceCameraBox" hidden>
@@ -71,7 +90,7 @@
 
             <div class="face-stage">
               <div class="face-frame" id="liveFrame">
-                <video id="video" autoplay muted playsinline class="face-video"></video>
+                <video id="video" autoplay muted playsinline class="face-video" data-face-guide></video>
                 <div class="face-overlay">
                   <div class="face-overlay-corner tl"></div>
                   <div class="face-overlay-corner tr"></div>
@@ -192,5 +211,9 @@
   </script>
   <script src="/js/vendor/jsQR.js"></script>
   <script src="/js/qr-login.js"></script>
+  <script src="/js/face-guide.js"></script>
+  <script src="/js/ui-pro.js"></script>
+  <script src="/js/theme.js"></script>
+  <script src="/js/recaptcha-widget.js"></script>
 </body>
 </html>

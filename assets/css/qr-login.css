@@ -4,8 +4,8 @@
 .btn-qr {
   width: 100%;
   margin-top: 10px;
-  background: #1a1a2e;
-  color: #fff;
+  background: var(--primary);
+  color: var(--on-primary);
   font-size: 16px;
   padding: 12px;
   border: none;
@@ -15,7 +15,7 @@
 }
 
 .btn-qr:hover {
-  background: #2a2a4a;
+  background: var(--primary-2);
 }
 
 .qr-section {
@@ -31,7 +31,7 @@
   margin: 0 auto;
   border-radius: 12px;
   overflow: hidden;
-  background: #1a1a2e;
+  background: var(--primary);
   aspect-ratio: 4 / 3;
 }
 
@@ -45,9 +45,9 @@
 .qr-frame {
   position: absolute;
   inset: 18% 24%;
-  border: 3px solid #4361ee;
+  border: 3px solid var(--accent);
   border-radius: 14px;
-  box-shadow: 0 0 0 999px rgba(26, 26, 46, 0.35);
+  box-shadow: 0 0 0 999px rgba(var(--shadow-rgb), 0.35);
   animation: qr-pulse 1.6s ease-in-out infinite;
   pointer-events: none;
 }
@@ -65,12 +65,12 @@
 }
 
 .btn-qr-upload {
-  background: #4361ee;
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-primary);
 }
 
 .btn-qr-upload:hover {
-  background: #3a56d4;
+  background: var(--accent-hover);
 }
 
 /* Selector de cámara (solo aparece si hay más de una) */
@@ -81,7 +81,7 @@
   max-width: 320px;
   margin: 0 auto 10px;
   font-size: 13px;
-  color: #1a1a2e;
+  color: var(--text-strong);
 }
 
 .qr-camera[hidden] {
@@ -97,14 +97,14 @@
   flex: 1;
   min-width: 0;
   padding: 6px 8px;
-  border: 1px solid #ccd0e0;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
-  color: #1a1a2e;
+  background: var(--surface);
+  color: var(--text-strong);
   font-size: 13px;
 }
 
 .qr-camera select:focus {
   outline: none;
-  border-color: #4361ee;
+  border-color: var(--accent);
 }

@@ -142,6 +142,33 @@ class UserService {
     return { valid: true };
   }
 
+  /**
+   * Valida los campos del registro SIN tocar la base de datos ni la API facial.
+   * El controlador la llama antes de procesar la foto, para mostrar primero el
+   * error del campo (contraseña corta, apodo inválido...) y no gastar una llamada
+   * a la API de rostro. register() vuelve a validar todo igual.
+   * @returns {{ success: boolean, error?: string }}
+   */
+  validateFields(registerDTO) {
+    const validaciones = [
+      () => this.validateFullName(registerDTO.fullName),
+      () => this.validateNickname(registerDTO.nickname),
+      () => this.validateRole(registerDTO.role),
+      () => this.validateEmail(registerDTO.email),
+      () => this.validatePhone(registerDTO.phone),
+      () => this.validateBirthDate(registerDTO.birthDate),
+      () => this.validateNotificationMethod(registerDTO.notificationMethod),
+      () => this.validatePassword(registerDTO.password),
+      () => (registerDTO.passwordsMatch() ? { valid: true } : { valid: false, error: 'passwords_not_match' }),
+      () => this.validatePhotos(registerDTO.photo, registerDTO.photoModified)
+    ];
+    for (const validar of validaciones) {
+      const resultado = validar();
+      if (!resultado.valid) return { success: false, error: resultado.error };
+    }
+    return { success: true };
+  }
+
   async authenticate(loginDTO) {
     if (!loginDTO.isValid()) {
       return { success: false, error: 'credentials_required' };
@@ -221,6 +248,10 @@ class UserService {
       return { success: false, error: photoValidation.error };
     }
 
+    // El apodo debe ser ÚNICO: el login (contraseña, rostro y API) y "Recuperar
+    // contraseña" buscan al usuario por apodo; con apodos repetidos el segundo
+    // usuario no podría entrar. MySQL compara sin distinguir mayúsculas ni tildes
+    // (Kevin = kevin = kévin), por eso el mensaje lo explica.
     const existing = await userRepository.findByNickname(registerDTO.nickname);
     if (existing) {
       return { success: false, error: 'nickname_exists' };
@@ -291,6 +322,26 @@ class UserService {
     const newState = user.state === 1 ? 0 : 1;
     await userRepository.updateState(id, newState);
     return { success: true, newState };
+  }
+
+  /**
+   * Fija el estado del usuario en un valor concreto (1 = activo, 0 = inactivo).
+   * Lo usa la pagina Gestion de usuarios desde el select de Estado.
+   */
+  async setUserState(id, state) {
+    if (!id || isNaN(id)) {
+      return { success: false, error: 'invalid_id' };
+    }
+    const newState = Number(state);
+    if (newState !== 0 && newState !== 1) {
+      return { success: false, error: 'invalid_state' };
+    }
+    const user = await userRepository.findById(id);
+    if (!user) {
+      return { success: false, error: 'user_not_found' };
+    }
+    await userRepository.updateState(id, newState);
+    return { success: true, state: newState };
   }
 
   async deleteUser(id) {

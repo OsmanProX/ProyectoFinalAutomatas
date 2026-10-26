@@ -14,7 +14,7 @@ body.ps-open {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(26, 26, 46, 0.7);
+  background: rgba(var(--shadow-rgb), 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,7 +23,7 @@ body.ps-open {
 }
 
 .ps-modal {
-  background: #fff;
+  background: var(--surface);
   border-radius: 18px;
   width: 100%;
   max-width: 860px;
@@ -34,10 +34,10 @@ body.ps-open {
 }
 
 .ps-header {
-  background: #1a1a2e;
-  color: #fff;
+  background: var(--primary);
+  color: var(--on-primary);
   padding: 18px 24px;
-  border-bottom: 4px solid #4361ee;
+  border-bottom: 4px solid var(--accent);
   border-radius: 18px 18px 0 0;
 }
 
@@ -50,7 +50,7 @@ body.ps-open {
 .ps-header p {
   margin: 0;
   font-size: 13px;
-  color: #c7d0ff;
+  color: var(--on-primary-muted);
 }
 
 .ps-body {
@@ -71,10 +71,10 @@ body.ps-open {
   width: 100%;
   aspect-ratio: 1 / 1;
   border-radius: 14px;
-  box-shadow: 0 6px 20px rgba(26, 26, 46, 0.25);
+  box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.25);
   touch-action: none;
   cursor: grab;
-  background: #eef0f7;
+  background: var(--surface-3);
 }
 
 .ps-canvas:active {
@@ -86,7 +86,7 @@ body.ps-open {
   grid-template-columns: 1fr 1fr;
   gap: 8px 12px;
   align-items: center;
-  background: #f5f6fa;
+  background: var(--surface-2);
   border-radius: 10px;
   padding: 10px 12px;
 }
@@ -96,13 +96,13 @@ body.ps-open {
   flex-direction: column;
   gap: 2px;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--text-muted);
   margin: 0;
 }
 
 .ps-sticker-controls input[type="range"] {
   width: 100%;
-  accent-color: #4361ee;
+  accent-color: var(--accent);
 }
 
 .ps-sticker-controls .ps-btn {
@@ -117,7 +117,7 @@ body.ps-open {
 .ps-tabs {
   display: flex;
   gap: 6px;
-  background: #f0f2f8;
+  background: var(--surface-2);
   padding: 4px;
   border-radius: 12px;
   margin-bottom: 14px;
@@ -131,14 +131,14 @@ body.ps-open {
   border-radius: 9px;
   font-size: 14px;
   font-weight: 600;
-  color: #1a1a2e;
+  color: var(--text-strong);
   cursor: pointer;
 }
 
 .ps-tab[aria-selected="true"] {
-  background: #fff;
-  color: #4361ee;
-  box-shadow: 0 1px 4px rgba(26, 26, 46, 0.12);
+  background: var(--surface);
+  color: var(--accent-text);
+  box-shadow: 0 1px 4px rgba(var(--shadow-rgb), 0.12);
 }
 
 .ps-strip {
@@ -153,12 +153,12 @@ body.ps-open {
   align-items: center;
   gap: 4px;
   border: 2px solid transparent;
-  background: #fff;
+  background: var(--surface);
   border-radius: 12px;
   padding: 4px;
   cursor: pointer;
   font-size: 12px;
-  color: #1a1a2e;
+  color: var(--text-strong);
   transition: transform 0.12s, border-color 0.12s;
 }
 
@@ -174,7 +174,7 @@ body.ps-open {
 }
 
 .ps-thumb.ps-active {
-  border-color: #4361ee;
+  border-color: var(--accent);
   font-weight: 700;
 }
 
@@ -190,13 +190,13 @@ body.ps-open {
   aspect-ratio: 1 / 1;
   border: none;
   border-radius: 12px;
-  background: #f5f6fa;
+  background: var(--surface-2);
   cursor: pointer;
   transition: transform 0.12s, background 0.12s;
 }
 
 .ps-sticker:hover {
-  background: rgba(67, 97, 238, 0.12);
+  background: rgba(var(--accent-rgb), 0.12);
   transform: scale(1.12) rotate(-6deg);
 }
 
@@ -207,7 +207,7 @@ body.ps-open {
 .ps-help {
   margin-top: 12px;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 /* Pie y botones */
@@ -216,7 +216,7 @@ body.ps-open {
   flex-wrap: wrap;
   gap: 10px;
   padding: 14px 24px 20px;
-  border-top: 1px solid #eef0f7;
+  border-top: 1px solid var(--border);
 }
 
 .ps-spacer {
@@ -238,24 +238,24 @@ body.ps-open {
 }
 
 .ps-btn-primary {
-  background: #4361ee;
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-primary);
   min-width: 120px;
 }
 
 .ps-btn-primary:hover {
-  background: #3a56d4;
+  background: var(--accent-hover);
 }
 
 .ps-btn-ghost {
-  background: #fff;
-  color: #1a1a2e;
-  border: 1px solid #d5d9ea;
+  background: var(--surface);
+  color: var(--text-strong);
+  border: 1px solid var(--border);
 }
 
 .ps-btn-fun {
   background: linear-gradient(135deg, #ff3cac 0%, #784ba0 50%, #2b86c5 100%);
-  color: #fff;
+  color: var(--on-primary);
 }
 
 @keyframes ps-fade {

@@ -20,6 +20,7 @@
  *   q0 --ESPACIO-->      q0
  *   q0 --DELIMITADOR-->  q0   (emite PUNTUACION)
  *   q0 --FIN_ORACION-->  q2
+ *   q0 --"." + letra (después de espacio)--> q1   (dominios y extensiones: .com, .LA, .txt)
  *   q0 --CARACTER-->     q1
  *   q1 --CARACTER-->     q1
  *   q1 --INTERNO + siguiente CARACTER--> q1  (el símbolo queda dentro del lexema)
@@ -98,7 +99,16 @@ function escanear(texto, opciones = {}) {
     switch (estado) {
       case ESTADOS.INICIO:
         if (clase === CLASES.FIN_TEXTO) { i++; break; }
-        if (clase === CLASES.ESPACIO) { i++; break; }
+        if (clase === CLASES.ESPACIO) {
+          // Línea en blanco (fin de párrafo, título o encabezado sin punto): cierra la oración,
+          // así "Gabriel García Márquez" del encabezado no se une con la palabra del párrafo siguiente
+          if (c === '\n' && !inicioOracion && hayLineaEnBlanco(texto, i)) emitir(TIPOS_TOKEN.FIN_ORACION, '\n', i);
+          i++; break;
+        }
+        // ".com", ".LA", ".txt": un punto pegado a letras y precedido de espacio abre un lexema
+        if (c === '.' && esInicioDeExtension(texto, i)) {
+          lexema = c; inicioLexema = i; estado = ESTADOS.EN_LEXEMA; i++; break;
+        }
         if (clase === CLASES.FIN_ORACION || c === '.') {
           lexema = c; inicioLexema = i; estado = ESTADOS.FIN_ORACION; i++; break;
         }
@@ -123,13 +133,23 @@ function escanear(texto, opciones = {}) {
           // del lexema si después viene un carácter: 3.14 / correo@x.com / don't / https://
           const internos = contarInternos(texto, i);
           const sig = texto[i + internos];
+          // "casa.El perro": falta el espacio después del punto -> fin de oración, no "casa.El"
+          if (c === '.' && internos === 1 && faltaEspacioTrasPunto(texto, i, lexema)) {
+            emitir(TIPOS_TOKEN.LEXEMA, lexema, inicioLexema);
+            emitir(TIPOS_TOKEN.FIN_ORACION, '.', i);
+            lexema = ''; estado = ESTADOS.INICIO; i++; break;
+          }
           const permitido = internos <= 2 || texto.startsWith('://', i);
           if (permitido && sig !== undefined && clasificarCaracter(sig) === CLASES.CARACTER) {
             lexema += texto.slice(i, i + internos); i += internos; break;
           }
           // Abreviatura conocida o inicial (Sr. / Dr. / J.)
           if (c === '.' && esAbreviatura(lexema, abreviaturas)) {
+            const siglaConPuntos = RE_SIGLA_CON_PUNTOS.test(lexema);
             emitir(TIPOS_TOKEN.LEXEMA, lexema + '.', inicioLexema);
+            // "…vive en L.A. Vino ayer": si después de la sigla viene una mayúscula,
+            // ese mismo punto también cierra la oración
+            if (siglaConPuntos && siguienteEsMayuscula(texto, i + 1)) emitir(TIPOS_TOKEN.FIN_ORACION, '.', i);
             lexema = ''; estado = ESTADOS.INICIO; i++; break;
           }
         }
@@ -159,8 +179,52 @@ function contarInternos(texto, desde) {
   return k;
 }
 
+/** ¿El punto en la posición i inicia una extensión o dominio? (" .com", " .LA") */
+function esInicioDeExtension(texto, i) {
+  const anterior = texto[i - 1];
+  const siguiente = texto[i + 1];
+  return (anterior === undefined || RE_ESPACIO.test(anterior))
+    && siguiente !== undefined && /\p{L}/u.test(siguiente);
+}
+
+/**
+ * ¿Es un punto sin espacio entre dos oraciones? ("casa.El perro")
+ * Palabra en minúscula + "." + palabra que empieza con mayúscula, y que no es parte de
+ * un correo ni de una dirección web (juan.Perez@x.com, sitio.Com/pagina).
+ */
+function faltaEspacioTrasPunto(texto, i, lexema) {
+  if (!/^\p{Ll}{2,}$/u.test(lexema) || !/\p{Lu}/u.test(texto[i + 1] || '')) return false;
+  let k = i + 1;
+  while (k < texto.length && !RE_ESPACIO.test(texto[k])) {
+    if (texto[k] === '@' || texto[k] === '/') return false;
+    k++;
+  }
+  return true;
+}
+
+/** ¿Desde este salto de línea hay otro antes del siguiente texto? (línea en blanco) */
+function hayLineaEnBlanco(texto, i) {
+  let k = i + 1;
+  while (k < texto.length && RE_ESPACIO.test(texto[k])) {
+    if (texto[k] === '\n') return true;
+    k++;
+  }
+  return false;
+}
+
+/** ¿El siguiente carácter que no es espacio es una letra mayúscula? */
+function siguienteEsMayuscula(texto, desde) {
+  let k = desde;
+  while (k < texto.length && RE_ESPACIO.test(texto[k])) k++;
+  return k > desde && k < texto.length && /\p{Lu}/u.test(texto[k]);
+}
+
+/** Siglas y abreviaturas con puntos: L.A, O.N.U, EE.UU, a.m, p.ej (el punto final queda dentro) */
+const RE_SIGLA_CON_PUNTOS = /^(\p{L}{1,3}\.)+\p{L}{1,3}$/u;
+
 function esAbreviatura(lexema, abreviaturas) {
   if (/^\p{Lu}$/u.test(lexema)) return true; // inicial de un nombre: "J." Rowling
+  if (RE_SIGLA_CON_PUNTOS.test(lexema)) return true; // "L.A." "O.N.U." "EE.UU.
   return abreviaturas.has(lexema.toLocaleLowerCase());
 }
 

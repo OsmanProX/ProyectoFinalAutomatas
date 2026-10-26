@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
 const QRCode = require('qrcode');
@@ -23,6 +24,22 @@ const FUENTES = {
   normal: path.join(__dirname, '..', '..', 'assets', 'fonts', 'DejaVuSans.ttf'),
   negrita: path.join(__dirname, '..', '..', 'assets', 'fonts', 'DejaVuSans-Bold.ttf')
 };
+
+// Logo de la UMG (PNG con fondo transparente): va en la credencial PDF y en el correo
+const LOGO = path.join(__dirname, '..', '..', 'assets', 'img', 'logo-umg.png');
+const LOGO_CID = 'logo-umg';
+let logoCache;
+function logoUmg() {
+  if (logoCache === undefined) {
+    try {
+      logoCache = fs.readFileSync(LOGO);
+    } catch (err) {
+      logoCache = null; // si falta el archivo, la credencial se genera igual, sin logo
+      console.warn('No se encontró el logo de la UMG en assets/img/logo-umg.png');
+    }
+  }
+  return logoCache;
+}
 
 // 60% blanco · 30% azul marino · 10% acento (+ toques de color "fresco")
 const COLOR = {
@@ -115,14 +132,21 @@ class CredentialService {
         email: {
           to: user.email,
           subject: nueva ? '🪪 Tu nueva credencial (la anterior ya no funciona)' : '🎉 ¡Bienvenido! Aquí está tu credencial de inscripción',
-          html: this.emailHtml(user, code, nueva),
-          attachments: [{ filename: archivo, content: pdf, contentType: 'application/pdf' }]
+          html: this.emailHtml(user, code, nueva, Boolean(logoUmg())),
+          attachments: [
+            { filename: archivo, content: pdf, contentType: 'application/pdf' },
+            // Logo incrustado en el cuerpo del correo (cid), no aparece como adjunto aparte
+            ...(logoUmg() ? [{ filename: 'logo-umg.png', content: logoUmg(), contentType: 'image/png', cid: LOGO_CID, contentDisposition: 'inline' }] : [])
+          ]
         },
         whatsapp: {
           to: user.phone,
-          body: nueva
+          tipo: nueva ? 'credencial_nueva' : 'credencial',
+          userId,
+          body: (nueva
             ? `Hola ${user.fullName}, generaste una credencial nueva (${code}). El QR anterior ya no funciona.`
-            : `¡Hola ${user.fullName}! 🎉 Tu registro quedó listo. Te enviamos tu credencial ${code}. Guárdala: con su código QR podrás iniciar sesión.`,
+            : `¡Hola ${user.fullName}! 🎉 Tu registro quedó listo. Te enviamos tu credencial ${code}. Guárdala: con su código QR podrás iniciar sesión.`)
+            + this.datosWhatsapp(user, code, nueva),
           // Green-API sube el PDF directamente; Twilio lo descarga desde el enlace público firmado
           file: { content: pdf, filename: archivo, contentType: 'application/pdf' },
           mediaUrl: `${process.env.PUBLIC_BASE_URL}/credencial/publica/${createSignedToken(userId, 120)}`
@@ -180,8 +204,12 @@ class CredentialService {
     degradado.stop(0, COLOR.marino).stop(1, COLOR.acento);
     doc.rect(0, 0, ANCHO, 50).fill(degradado);
     this.confeti(doc, [[296, 14, 9, COLOR.rosa], [318, 34, 6, COLOR.amarillo], [340, 13, 5, COLOR.celeste], [278, 38, 4, COLOR.verde], [252, 12, 3, COLOR.amarillo]]);
-    doc.font('negrita').fontSize(12).fillColor('#ffffff').text('CREDENCIAL DE ANALISTA', 16, 13, { lineBreak: false });
-    doc.font('normal').fontSize(7.5).fillColor('#c7d0ff').text('Lenguajes Formales y Autómatas · UMG', 16, 31, { lineBreak: false });
+    // Logo de la UMG a la izquierda del título (si no está, el título queda donde estaba)
+    const logo = logoUmg();
+    const xTitulo = logo ? 56 : 16;
+    if (logo) doc.image(logo, 12, 6, { width: 38, height: 38 });
+    doc.font('negrita').fontSize(12).fillColor('#ffffff').text('CREDENCIAL DE ANALISTA', xTitulo, 13, { lineBreak: false });
+    doc.font('normal').fontSize(7.5).fillColor('#c7d0ff').text('Lenguajes Formales y Autómatas · UMG', xTitulo, 31, { lineBreak: false });
 
     // Foto modificada en círculo
     const cx = 66;
@@ -238,7 +266,16 @@ class CredentialService {
     doc.rect(0, 0, ANCHO, 34).fill(COLOR.marino);
     doc.rect(0, 34, ANCHO, 3).fill(COLOR.acento);
     this.confeti(doc, [[330, 17, 7, COLOR.rosa], [312, 9, 4, COLOR.amarillo], [346, 27, 3, COLOR.celeste]]);
-    doc.font('negrita').fontSize(11).fillColor('#ffffff').text('¿Cómo usar tu credencial?', 16, 11, { lineBreak: false });
+    const logo = logoUmg();
+    if (logo) {
+      doc.image(logo, 10, 4, { width: 26, height: 26 });
+      // Marca de agua suave del logo en el reverso
+      doc.save();
+      doc.opacity(0.06);
+      doc.image(logo, ANCHO - 130, 60, { width: 120, height: 120 });
+      doc.restore();
+    }
+    doc.font('negrita').fontSize(11).fillColor('#ffffff').text('¿Cómo usar tu credencial?', logo ? 44 : 16, 11, { lineBreak: false });
 
     const pasos = [
       ['1', 'Entrar con QR', 'En la pantalla de inicio de sesión elige "Entrar con QR" y muestra este código a la cámara.'],
@@ -269,18 +306,58 @@ class CredentialService {
     doc.rect(0, ALTO - 8, ANCHO, 8).fill(franja);
   }
 
-  emailHtml(user, code, nueva = false) {
+  /** Datos del usuario que van en el mensaje (nunca la contraseña) */
+  datosUsuario(user, code) {
+    const metodos = { whatsapp: 'WhatsApp', correo_electronico: 'Correo electrónico', ambos: 'Correo y WhatsApp' };
+    return [
+      ['Nombre', user.fullName],
+      ['Usuario', user.nickname ? `@${user.nickname}` : ''],
+      ['Correo', user.email],
+      ['Teléfono', user.phone],
+      ['Rol', typeof user.roleDisplayName === 'function' ? user.roleDisplayName() : user.role],
+      ['Notificaciones', metodos[user.notificationMethod] || user.notificationMethod],
+      ['No. de credencial', code]
+    ].filter(([, valor]) => valor);
+  }
+
+  /** La cuenta ya puede iniciar sesión (los usuarios nuevos nacen activos) */
+  cuentaActiva(user) {
+    return typeof user.isActive === 'function' ? user.isActive() : Number(user.state) === 1;
+  }
+
+  /** Bloque de datos para el texto de WhatsApp (va como descripción del PDF) */
+  datosWhatsapp(user, code, nueva = false) {
+    const lineas = this.datosUsuario(user, code).map(([campo, valor]) => `• ${campo}: ${valor}`);
+    return `\n\n📋 *Tus datos*\n${lineas.join('\n')}\n\n🔐 En el PDF va tu credencial con el código QR para iniciar sesión.`
+      + (nueva || this.cuentaActiva(user) ? '' : '\n⏳ Tu cuenta quedará activa cuando el administrador la apruebe.');
+  }
+
+  emailHtml(user, code, nueva = false, conLogo = false) {
     const escapar = (s) => String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     return `
       <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:560px;margin:auto;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden">
-        <div style="background:linear-gradient(90deg,#1a1a2e,#4361ee);color:#fff;padding:22px 26px">
-          <h2 style="margin:0">${nueva ? '🪪 Tu nueva credencial' : `🎉 ¡Bienvenido, ${escapar(user.fullName || user.nickname)}!`}</h2>
-          <p style="margin:6px 0 0;color:#c7d0ff">${nueva ? 'La credencial anterior y su QR ya no funcionan' : 'Tu registro quedó listo'}</p>
+        <div style="background:#1a1a2e;background:linear-gradient(90deg,#1a1a2e,#4361ee);color:#fff;padding:22px 26px">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse"><tr>
+            ${conLogo ? `<td style="padding-right:16px;vertical-align:middle"><img src="cid:${LOGO_CID}" width="64" height="64" alt="Universidad Mariano Gálvez de Guatemala" style="display:block;border:0"></td>` : ''}
+            <td style="vertical-align:middle">
+              <h2 style="margin:0;color:#fff">${nueva ? '🪪 Tu nueva credencial' : `🎉 ¡Bienvenido, ${escapar(user.fullName || user.nickname)}!`}</h2>
+              <p style="margin:6px 0 0;color:#c7d0ff">${nueva ? 'La credencial anterior y su QR ya no funcionan' : 'Tu registro quedó listo'}</p>
+              <p style="margin:4px 0 0;color:#c7d0ff;font-size:12px">Universidad Mariano Gálvez de Guatemala · Lenguajes Formales y Autómatas</p>
+            </td>
+          </tr></table>
         </div>
         <div style="padding:22px 26px;color:#2d2d3a;line-height:1.5">
           <p>Adjuntamos tu <b>credencial de inscripción ${escapar(code)}</b> en PDF, con la foto que personalizaste.</p>
           <p>Guárdala bien: con su <b>código QR</b> podrás iniciar sesión sin escribir tu contraseña.</p>
           <p style="color:#6b7280;font-size:13px">Usuario: <b>@${escapar(user.nickname)}</b></p>
+          <h3 style="margin:18px 0 8px;color:#1a1a2e;font-size:15px">📋 Tus datos</h3>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;font-size:14px">
+            ${this.datosUsuario(user, code).map(([campo, valor]) => `<tr>
+              <td style="padding:7px 10px;border-bottom:1px solid #eef0f7;color:#6b7280;width:40%">${escapar(campo)}</td>
+              <td style="padding:7px 10px;border-bottom:1px solid #eef0f7;color:#1a1a2e;font-weight:600">${escapar(valor)}</td>
+            </tr>`).join('')}
+          </table>
+          <p style="margin-top:16px">🔐 El <b>código QR</b> está en la credencial PDF adjunta.${nueva || this.cuentaActiva(user) ? '' : ' Tu cuenta quedará activa cuando el administrador la apruebe.'}</p>
         </div>
         <div style="height:6px;background:linear-gradient(90deg,#ff3cac,#784ba0,#4361ee)"></div>
       </div>`;

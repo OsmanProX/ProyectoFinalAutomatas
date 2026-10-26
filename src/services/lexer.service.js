@@ -42,9 +42,36 @@ const PATTERN_LABELS = Object.freeze({
   NUMERO: 'Números',
   HASHTAG: 'Hashtags',
   MENCION: 'Menciones (@usuario)',
-  SIGLA: 'Siglas y acrónimos',
+  ROMANO: 'Números romanos (capítulos, siglos)',
+  SIGLA: 'Siglas y acrónimos (también con puntos: L.A., O.N.U.)',
+  DOMINIO: 'Dominios y extensiones (.com, .LA)',
+  PALABRA_SIGNOS: 'Palabras con punto en medio (ho.a)',
   CODIGO: 'Códigos alfanuméricos'
 });
+
+/**
+ * Agrupa palabras (ya ordenadas) por su primera letra: A, B, C ... Z.
+ * Las tildes no crean grupos aparte (á -> A) pero la Ñ sí; números y símbolos van en "#".
+ * En chino cada carácter es distinto, así que va todo en un solo grupo.
+ * @returns {Array<{ letter: string, words: string[] }>}
+ */
+function agruparPorLetra(palabras, code) {
+  if (!Array.isArray(palabras) || !palabras.length) return [];
+  if (code === 'zh') return [{ letter: '字', words: palabras.slice() }];
+  const grupos = new Map();
+  palabras.forEach((palabra) => {
+    const primera = String(palabra).charAt(0);
+    let letra;
+    if (/[ñÑ]/.test(primera)) letra = 'Ñ';
+    else if (/\p{L}/u.test(primera)) letra = primera.normalize('NFD').replace(/\p{M}/gu, '').toLocaleUpperCase(code);
+    else letra = '#';
+    if (!grupos.has(letra)) grupos.set(letra, []);
+    grupos.get(letra).push(palabra);
+  });
+  return [...grupos.entries()]
+    .sort((a, b) => (a[0] === '#') - (b[0] === '#') || a[0].localeCompare(b[0], code))
+    .map(([letter, words]) => ({ letter, words }));
+}
 
 function isSupportedLanguage(lang) {
   return Object.prototype.hasOwnProperty.call(LANGUAGES, lang);
@@ -58,6 +85,7 @@ function emptyResult(code) {
     mostRepeated: [],
     leastRepeated: [],
     leastRepeatedTotal: 0,
+    leastRepeatedByLetter: [],
     pronouns: [],
     persons: [],
     properNouns: [],
@@ -102,6 +130,8 @@ function analyzeText(text, lang = 'es') {
     // c. Palabras que menos se repiten (las de frecuencia mínima)
     leastRepeated: r.menosRepetidas.palabras.map((word) => ({ word, count: r.menosRepetidas.frecuencia })),
     leastRepeatedTotal: r.menosRepetidas.total,
+    //    agrupadas por letra (A, B, C ... Z) para mostrarlas completas y en orden
+    leastRepeatedByLetter: agruparPorLetra(r.menosRepetidas.palabras, code),
     // d. Pronombres personales
     pronouns: r.pronombresPersonales.map(conteo('word')),
     // e. Nombres de personas y otros nombres propios (lugares, instituciones)
@@ -130,6 +160,7 @@ function analyzeText(text, lang = 'es') {
 module.exports = {
   analyzeText,
   isSupportedLanguage,
+  agruparPorLetra,
   LANGUAGES,
   SUPPORTED_LANGUAGES,
   PATTERN_LABELS

@@ -36,8 +36,11 @@ const CAT = Object.freeze({
 const PATRONES_REPORTADOS = [
   CATEGORIAS.CORREO, CATEGORIAS.URL, CATEGORIAS.FECHA, CATEGORIAS.HORA, CATEGORIAS.TELEFONO,
   CATEGORIAS.MONEDA, CATEGORIAS.PORCENTAJE, CATEGORIAS.NUMERO, CATEGORIAS.HASHTAG,
-  CATEGORIAS.MENCION, CATEGORIAS.SIGLA, CATEGORIAS.CODIGO
+  CATEGORIAS.MENCION, CATEGORIAS.ROMANO, CATEGORIAS.SIGLA, CATEGORIAS.DOMINIO, CATEGORIAS.PALABRA_SIGNOS, CATEGORIAS.CODIGO
 ];
+
+/** Tope de seguridad para la lista completa de palabras menos repetidas (libros enteros) */
+const MAX_MENOS_REPETIDAS = 100000;
 
 const cacheStemmers = {};
 function obtenerStemmer(nombre) {
@@ -68,6 +71,7 @@ function analizarTexto(texto, codigoIdioma) {
   PATRONES_REPORTADOS.forEach((c) => { patrones[c] = new Map(); });
 
   const flujo = []; // palabras en orden; null = corte de contexto (signo, número, etc.)
+  const siglasPropias = new Map();
   let totalPalabras = 0;
   let totalOraciones = 0;
   let totalLexemas = 0;
@@ -84,8 +88,15 @@ function analizarTexto(texto, codigoIdioma) {
     const categoria = clasificarLexema(token.valor);
     conteoCategorias[categoria] = (conteoCategorias[categoria] || 0) + 1;
 
-    if (categoria !== CATEGORIAS.PALABRA) {
+    // "ho.a": se reporta en su propia clasificación Y también cuenta como palabra
+    if (categoria === CATEGORIAS.PALABRA_SIGNOS) incrementar(patrones[categoria], token.valor);
+
+    if (categoria !== CATEGORIAS.PALABRA && categoria !== CATEGORIAS.PALABRA_SIGNOS) {
       if (patrones[categoria]) incrementar(patrones[categoria], token.valor);
+      // Siglas con puntos (L.A., O.N.U., EE.UU.) son nombres de lugares o instituciones
+      if (categoria === CATEGORIAS.SIGLA && token.valor.includes('.') && /\p{Lu}/u.test(token.valor)) {
+        incrementar(siglasPropias, token.valor);
+      }
       if (flujo[flujo.length - 1] !== null) flujo.push(null);
       continue;
     }
@@ -108,6 +119,7 @@ function analizarTexto(texto, codigoIdioma) {
 
   // ---------------------------------------------------------------- Fase 3
   detectarNombres(flujo, idioma);
+  contarNombresAlInicioDeOracion(flujo, idioma);
 
   // ---------------------------------------------------------------- Fase 4
   const stemmer = obtenerStemmer(idioma.stemmer);
@@ -148,6 +160,9 @@ function analizarTexto(texto, codigoIdioma) {
     if (esContenido) incrementar(frecuenciasContenido, w.min);
   }
 
+  // Siglas con puntos también cuentan como nombres propios (con todas sus repeticiones)
+  siglasPropias.forEach((veces, sigla) => { propios.set(sigla, (propios.get(sigla) || 0) + veces); });
+
   const ordenar = (mapa) => [...mapa.entries()]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], idioma.codigo));
 
@@ -168,6 +183,12 @@ function analizarTexto(texto, codigoIdioma) {
     .map(([p]) => p)
     .sort((a, b) => a.localeCompare(b, idioma.codigo));
 
+  // Palabras en MAYÚSCULAS que en el texto también aparecen en minúscula ("LA", "POR",
+  // "CUEVA" de un título) son palabras comunes escritas en mayúsculas, no siglas
+  patrones[CATEGORIAS.SIGLA].forEach((veces, sigla) => {
+    if (!sigla.includes('.') && frecuencias.has(minuscula(sigla))) patrones[CATEGORIAS.SIGLA].delete(sigla);
+  });
+
   const otrosPatrones = {};
   PATRONES_REPORTADOS.forEach((c) => { otrosPatrones[c] = aLista(patrones[c], 'valor'); });
 
@@ -184,7 +205,8 @@ function analizarTexto(texto, codigoIdioma) {
     },
     masRepetidas: aLista(frecuenciasContenido, 'palabra', TOP_FRECUENCIAS),
     masRepetidasIncluyendoFuncionales: aLista(frecuencias, 'palabra', TOP_FRECUENCIAS),
-    menosRepetidas: { frecuencia: frecuenciaMinima, total: menos.length, palabras: menos.slice(0, 40) },
+    // Todas, en orden alfabético de la A a la Z (antes solo las primeras 40: solo salía la "A")
+    menosRepetidas: { frecuencia: frecuenciaMinima, total: menos.length, palabras: menos.slice(0, MAX_MENOS_REPETIDAS) },
     pronombresPersonales: aLista(pronombres),
     nombresPersonas: aLista(personas, 'nombre'),
     otrosNombresPropios: aLista(propios, 'nombre'),
@@ -208,9 +230,15 @@ function detectarNombres(flujo, idioma) {
     && !idioma.funcionales.has(w.min) && !idioma.pronombres.has(w.min)
     && !idioma.titulos.has(w.minConPunto) && !idioma.titulos.has(w.min);
 
+  // Palabras que en el texto también aparecen en minúscula ("llegó", "era"): si van al
+  // inicio de una oración no forman parte del nombre ("Llegó Úrsula" -> "Úrsula")
+  const enMinuscula = new Set();
+  flujo.forEach((x) => { if (x && x.texto === x.min) enMinuscula.add(x.min); });
+
   for (let i = 0; i < flujo.length; i++) {
     const w = flujo[i];
     if (!puedeSerNombre(w) || idioma.noPersonas.has(w.min)) continue;
+    if (w.inicioOracion && enMinuscula.has(w.min)) continue;
 
     // Extiende la secuencia: "Gabriel García Márquez", "Juan de la Cruz"
     const secuencia = [i];
@@ -231,7 +259,9 @@ function detectarNombres(flujo, idioma) {
     const ultima = palabras[palabras.length - 1];
     const anterior = flujo[i - 1];
     const tieneTitulo = anterior && (idioma.titulos.has(anterior.minConPunto) || idioma.titulos.has(anterior.min));
-    const tieneNombreComun = palabras.some((p) => idioma.nombresComunes.has(p.min));
+    // También nombres compuestos con guion: "María-José", "Jean-Paul"
+    const tieneNombreComun = palabras.some((p) => idioma.nombresComunes.has(p.min)
+      || (p.min.includes('-') && p.min.split('-').some((parte) => idioma.nombresComunes.has(parte))));
     const tieneApellido = idioma.patronApellido
       && idioma.patronApellido.test(ultima.texto)
       && (secuencia.length >= 2 || !w.inicioOracion);
@@ -249,6 +279,30 @@ function detectarNombres(flujo, idioma) {
     }
     i = j - 1;
   }
+}
+
+/**
+ * Un nombre de una sola palabra al inicio de una oración no se puede distinguir por la
+ * mayúscula ("Jean-Paul llegó." / "Roma es bella."). Si ese mismo nombre ya se reconoció
+ * en otra parte del texto, aquí también se cuenta, para que salga con todas sus repeticiones.
+ */
+function contarNombresAlInicioDeOracion(flujo, idioma) {
+  const conocidos = new Map();
+  // Palabras que también aparecen en minúscula ("era", "cien") son palabras comunes,
+  // no nombres: así "Era" al inicio de oración no se cuenta como nombre propio
+  const enMinuscula = new Set();
+  flujo.forEach((w) => {
+    if (!w) return;
+    if (w.nombreCompleto && w.nombreCompleto === w.texto) conocidos.set(w.min, w.cat);
+    if (w.texto === w.min) enMinuscula.add(w.min);
+  });
+  if (!conocidos.size) return;
+  flujo.forEach((w) => {
+    if (!w || w.cat || !w.inicioOracion || !esCapitalizada(w.texto)) return;
+    if (idioma.funcionales.has(w.min) || idioma.pronombres.has(w.min) || enMinuscula.has(w.min)) return;
+    const cat = conocidos.get(w.min);
+    if (cat) { w.cat = cat; w.nombreCompleto = w.texto; }
+  });
 }
 
 // ============================================================================

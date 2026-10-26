@@ -143,8 +143,16 @@ function createAnalysisPDF(analysisResults, meta = {}) {
       titulo('Palabras que menos se repiten');
       if (r.leastRepeated && r.leastRepeated.length) {
         const total = r.leastRepeatedTotal || r.leastRepeated.length;
-        linea([{ texto: `${total} palabra(s) aparecen ${r.leastRepeated[0].count} vez/veces${total > r.leastRepeated.length ? ` (se muestran ${r.leastRepeated.length})` : ''}:`, color: COLOR.suave }]);
-        linea([{ texto: r.leastRepeated.map((i) => i.word).join(', ') }]);
+        linea([{ texto: `${total} palabra(s) aparecen ${r.leastRepeated[0].count} vez/veces${total > r.leastRepeated.length ? ` (se muestran ${r.leastRepeated.length})` : ''}. Todas, en orden alfabético:`, color: COLOR.suave }]);
+        // Una línea por letra: "A  abeja, árbol…"  "B  barco…"
+        // Si el análisis viene de la sesión (sin los grupos, para que pese menos) se agrupan aquí
+        const grupos = r.leastRepeatedByLetter && r.leastRepeatedByLetter.length
+          ? r.leastRepeatedByLetter
+          : require('./lexer.service').agruparPorLetra(r.leastRepeated.map((i) => i.word), r.language && r.language.code);
+        grupos.forEach((g) => {
+          if (doc.y > doc.page.height - 70) doc.addPage();
+          linea([{ texto: `${g.letter}  `, negrita: true, color: COLOR.acento }, { texto: g.words.join(', ') }]);
+        });
       } else vacio('Ninguna');
 
       // ------------------------------------------------------------ Clasificaciones

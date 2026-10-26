@@ -2,6 +2,7 @@ const userService = require('../services/user.service');
 const roleRepository = require('../repositories/role.repository');
 const { getTranslation } = require('../utils/i18n');
 const { DashboardDTO } = require('../dto');
+const supervisionService = require('../services/supervision.service');
 
 // Roles que se pueden asignar desde la pagina Usuarios
 const ASSIGNABLE_ROLES = ['ADMIN', 'SUPERVISOR', 'ANALISTA'];
@@ -15,7 +16,11 @@ class UserController {
       const users = await userService.getAllUsers();
       const dashboardDTO = new DashboardDTO(users);
       const data = dashboardDTO.toJSON();
-      res.render('dashboard', { t, lang, ...data });
+      // SUPERVISOR: resumen de entregas (WhatsApp) y accesos de los últimos 7 días
+      let supervision = null;
+      const rol = String((res.locals.user && res.locals.user.role) || '').toUpperCase();
+      if (rol === 'SUPERVISOR') supervision = await supervisionService.resumen(lang);
+      res.render('dashboard', { t, lang, ...data, supervision });
     } catch (err) {
       console.error('Error al obtener usuarios:', err);
       res.render('dashboard', { t, lang, users: [], count: 0, activeCount: 0, inactiveCount: 0 });
@@ -24,6 +29,10 @@ class UserController {
 
   async toggleUserState(req, res) {
     try {
+      if (this.esElMismo(req)) {
+        console.warn('Un ADMIN intentó cambiar el estado de su propia cuenta');
+        return res.redirect('/users/dashboard');
+      }
       const result = await userService.toggleState(req.params.id);
       if (!result.success) {
         console.error('No se pudo cambiar estado:', result.error);
@@ -36,6 +45,10 @@ class UserController {
 
   async deleteUser(req, res) {
     try {
+      if (this.esElMismo(req)) {
+        console.warn('Un ADMIN intentó borrar su propia cuenta');
+        return res.redirect('/users/dashboard');
+      }
       const result = await userService.deleteUser(req.params.id);
       if (!result.success) {
         console.error('No se pudo eliminar:', result.error);
@@ -77,17 +90,46 @@ class UserController {
     });
   }
 
+  /** true si la fila que se edita es la del usuario que tiene la sesión */
+  esElMismo(req) {
+    const actual = req.session && req.session.user;
+    return Boolean(actual) && Number(actual.id) === Number(req.params.id);
+  }
+
   /**
-   * Actualiza el rol de un usuario (ADMIN, SUPERVISOR o ANALISTA).
+   * Guarda los cambios de la fila en Gestion de usuarios:
+   * rol (ADMIN, SUPERVISOR o ANALISTA) y, si viene en el cuerpo, estado (1/0).
    */
   async updateRole(req, res) {
     try {
       const idRole = req.body.idRole;
+
+      // El ADMIN no puede desactivarse ni quitarse el rol ADMIN a sí mismo
+      // (se quedaría sin acceso a Gestión de usuarios)
+      if (this.esElMismo(req)) {
+        const rolNuevo = await roleRepository.findById(Number(idRole));
+        const dejaDeSerAdmin = !rolNuevo || String(rolNuevo.name).toUpperCase() !== 'ADMIN';
+        const seDesactiva = req.body.state !== undefined && Number(req.body.state) === 0;
+        if (dejaDeSerAdmin || seDesactiva) {
+          return res.status(400).json({ success: false, error: 'self_change' });
+        }
+      }
+
       const result = await userService.updateUserRole(req.params.id, idRole);
       if (!result.success) {
         return res.status(400).json({ success: false, error: result.error });
       }
-      return res.json({ success: true, roleName: result.roleName });
+
+      let state = null;
+      if (req.body.state !== undefined) {
+        const stateResult = await userService.setUserState(req.params.id, req.body.state);
+        if (!stateResult.success) {
+          return res.status(400).json({ success: false, error: stateResult.error });
+        }
+        state = stateResult.state;
+      }
+
+      return res.json({ success: true, roleName: result.roleName, state });
     } catch (err) {
       console.error('Error al actualizar rol del usuario:', err);
       return res.status(500).json({ success: false, error: 'server' });

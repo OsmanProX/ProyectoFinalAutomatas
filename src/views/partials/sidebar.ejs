@@ -17,7 +17,16 @@
 %>
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-brand">
-    <h2 class="sidebar-text">Mi App</h2>
+    <%# Logo de la UMG: se ve siempre (también con el menú colapsado y en celular) %>
+    <a href="/users/dashboard" class="brand-umg-link" title="Universidad Mariano Gálvez de Guatemala">
+      <img class="brand-umg" src="/img/logo-umg-128.webp" width="38" height="38" alt="Universidad Mariano Gálvez de Guatemala" decoding="async">
+    </a>
+    <h2 class="sidebar-text">
+      <span class="brand-textos">
+        <span>Analizador Léxico</span>
+        <small>UMG · Autómatas</small>
+      </span>
+    </h2>
     <button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
   </div>
 
@@ -50,6 +59,12 @@
     <a href="/roles" class="sidebar-nav-item <%= _activePage === 'roles' ? 'active' : '' %>">
       <span class="icon">&#128272;</span>
       <span class="sidebar-text"><%= _t.nav_roles || 'Roles y Permisos' %></span>
+    </a>
+    <% } %>
+    <% if (_isAdmin) { %>
+    <a href="/users/bitacora" class="sidebar-nav-item <%= _activePage === 'bitacora' ? 'active' : '' %>">
+      <span class="icon">&#128203;</span>
+      <span class="sidebar-text"><%= _t.nav_audit || 'Bitácora de accesos' %></span>
     </a>
     <% } %>
   </nav>
