@@ -23,11 +23,32 @@ const upload = multer({
 
 const LANGS = SUPPORTED_LANGUAGES; // es, en, ru, zh, ar
 
+// Historial de análisis en la MEMORIA RAM (sesión del usuario), sin MySQL:
+// solo un resumen pequeño de los últimos 5; se borra al cerrar sesión o reiniciar el servidor
+const MAX_HISTORIAL = 5;
+
+function guardarEnHistorial(req, result, archivo) {
+  if (!req.session) return;
+  const anteriores = Array.isArray(req.session.analysisHistory) ? req.session.analysisHistory : [];
+  const resumen = {
+    fileName: archivo,
+    language: result.language ? result.language.name : '',
+    totalWords: result.totalWords || 0,
+    uniqueWords: result.summary ? result.summary.uniqueWords : 0,
+    characters: result.summary ? result.summary.characters : 0,
+    timeMs: result.summary ? result.summary.timeMs : 0,
+    topWords: (result.mostRepeated || []).slice(0, 3).map((i) => `${i.word} (${i.count})`).join(', '),
+    date: new Date().toISOString()
+  };
+  req.session.analysisHistory = [resumen, ...anteriores].slice(0, MAX_HISTORIAL);
+}
+
 // Renderiza el formulario con las traducciones y los resultados del análisis
 function renderForm(req, res, error = null, result = null, success = null) {
   const lang = req.session ? (req.session.lang || 'es') : 'es';
   const t = getTranslation(lang);
-  res.render('analyze', { t, lang, error, result, success });
+  const history = req.session && Array.isArray(req.session.analysisHistory) ? req.session.analysisHistory : [];
+  res.render('analyze', { t, lang, error, result, success, history });
 }
 
 // Canales permitidos según el método de notificación elegido en el registro
@@ -79,6 +100,7 @@ router.post('/', (req, res) => {
       const { leastRepeatedByLetter, ...paraSesion } = result;
       req.session.lastAnalysis = paraSesion;
       req.session.lastAnalysisFile = safeFileName(req.file.originalname);
+      guardarEnHistorial(req, result, req.session.lastAnalysisFile);
     }
 
     // Renderizar la vista pasando los resultados

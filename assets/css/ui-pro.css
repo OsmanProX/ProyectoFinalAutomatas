@@ -2764,6 +2764,91 @@ video {
   content-visibility: visible;
 }
 
+/* Historial en memoria (últimos 5 análisis de la sesión) */
+.lex-historial {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.lex-historial h3 {
+  margin: 0 0 10px;
+  color: var(--text-strong);
+  font-size: 15px;
+  text-align: left;
+}
+
+.lex-historial h3 small {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.lex-historial-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: historial;
+}
+
+.lex-historial-lista li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px 10px 44px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  counter-increment: historial;
+}
+
+.lex-historial-lista li::before {
+  content: counter(historial);
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--text-strong);
+  font-size: 12px;
+  font-weight: 800;
+  transform: translateY(-50%);
+}
+
+.lex-historial-lista li.actual {
+  border-color: rgba(var(--accent-rgb), 0.55);
+}
+
+.lex-historial-lista li.actual::before {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.lex-historial-archivo {
+  overflow: hidden;
+  color: var(--text-strong);
+  font-size: 14px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lex-historial-datos,
+.lex-historial-top {
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
 /* Nombres: en computadora ocupa 2 columnas y cada lista tiene su propio desplazamiento */
 @media (min-width: 901px) {
   .lex-box-nombres {

@@ -142,6 +142,28 @@
           </button>
         </form>
 
+        <%# Historial en memoria RAM: últimos 5 análisis de esta sesión (no se guarda en MySQL) %>
+        <% const H = (typeof history !== 'undefined' && Array.isArray(history)) ? history : []; %>
+        <% if (H.length) { %>
+          <section class="lex-historial" aria-label="<%= EN ? 'Your latest analyses' : 'Tus últimos análisis' %>">
+            <h3><%= EN ? 'Your latest analyses' : 'Tus últimos análisis' %> <small><%= EN ? '(this session · up to 5)' : '(esta sesión · hasta 5)' %></small></h3>
+            <ol class="lex-historial-lista">
+              <% H.forEach((h, i) => { %>
+                <li class="<%= i === 0 && R ? 'actual' : '' %>">
+                  <span class="lex-historial-archivo" title="<%= h.fileName %>"><%= h.fileName %></span>
+                  <span class="lex-historial-datos">
+                    <%= h.language %> · <%= Number(h.totalWords).toLocaleString(EN ? 'en-US' : 'es-GT') %> <%= EN ? 'words' : 'palabras' %>
+                    · <%= Number(h.characters).toLocaleString(EN ? 'en-US' : 'es-GT') %> <%= EN ? 'characters' : 'caracteres' %>
+                    · <%= h.timeMs %> ms
+                    · <%= new Date(h.date).toLocaleString(EN ? 'en-US' : 'es-GT', { timeZone: 'America/Guatemala', hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short', hour12: false }) %>
+                  </span>
+                  <% if (h.topWords) { %><span class="lex-historial-top"><%= EN ? 'Most repeated:' : 'Más repetidas:' %> <%= h.topWords %></span><% } %>
+                </li>
+              <% }); %>
+            </ol>
+          </section>
+        <% } %>
+
         <!-- RESULTADOS DEL ANÁLISIS LÉXICO (Inciso e & f) -->
         <% if (R) { %>
           <hr class="lex-divider">
