@@ -13,6 +13,8 @@
  * - La posición usa face-api.js (el mismo motor del servidor) con el modelo
  *   SSD MobileNet de assets/models. Se carga solo cuando se abre la cámara;
  *   mientras carga (o si no se puede cargar) la guía funciona solo con la luz.
+ * - Celulares: algunas tarjetas de video (Android) calculan con poca precisión
+ *   en WebGL y el detector "no ve" el rostro. Si pasa, se cambia solo a CPU.
  * - Nada se envía al servidor: todo se calcula en el navegador.
  * ============================================================================
  */
@@ -70,7 +72,15 @@
       var tf = api.tf;
       return tf.setBackend('webgl')
         .then(function (ok) { if (!ok) throw new Error('sin webgl'); })
-        .catch(function () { return tf.setBackend('cpu'); })
+        .then(function () { return tf.ready(); })
+        .then(function () {
+          // Sin texturas de 32 bits (muchos celulares) el modelo da resultados vacíos: CPU
+          if (!webglConPrecision(tf)) throw new Error('webgl de 16 bits');
+        })
+        .catch(function (motivo) {
+          console.info('[Guía del rostro] se usa CPU:', motivo && motivo.message);
+          return tf.setBackend('cpu');
+        })
         .then(function () { return tf.ready(); })
         .then(function () { return api.nets.ssdMobilenetv1.loadFromUri(MODELOS); })
         .then(function () { return api; });
@@ -79,6 +89,40 @@
       console.warn('Guía del rostro sin detector (solo luz):', err.message);
     });
     return cargaFaceApi;
+  }
+
+  /** ¿La tarjeta de video puede calcular con números de 32 bits? */
+  function webglConPrecision(tf) {
+    try {
+      var entorno = typeof tf.env === 'function' ? tf.env() : tf.ENV;
+      if (entorno.getBool('WEBGL_FORCE_F16_TEXTURES')) return false;
+      return entorno.getBool('WEBGL_RENDER_FLOAT32_ENABLED') !== false;
+    } catch (e) {
+      return true; // versión sin esas banderas: se confía en WebGL
+    }
+  }
+
+  /**
+   * Plan B en tiempo real: si con WebGL no se detecta el rostro varias veces
+   * seguidas pero hay luz, se prueba el MISMO cuadro con CPU. Si la CPU sí lo
+   * encuentra, la tarjeta de video calcula mal y se queda en CPU (solo una vez).
+   */
+  var CUADROS_ANTES_DE_PROBAR_CPU = 4;
+  var cpuProbada = false;
+  function probarConCpu(api, lienzo, opciones) {
+    var tf = api.tf;
+    cpuProbada = true;
+    return tf.setBackend('cpu')
+      .then(function () { return tf.ready(); })
+      .then(function () { return api.detectSingleFace(lienzo, opciones); })
+      .then(function (det) {
+        if (det) {
+          console.info('[Guía del rostro] WebGL no detectaba el rostro en este equipo; se usa CPU');
+          return det;
+        }
+        // Tampoco con CPU: no era la tarjeta de video, se vuelve a WebGL
+        return tf.setBackend('webgl').then(function () { return tf.ready(); }).then(function () { return null; });
+      });
   }
 
   // ------------------------------------------------------------------ silueta (SVG)
@@ -337,7 +381,18 @@
     }
 
     var api = this.detector;
-    api.detectSingleFace(this.lienzo, new api.SsdMobilenetv1Options({ minConfidence: 0.4 }))
+    var opciones = new api.SsdMobilenetv1Options({ minConfidence: 0.4 });
+    api.detectSingleFace(this.lienzo, opciones)
+      .then(function (det) {
+        if (det) { self.sinRostroSeguidos = 0; return det; }
+        self.sinRostroSeguidos = (self.sinRostroSeguidos || 0) + 1;
+        var hayLuz = zonaOvalo > 35 && zonaOvalo < 235;
+        if (!cpuProbada && hayLuz && self.sinRostroSeguidos >= CUADROS_ANTES_DE_PROBAR_CPU &&
+            api.tf.getBackend() === 'webgl') {
+          return probarConCpu(api, self.lienzo, opciones).catch(function () { return null; });
+        }
+        return null;
+      })
       .then(function (det) {
         if (!det) {
           self.nivelActual = 0;
