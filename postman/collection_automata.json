@@ -1,0 +1,309 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "collection_automata",
+    "description": "Colección de endpoints REST del Proyecto Final de Autómatas.\n\n Flujo típico:\n 1. Ejecuta POST /api/auth/login (guarda el token automáticamente en la variable `token`).\n 2. El resto de endpoints usan Authorization: Bearer {{token}}.\n 3. Los endpoints de Auditoría requieren un usuario con rol ADMIN.\n 4. Los endpoints de Análisis requieren rol activo y permiso del menú 'analisis'.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "nickname",
+      "value": "admin",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "TuContraseña123",
+      "type": "string"
+    },
+    {
+      "key": "language",
+      "value": "es",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "health"]
+            },
+            "description": "Estado del servicio. No requiere autenticación."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 - Autenticación",
+      "item": [
+        {
+          "name": "Login (obtener token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login exitoso', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('Token guardado en la variable de colección: token');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"{{nickname}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Inicia sesión y devuelve un JWT. El test automático guarda el token en la variable `token`."
+          },
+          "response": []
+        },
+        {
+          "name": "Perfil del usuario (me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Devuelve los datos del usuario autenticado con el token actual."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout (revocar token)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Invalida el token actual. Después de esto hay que volver a hacer login."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Auditoría (ADMIN)",
+      "item": [
+        {
+          "name": "Bitácora de logins",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/audit/logins?limite=100",
+              "host": ["{{base_url}}"],
+              "path": ["api", "audit", "logins"],
+              "query": [
+                { "key": "usuario", "value": "", "description": "Filtrar por nickname" },
+                { "key": "metodo", "value": "", "description": "web | api | face | qr" },
+                { "key": "resultado", "value": "", "description": "ok | fallido" },
+                { "key": "limite", "value": "100" }
+              ]
+            },
+            "description": "Historial de accesos. Requiere token de usuario con rol ADMIN."
+          },
+          "response": []
+        },
+        {
+          "name": "Envíos de WhatsApp",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/audit/whatsapp?limite=50",
+              "host": ["{{base_url}}"],
+              "path": ["api", "audit", "whatsapp"],
+              "query": [
+                { "key": "limite", "value": "50" }
+              ]
+            },
+            "description": "Registro de mensajes de WhatsApp y su estado. Requiere rol ADMIN."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 - Análisis léxico",
+      "item": [
+        {
+          "name": "Idiomas disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analysis/languages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "analysis", "languages"]
+            },
+            "description": "Lista los idiomas soportados para el análisis léxico."
+          },
+          "response": []
+        },
+        {
+          "name": "Analizar texto (JSON)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"language\": \"{{language}}\",\n  \"text\": \"int main() {\\n  printf(\\\"Hola Mundo\\\");\\n  return 0;\\n}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/analysis",
+              "host": ["{{base_url}}"],
+              "path": ["api", "analysis"]
+            },
+            "description": "Ejecuta el análisis léxico del texto y devuelve tokens/errores en JSON."
+          },
+          "response": []
+        },
+        {
+          "name": "Analizar archivo .txt (multipart)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "language", "value": "{{language}}", "type": "text" },
+                { "key": "file", "type": "file", "src": "", "description": "Archivo .txt (máx. 5 MB)" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/analysis",
+              "host": ["{{base_url}}"],
+              "path": ["api", "analysis"]
+            },
+            "description": "Misma función que la anterior pero enviando un archivo .txt."
+          },
+          "response": []
+        },
+        {
+          "name": "Reporte PDF del análisis",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"language\": \"{{language}}\",\n  \"text\": \"int main() {\\n  printf(\\\"Hola Mundo\\\");\\n  return 0;\\n}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/analysis/report",
+              "host": ["{{base_url}}"],
+              "path": ["api", "analysis", "report"]
+            },
+            "description": "Analiza el texto y devuelve un PDF descargable del reporte."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 - Reconocimiento facial",
+      "item": [
+        {
+          "name": "Segmentar rostro",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"image\": \"data:image/jpeg;base64,/9j/4AAQSkZJRg...\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/rostro/segmentar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rostro", "segmentar"]
+            },
+            "description": "Detecta y recorta el rostro de una imagen en base64. Devuelve el recorte en base64."
+          },
+          "response": []
+        },
+        {
+          "name": "Verificar rostro (comparar 2 imágenes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rostroA\": \"data:image/jpeg;base64,/9j/4AAQSkZJRg...\",\n  \"rostroB\": \"data:image/jpeg;base64,/9j/4AAQSkZJRg...\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/rostro/verificar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rostro", "verificar"]
+            },
+            "description": "Compara dos rostros en base64 y devuelve si son la misma persona (match, score, distancia)."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
