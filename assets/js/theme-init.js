@@ -61,3 +61,21 @@
     else if (consultaOscuro.addListener) consultaOscuro.addListener(alCambiar);
   }
 })();
+
+/**
+ * Cambio de página suave (View Transitions): si el navegador cancela la animación
+ * (por ejemplo al recargar, al volver atrás o si la página tarda en mostrarse),
+ * la página se abre igual, sin animación. Aquí solo se "atiende" ese aviso para
+ * que no aparezca en la consola como error ("Transition was aborted...").
+ */
+(function () {
+  function atender(evento) {
+    var vt = evento && evento.viewTransition;
+    if (!vt) return;
+    ['ready', 'finished', 'updateCallbackDone'].forEach(function (promesa) {
+      if (vt[promesa] && typeof vt[promesa].catch === 'function') vt[promesa].catch(function () {});
+    });
+  }
+  window.addEventListener('pagereveal', atender);
+  window.addEventListener('pageswap', atender);
+})();
