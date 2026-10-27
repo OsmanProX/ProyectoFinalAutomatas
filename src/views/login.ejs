@@ -25,7 +25,7 @@
       <h1><%= t.login_title %></h1>
 
       <% if (success) { %>
-        <div class="alert alert-success"><%= success %></div>
+        <div class="alert alert-success" id="flashSuccess"><%= success %></div>
       <% } %>
 
       <% if (error) { %>
@@ -215,5 +215,13 @@
   <script src="/js/ui-pro.js"></script>
   <script src="/js/theme.js"></script>
   <script src="/js/recaptcha-widget.js"></script>
+  <% if (success) { %>
+  <script>
+    setTimeout(function () {
+      var flash = document.getElementById('flashSuccess');
+      if (flash) flash.remove();
+    }, 3000);
+  </script>
+  <% } %>
 </body>
 </html>
