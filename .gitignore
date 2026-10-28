@@ -19,3 +19,8 @@ Thumbs.db
 
 node_modules/
 .env
+
+# diagramas: png/pdf/svg son solo para descargar; se regeneran desde los .dot
+docs/diagramas/*.png
+docs/diagramas/*.pdf
+docs/diagramas/*.svg
